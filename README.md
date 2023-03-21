@@ -1,8 +1,33 @@
-# EOSC PID Meta Resolver
+# PID Meta Resolver
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+The PID Meta Resolver is a generalized resolver for mapping items into records. Actually the  PID Meta Resolver will  know where to route different types of identifier – ex. DOI, URN:NBN. 
+PID Meta Resolver which should improve a machine based data processing and allows to get digital object information without in-depth knowledge of the resolution mechanism of different PID systems. 
+That enhances the collection and analysis of data collections originating not only from different sources also referenced by different PID systems. 
+The PID Meta Resolver should return a minimal set of information. This creates the connection with the PID Kernel Information.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+## Expose OpenAPI Specifications
+
+OpenAPI Specifications are accessible at `/open-api` endpoint.
+
+## Swagger UI
+
+Swagger UI is accessible at `/swagger-ui` endpoint.
+
+## Configuration files
+
+To run the API, the following configuration files should be defined:
+
+- The list of Metaresolvers that the API supports
+- The list of Providers that the API supports
+
+Examples of these files can be found in the following [folder](files).
+
+To define these files, please export the following variables:
+
+```bash
+- export LIST_METARESOLVERS_FILE=the absolute path of the file encapsulating the Metaresolvers
+- export LIST_PROVIDERS_FILE=the absolute path of the file encapsulating the Providers
+```
 
 ## Running the application in dev mode
 
@@ -46,11 +71,3 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 You can then execute your native executable with: `./target/pid-meta-resolver-1.0.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
-
-## Provided Code
-
-### RESTEasy Reactive
-
-Easily start your Reactive RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)

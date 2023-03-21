@@ -24,7 +24,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -62,7 +61,7 @@ public class ProviderEndpoint {
             description = "Indicates the page number. Page number must be between 1 and 100.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                           @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,  @Context UriInfo uriInfo) throws IOException {
+                           @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,  @Context UriInfo uriInfo) {
 
 
         return Response.ok().entity(providerService.pagination(page - 1, size, uriInfo)).build();

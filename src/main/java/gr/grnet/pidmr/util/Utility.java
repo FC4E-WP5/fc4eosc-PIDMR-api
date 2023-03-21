@@ -2,11 +2,13 @@ package gr.grnet.pidmr.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.cache.CacheResult;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
@@ -35,7 +37,7 @@ public class Utility {
     }
 
     /**
-     * This method turns a JSON array into a List of objects.
+     * This method turns a JSON array into a Set of objects.
      * The clazz parameter determines the type of the objects.
      * This object type must match the structure of the JSON object.
      *
@@ -43,11 +45,12 @@ public class Utility {
      * @param objectMapper ObjectMapper provides functionality for reading and writing JSON.
      * @param pathToJson Specifies the location of the JSON file.
      * @param <T>
-     * @return The converted JSON array to List.
-     * @throws IOException If the parsing is not completed successfully.
+     * @return The converted JSON array to Set.
+     * @throws RuntimeException If the parsing is not completed successfully.
      */
-    public static <T> List<T> toList(Class<T> clazz, ObjectMapper objectMapper, String pathToJson) throws IOException {
+    @SneakyThrows(IOException.class)
+    public static <T> Set<T> toSet(Class<T> clazz, ObjectMapper objectMapper, String pathToJson) {
 
-        return objectMapper.readValue(Paths.get(pathToJson).toFile(), objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
+       return objectMapper.readValue(Paths.get(pathToJson).toFile(), objectMapper.getTypeFactory().constructCollectionType(Set.class, clazz));
     }
 }

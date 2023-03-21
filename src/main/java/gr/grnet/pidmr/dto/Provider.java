@@ -1,10 +1,12 @@
 package gr.grnet.pidmr.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(name="Provider", description="An object represents a Provider.")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Provider {
 
     @Schema(
@@ -14,6 +16,7 @@ public class Provider {
             example = "ark"
     )
     @JsonProperty("pid")
+    @EqualsAndHashCode.Include
     public String pid;
 
     @Schema(
