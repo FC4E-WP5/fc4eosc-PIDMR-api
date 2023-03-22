@@ -1,9 +1,11 @@
 package gr.grnet.pidmr.endpoint;
 
 import gr.grnet.pidmr.dto.InformativeResponse;
+import gr.grnet.pidmr.dto.ProviderDto;
+import gr.grnet.pidmr.dto.Validity;
 import gr.grnet.pidmr.pagination.PageResource;
-import gr.grnet.pidmr.dto.Provider;
 import gr.grnet.pidmr.service.ProviderService;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -17,6 +19,7 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -39,7 +42,7 @@ public class ProviderEndpoint {
     }
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Returns all the available Providers.",
             description = "This operation returns the list of Providers that the API supports. By default, the first page of 10 Providers will be returned. " +
                     "You can tune the default values by using the query parameters page and size.")
@@ -63,21 +66,65 @@ public class ProviderEndpoint {
                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
                            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,  @Context UriInfo uriInfo) {
 
-
         return Response.ok().entity(providerService.pagination(page - 1, size, uriInfo)).build();
     }
 
-    public static class PageableProvider extends PageResource<Provider> {
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Validates PIDs.",
+            description = "This operation check the validity of each identifier. " +
+                    "Every Provider has a regex based on which the validation is performed.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The result of the validation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = Validity.class)))
+    @APIResponse(
+            responseCode = "406",
+            description = "The pid or type is not supported.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/validate/{pid : .+}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response validate(@Parameter(
+            description = "The PID to be validated.",
+            required = true,
+            example = "ark:/13030/tf5p30086k",
+            schema = @Schema(type = SchemaType.STRING))
+                                 @PathParam("pid") String pid, @Parameter(name = "type", in = QUERY,
+            description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) {
 
-        private List<Provider> content;
+        Validity validity;
+
+        if(type.isEmpty()){
+            validity = providerService.valid(pid);
+        } else{
+            validity = providerService.valid(pid, type);
+        }
+
+        return Response.ok().entity(validity).build();
+    }
+
+    public static class PageableProvider extends PageResource<ProviderDto> {
+
+        private List<ProviderDto> content;
 
         @Override
-        public List<Provider> getContent() {
+        public List<ProviderDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<Provider> content) {
+        public void setContent(List<ProviderDto> content) {
             this.content = content;
         }
     }
