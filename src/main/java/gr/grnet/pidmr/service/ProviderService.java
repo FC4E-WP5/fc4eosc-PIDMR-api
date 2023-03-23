@@ -11,7 +11,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 
 @ApplicationScoped
@@ -35,13 +35,12 @@ public class ProviderService {
      * @param size The total number of Providers to be retrieved.
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
-     * @throws IOException If the parsing of Providers is not completed successfully.
      */
-    public PageResource<Provider> pagination(int page, int size, UriInfo uriInfo) throws IOException {
+    public PageResource<Provider> pagination(int page, int size, UriInfo uriInfo) {
 
-        var allProviders = Utility.toList(Provider.class, objectMapper, path);
+        var allProviders = Utility.toSet(Provider.class, objectMapper, path);
 
-        var partition = Utility.partition(allProviders, size);
+        var partition = Utility.partition(new ArrayList<>(allProviders), size);
 
         var providers = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
 
