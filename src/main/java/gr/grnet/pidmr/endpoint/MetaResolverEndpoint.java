@@ -1,6 +1,7 @@
 package gr.grnet.pidmr.endpoint;
 
 import gr.grnet.pidmr.service.MetaresolverService;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -26,7 +27,7 @@ public class MetaResolverEndpoint {
     }
 
     @Tag(name = "Metaresolver")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Resolves different types of PIDs.",
             description = "This operation can be used to resolve the different types of PIDs. Using a Metaresolver, it resolves the incoming PID. " +
                     "The 301 redirect status response code" +
