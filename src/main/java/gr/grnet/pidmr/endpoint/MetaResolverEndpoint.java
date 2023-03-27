@@ -1,9 +1,11 @@
 package gr.grnet.pidmr.endpoint;
 
+import gr.grnet.pidmr.dto.InformativeResponse;
 import gr.grnet.pidmr.service.MetaresolverService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -13,10 +15,12 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
-@Path("v1/resolve")
+@Path("v1/metaresolvers")
 public class MetaResolverEndpoint {
 
     @Inject
@@ -39,8 +43,15 @@ public class MetaResolverEndpoint {
                     type = SchemaType.STRING,
                     example = "http://hdl.handle.net/21.T11999/METARESOLVER@ark:/13030/tf5p30086k",
                     implementation = String.class)))
+    @APIResponse(
+            responseCode = "406",
+            description = "The pid is not supported.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
     @GET
-    @Path("/{pid : .+}")
+    @Path("/resolve/{pid : .+}")
+    @Produces(value = MediaType.APPLICATION_JSON)
     public Response resolve(@Parameter(
             description = "The PID to be resolved.",
             required = true,

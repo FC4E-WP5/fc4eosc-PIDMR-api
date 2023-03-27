@@ -1,5 +1,6 @@
 package gr.grnet.pidmr.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,8 +17,30 @@ import java.util.Set;
 public class Provider {
 
     @EqualsAndHashCode.Include
+    @JsonProperty(value = "type", required = true)
     private String type;
     private String name;
     private String description;
+    @JsonProperty(value = "regex", required = true)
     private Set<String> regex;
+    @JsonProperty(value = "characters_to_be_removed")
+    //To be able to resolve some pids, it is necessary to remove some of its first characters.
+    private int charactersToBeRemoved;
+    @JsonProperty(value = "metaresolver", required = true)
+    private String metaresolver;
+
+    /**
+     * To be able to resolve some pids, it is necessary to remove some of its first characters.
+     * This method calibrates the pid by removing the number of characters declared in the "charactersToBeRemoved" property.
+     * @param pid The pid to be calibrated.
+     * @return The calibrated pid.
+     */
+    public String calibratePid(String pid){
+
+        if(charactersToBeRemoved!=0){
+            return pid.substring(charactersToBeRemoved);
+        } else {
+            return pid;
+        }
+    }
 }

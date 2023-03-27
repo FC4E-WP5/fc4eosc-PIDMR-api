@@ -1,5 +1,6 @@
 package gr.grnet.pidmr.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +15,9 @@ import lombok.Setter;
 public class MetaResolver {
 
     @EqualsAndHashCode.Include
+    @JsonProperty(value = "key", required = true)
     private String key;
+    @JsonProperty(value = "location", required = true)
     private String location;
     private String description;
 }
