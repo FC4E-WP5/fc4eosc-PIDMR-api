@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -71,7 +72,8 @@ public class ProviderService {
     @CacheResult(cacheName = "providers")
     public Set<Provider> getProviders(){
 
-        var mapper = JsonMapper.builder()
+        var mapper = JsonMapper
+                .builder()
                 .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
                 .build();
 
@@ -105,13 +107,7 @@ public class ProviderService {
      */
     public Validity valid(String pid){
 
-        var providers = getProviders();
-
-        var type = providers
-                .stream()
-                .map(Provider::getType)
-                .filter(tp->belongsTo(pid, tp))
-                .findAny();
+        var type = getPidType(pid);
 
         var candidateType = type.orElseThrow(()->new NotAcceptableException(String.format("%s doesn't belong to any of the available types.", pid)));
 
@@ -177,13 +173,35 @@ public class ProviderService {
                 .allMatch(index->Character.toLowerCase(type.charAt(index)) == Character.toLowerCase(pid.charAt(index)));
     }
 
+    /**
+     * This method finds and returns the pid type. If there is no available pid type, it returns an empty Optional object.
+     *
+     * @param pid The incoming pid.
+     * @return The pid type.
+     */
+    public Optional<String> getPidType(String pid){
+
+        var providers = getProviders();
+
+        return providers
+                .stream()
+                .map(Provider::getType)
+                .filter(tp->belongsTo(pid, tp))
+                .findAny();
+    }
+
     void onStart(@Observes StartupEvent ev) {
 
-        // try to read the providers file. If the file doesn't exist, the application cannot start.
+        var mapper = JsonMapper
+                .builder()
+                .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
+                .build();
+
+        // try to read the providers file. If the file cannot be read, the application cannot start.
         try {
-            Files.lines(Paths.get(path)).collect(Collectors.joining(System.lineSeparator()));
-        } catch (IOException e) {
-            throw new FailedToStartException("The file containing the Providers has not been found.");
+            Utility.toSet(Provider.class, mapper, path);
+        } catch (Exception e) {
+            throw new FailedToStartException("The file containing the Providers cannot be read.");
         }
     }
 }

@@ -1,7 +1,10 @@
 package gr.grnet.pidmr.service;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import gr.grnet.pidmr.entity.MetaResolver;
+import gr.grnet.pidmr.entity.Provider;
 import gr.grnet.pidmr.exception.FailedToStartException;
 import gr.grnet.pidmr.util.Utility;
 import io.quarkus.cache.CacheResult;
@@ -11,6 +14,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import javax.ws.rs.NotAcceptableException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,8 +32,12 @@ public class MetaresolverService {
     @Inject
     ObjectMapper objectMapper;
 
-    public MetaresolverService(ObjectMapper objectMapper) {
+    @Inject
+    ProviderService providerService;
+
+    public MetaresolverService(ObjectMapper objectMapper, ProviderService providerService) {
         this.objectMapper = objectMapper;
+        this.providerService = providerService;
     }
 
     /**
@@ -40,10 +48,17 @@ public class MetaresolverService {
      */
     public String resolve(String pid) {
 
-        // For now we use the EOSC metaresolver
-        var eoscMetaresolver = getMetaresolverByKey("FC4EOSC");
+        var type = providerService.getPidType(pid);
 
-        return eoscMetaresolver.getLocation().concat(pid);
+        var candidateType = type.orElseThrow(()->new NotAcceptableException(String.format("%s doesn't belong to any of the available types.", pid)));
+
+        var provider = providerService.getProviderByType(candidateType);
+
+        var calibratedPid = provider.calibratePid(pid);
+
+        var eoscMetaresolver = getMetaresolverByKey(provider.getMetaresolver());
+
+        return eoscMetaresolver.getLocation().concat(calibratedPid);
     }
 
     /**
@@ -75,11 +90,15 @@ public class MetaresolverService {
 
     void onStart(@Observes StartupEvent ev) {
 
-        // try to read the metaresolvers file. If the file doesn't exist, the application cannot start.
+        var mapper = JsonMapper
+                .builder()
+                .build();
+
+        // try to read the metaresolvers file. If the file cannot be read, the application cannot start.
         try {
-            Files.lines(Paths.get(path)).collect(Collectors.joining(System.lineSeparator()));
-        } catch (IOException e) {
-            throw new FailedToStartException("The file containing the Metaresolvers has not been found.");
+            Utility.toSet(MetaResolver.class, mapper, path);
+        } catch (Exception e) {
+            throw new FailedToStartException("The file containing the Metaresolvers cannot be read.");
         }
     }
 }
