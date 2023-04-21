@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Schema(name="Provider", description="An object represents a Provider.")
 public class ProviderDto {
 
@@ -33,4 +36,12 @@ public class ProviderDto {
     )
     @JsonProperty("description")
     public String description;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = ActionDto.class,
+            description = "The actions supported by Provider."
+    )
+    @JsonProperty("actions")
+    public Set<ActionDto> actions = new HashSet<>();
 }

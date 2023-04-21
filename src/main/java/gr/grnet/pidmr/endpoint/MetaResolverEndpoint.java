@@ -12,13 +12,17 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+
+import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("v1/metaresolvers")
 public class MetaResolverEndpoint {
@@ -37,7 +41,7 @@ public class MetaResolverEndpoint {
                     "The 301 redirect status response code" +
                     " indicates the Metaresolver URL, which resolves the PID. The Location header contains that URL.")
     @APIResponse(
-            responseCode = "301",
+            responseCode = "302",
             description = "The Metaresolver location that resolves the PID.",
             headers = @Header(name = "Location", description = "The Metaresolver location that resolves the PID.", schema = @Schema(
                     type = SchemaType.STRING,
@@ -57,10 +61,11 @@ public class MetaResolverEndpoint {
             required = true,
             example = "ark:/13030/tf5p30086k",
             schema = @Schema(type = SchemaType.STRING))
-                                @PathParam("pid") String pid) {
+                                @PathParam("pid") String pid,  @Parameter(name = "mode", in = QUERY,
+            description = "When this parameter is used, the API also appends to PID the display mode.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("mode") String mode) {
 
-        var resolvable = metaresolverService.resolve(pid);
+        var resolvable = metaresolverService.resolve(pid, mode);
 
-        return Response.status(Response.Status.MOVED_PERMANENTLY).header("Location", URI.create(resolvable).toString()).build();
+        return Response.status(Response.Status.FOUND).header("Location", URI.create(resolvable).toString()).build();
     }
 }
