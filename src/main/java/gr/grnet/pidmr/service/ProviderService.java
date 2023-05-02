@@ -3,6 +3,7 @@ package gr.grnet.pidmr.service;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import gr.grnet.pidmr.dto.Validity;
+import gr.grnet.pidmr.entity.Action;
 import gr.grnet.pidmr.entity.Provider;
 import gr.grnet.pidmr.exception.FailedToStartException;
 import gr.grnet.pidmr.mapper.ProviderMapper;
@@ -19,23 +20,23 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+/**
+ * This ProviderService initializes the available Providers provided in the providers.conf file.
+ */
 @ApplicationScoped
-public class ProviderService {
+public class ProviderService implements ProviderServiceI {
 
     @ConfigProperty(name = "list.providers.file")
-    String path;
+    String providersPath;
+
+    @ConfigProperty(name = "list.actions.file")
+    String actionsPath;
+
 
     /**
      * This method is responsible for paginating the available Providers.
@@ -70,6 +71,7 @@ public class ProviderService {
      * @return A set of Providers.
      */
     @CacheResult(cacheName = "providers")
+    @Override
     public Set<Provider> getProviders(){
 
         var mapper = JsonMapper
@@ -77,24 +79,22 @@ public class ProviderService {
                 .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
                 .build();
 
-       return Utility.toSet(Provider.class, mapper, path);
+        return Utility.toSet(Provider.class, mapper, providersPath);
     }
 
     /**
-     * This method returns the Provider that corresponds to a particular type.
-     *
-     * @param type The type of Provider.
-     * @return The corresponding Provider.
+     * This method returns the available Providers.
+     * @return A set of Providers.
      */
+    @CacheResult(cacheName = "actions")
+    @Override
+    public Set<Action> getActions() {
 
-    @CacheResult(cacheName = "providersToMap")
-    public Provider getProviderByType(String type){
+        var mapper = JsonMapper
+                .builder()
+                .build();
 
-        var map = getProviders()
-                .stream()
-                .collect(Collectors.toMap(Provider::getType, Function.identity()));
-
-        return map.get(type);
+        return Utility.toSet(Action.class, mapper, actionsPath);
     }
 
     /**
@@ -105,6 +105,7 @@ public class ProviderService {
      * @param pid The pid to be validated.
      * @return An object representing whether a PID is valid.
      */
+    @Override
     public Validity valid(String pid){
 
         var type = getPidType(pid);
@@ -123,6 +124,7 @@ public class ProviderService {
      * @param type The type that pid belongs to.
      * @return An object representing whether a PID is valid.
      */
+    @Override
     public Validity valid(String pid, String type){
 
         var provider = getProviderByType(type);
@@ -138,57 +140,6 @@ public class ProviderService {
         return valid(provider, pid);
     }
 
-    /**
-     * Each identifier should match the regular expression provided by its Provider.
-     *
-     * @param pid The pid to be validated.
-     * @param provider The provider that pid belongs to.
-     * @return An object representing whether a PID is valid.
-     */
-    public Validity valid(Provider provider, String pid){
-
-        var regex = provider.getRegex();
-
-        var valid = regex
-                .stream()
-                .anyMatch(pid::matches);
-
-        var validity = new Validity();
-        validity.valid = valid;
-        validity.type = provider.getType();
-
-        return validity;
-    }
-
-    /**
-     * This method checks if the incoming pid belongs to a particular type.
-     * @param pid The incoming pid.
-     * @param type The type of pid to which the incoming pid may belong.
-     * @return If the incoming pid belongs to the given type.
-     */
-    private boolean belongsTo(String pid, String type){
-
-        return IntStream
-                .range(0, type.length())
-                .allMatch(index->Character.toLowerCase(type.charAt(index)) == Character.toLowerCase(pid.charAt(index)));
-    }
-
-    /**
-     * This method finds and returns the pid type. If there is no available pid type, it returns an empty Optional object.
-     *
-     * @param pid The incoming pid.
-     * @return The pid type.
-     */
-    public Optional<String> getPidType(String pid){
-
-        var providers = getProviders();
-
-        return providers
-                .stream()
-                .map(Provider::getType)
-                .filter(tp->belongsTo(pid, tp))
-                .findAny();
-    }
 
     void onStart(@Observes StartupEvent ev) {
 
@@ -199,7 +150,7 @@ public class ProviderService {
 
         // try to read the providers file. If the file cannot be read, the application cannot start.
         try {
-            Utility.toSet(Provider.class, mapper, path);
+            Utility.toSet(Provider.class, mapper, providersPath);
         } catch (Exception e) {
             throw new FailedToStartException("The file containing the Providers cannot be read.");
         }

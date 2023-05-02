@@ -103,13 +103,7 @@ public class ProviderEndpoint {
                                  @PathParam("pid") String pid, @Parameter(name = "type", in = QUERY,
             description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) {
 
-        Validity validity;
-
-        if(type.isEmpty()){
-            validity = providerService.valid(pid);
-        } else{
-            validity = providerService.valid(pid, type);
-        }
+        var validity = providerService.validation(pid, type);
 
         return Response.ok().entity(validity).build();
     }

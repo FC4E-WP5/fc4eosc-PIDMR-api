@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -28,6 +29,8 @@ public class Provider {
     private int charactersToBeRemoved;
     @JsonProperty(value = "metaresolver", required = true)
     private String metaresolver;
+
+    private Set<String> actions = new HashSet<>();
 
     /**
      * To be able to resolve some pids, it is necessary to remove some of its first characters.

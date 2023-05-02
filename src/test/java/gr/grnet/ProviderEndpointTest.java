@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import gr.grnet.pidmr.dto.InformativeResponse;
 import gr.grnet.pidmr.dto.Validity;
 import gr.grnet.pidmr.endpoint.ProviderEndpoint;
+import gr.grnet.pidmr.entity.Action;
 import gr.grnet.pidmr.entity.Provider;
 import gr.grnet.pidmr.pagination.PageResource;
 import gr.grnet.pidmr.service.ProviderService;
@@ -39,7 +40,11 @@ public class ProviderEndpointTest {
     ProviderService providerService;
 
     @ConfigProperty(name = "list.providers.file")
-    String path;
+    String providersPath;
+
+    @ConfigProperty(name = "list.actions.file")
+    String actionsPath;
+
 
     @BeforeAll
     public void setup() {
@@ -461,8 +466,20 @@ public class ProviderEndpointTest {
                     .build();
 
             ClassLoader classLoader = getClass().getClassLoader();
-            File file = new File(classLoader.getResource(path).getFile());
+            File file = new File(classLoader.getResource(providersPath).getFile());
             return mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(Set.class, Provider.class));
+        }
+
+        @Override
+        @SneakyThrows(IOException.class)
+        public Set<Action> getActions()  {
+
+            var mapper = JsonMapper.builder()
+                    .build();
+
+            ClassLoader classLoader = getClass().getClassLoader();
+            File file = new File(classLoader.getResource(actionsPath).getFile());
+            return mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(Set.class, Action.class));
         }
     }
 
