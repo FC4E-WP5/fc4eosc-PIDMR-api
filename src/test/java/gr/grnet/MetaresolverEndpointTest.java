@@ -3,6 +3,7 @@ package gr.grnet;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import gr.grnet.pidmr.dto.InformativeResponse;
 import gr.grnet.pidmr.endpoint.MetaResolverEndpoint;
 import gr.grnet.pidmr.entity.Action;
 import gr.grnet.pidmr.entity.MetaResolver;
@@ -13,6 +14,7 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import io.restassured.http.ContentType;
 import lombok.SneakyThrows;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -61,6 +64,58 @@ public class MetaresolverEndpointTest {
         QuarkusMock.installMockForInstance(new MockableProvider(), providerService);
         QuarkusMock.installMockForInstance(new MockableMetaresolver(objectMapper, providerService), metaresolverService);
 
+    }
+
+    @Test
+    public void pidNotEmpty(){
+
+        var informativeResponse = given()
+                .contentType(ContentType.JSON)
+                .get("/resolve")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("pid may not be empty.", informativeResponse.message);
+    }
+
+    @Test
+    public void resolvePIDViaAPI(){
+
+        var headers = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "ark:/67531/metapth346793")
+                .get("/resolve")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .response()
+                .getHeaders();
+
+        assertEquals("GET", headers.get("http-method").getValue());
+        assertEquals("http://hdl.handle.net/21.T11999/METARESOLVER@ark:/67531/metapth346793", headers.get("location").getValue());
+    }
+
+    @Test
+    public void resolvePIDWithModeViaAPI(){
+
+        var headers = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "ark:/67531/metapth346793")
+                .queryParam("pidMode", "metadata")
+                .get("/resolve")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .response()
+                .getHeaders();
+
+        assertEquals("POST", headers.get("http-method").getValue());
+        assertEquals("http://hdl.handle.net/21.T11999/METARESOLVER@ark:/67531/metapth346793?metadata", headers.get("location").getValue());
     }
 
     @Test
