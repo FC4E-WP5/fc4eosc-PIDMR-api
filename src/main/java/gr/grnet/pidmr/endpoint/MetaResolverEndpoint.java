@@ -6,16 +6,19 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.mapstruct.ap.internal.util.Strings;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -41,12 +44,22 @@ public class MetaResolverEndpoint {
                     "The 301 redirect status response code" +
                     " indicates the Metaresolver URL, which resolves the PID. The Location header contains that URL.")
     @APIResponse(
-            responseCode = "302",
+            responseCode = "200",
             description = "The Metaresolver location that resolves the PID.",
-            headers = @Header(name = "Location", description = "The Metaresolver location that resolves the PID.", schema = @Schema(
+            headers = {@Header(name = "location", description = "The Metaresolver location that resolves the PID.", schema = @Schema(
                     type = SchemaType.STRING,
                     example = "http://hdl.handle.net/21.T11999/METARESOLVER@ark:/13030/tf5p30086k",
-                    implementation = String.class)))
+                    implementation = String.class)),
+                    @Header(name = "http-method", description = "The http method resolving the PID.", schema = @Schema(
+                            type = SchemaType.STRING,
+                            example = "GET",
+                            implementation = String.class))})
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "406",
             description = "The pid is not supported.",
@@ -54,18 +67,18 @@ public class MetaResolverEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @GET
-    @Path("/resolve/{pid : .+}")
+    @Path("/resolve")
     @Produces(value = MediaType.APPLICATION_JSON)
-    public Response resolve(@Parameter(
-            description = "The PID to be resolved.",
-            required = true,
-            example = "ark:/13030/tf5p30086k",
-            schema = @Schema(type = SchemaType.STRING))
-                                @PathParam("pid") String pid,  @Parameter(name = "mode", in = QUERY,
-            description = "When this parameter is used, the API also appends to PID the display mode.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("mode") String mode) {
+    public Response resolve(@Parameter(name = "pid", in = QUERY, required = true, example = "ark:/13030/tf5p30086k", allowReserved = true,
+            description = "The PID to be resolved.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("pid") @NotEmpty(message = "pid may not be empty.") String pid, @Parameter(name = "pidMode", in = QUERY,
+            description = "When this parameter is used, the API also appends to PID the display mode.", examples = {@ExampleObject(name = "Landing Page", value = "landingpage"), @ExampleObject(name = "Metadata", value = "metadata"), @ExampleObject(name = "Resource", value = "resource")}, schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("pidMode") String pidMode) {
 
-        var resolvable = metaresolverService.resolve(pid, mode);
+        var resolvable = metaresolverService.resolve(pid, pidMode);
 
-        return Response.status(Response.Status.FOUND).header("Location", URI.create(resolvable).toString()).build();
+        if(Strings.isEmpty(pidMode)){
+            return Response.status(Response.Status.OK).header("location", URI.create(resolvable).toString()).header("http-method", "GET").build();
+        }else {
+            return Response.status(Response.Status.OK).header("location", URI.create(resolvable).toString()).header("http-method", "POST").build();
+        }
     }
 }

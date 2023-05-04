@@ -16,6 +16,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import javax.inject.Inject;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -93,14 +94,10 @@ public class ProviderEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @GET
-    @Path("/validate/{pid : .+}")
+    @Path("/validate")
     @Produces(value = MediaType.APPLICATION_JSON)
-    public Response validate(@Parameter(
-            description = "The PID to be validated.",
-            required = true,
-            example = "ark:/13030/tf5p30086k",
-            schema = @Schema(type = SchemaType.STRING))
-                                 @PathParam("pid") String pid, @Parameter(name = "type", in = QUERY,
+    public Response validate(@Parameter(name = "pid", in = QUERY, required = true, example = "ark:/13030/tf5p30086k", allowReserved = true,
+            description = "The PID to be validated.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("pid") @NotEmpty(message = "pid may not be empty.") String pid, @Parameter(name = "type", in = QUERY,
             description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) {
 
         var validity = providerService.validation(pid, type);
