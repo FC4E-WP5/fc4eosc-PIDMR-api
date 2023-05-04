@@ -96,7 +96,7 @@ public class MetaresolverEndpointTest {
                 .getHeaders();
 
         assertEquals("GET", headers.get("http-method").getValue());
-        assertEquals("http://hdl.handle.net/21.T11999/METARESOLVER@ark:/67531/metapth346793", headers.get("location").getValue());
+        assertEquals("http://hdl.handle.net/21.T11973/MR@ark:/67531/metapth346793", headers.get("location").getValue());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class MetaresolverEndpointTest {
                 .getHeaders();
 
         assertEquals("POST", headers.get("http-method").getValue());
-        assertEquals("http://hdl.handle.net/21.T11999/METARESOLVER@ark:/67531/metapth346793?metadata", headers.get("location").getValue());
+        assertEquals("http://hdl.handle.net/21.T11973/MR@ark:/67531/metapth346793?metadata", headers.get("location").getValue());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class MetaresolverEndpointTest {
 
        var location = metaresolverService.resolve("ark:/67531/metapth346793", "");
 
-        assertEquals("http://hdl.handle.net/21.T11999/METARESOLVER@ark:/67531/metapth346793", location);
+        assertEquals("http://hdl.handle.net/21.T11973/MR@ark:/67531/metapth346793", location);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class MetaresolverEndpointTest {
 
         var location = metaresolverService.resolve("ark:/67531/metapth346793", "metadata");
 
-        assertEquals("http://hdl.handle.net/21.T11999/METARESOLVER@ark:/67531/metapth346793?metadata", location);
+        assertEquals("http://hdl.handle.net/21.T11973/MR@ark:/67531/metapth346793?metadata", location);
     }
 
     @Test
@@ -164,6 +164,42 @@ public class MetaresolverEndpointTest {
 
 
         assertEquals("This mode {resource} is not supported.", exception.getMessage());
+    }
+
+    @Test
+    public void resolveGermanUriViaAPI(){
+
+        var headers = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "urn:nbn:de:hbz:6-85659524771")
+                .get("/resolve")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .response()
+                .getHeaders();
+
+        assertEquals("GET", headers.get("http-method").getValue());
+        assertEquals("http://hdl.handle.net/21.T11973/MR@urn:nbn:de:hbz:6-85659524771", headers.get("location").getValue());
+    }
+
+    @Test
+    public void resolveFinishUriViaAPI(){
+
+        var headers = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "urn:nbn:fi-fe2021080942632")
+                .get("/resolve")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .response()
+                .getHeaders();
+
+        assertEquals("GET", headers.get("http-method").getValue());
+        assertEquals("http://hdl.handle.net/21.T11973/MR@urn:nbn:fi-fe2021080942632", headers.get("location").getValue());
     }
 
     public class MockableProvider extends ProviderService {
