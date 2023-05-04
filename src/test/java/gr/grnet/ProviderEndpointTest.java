@@ -61,8 +61,8 @@ public class ProviderEndpointTest {
                 .thenReturn();
 
         assertEquals(200, response.statusCode());
-        assertEquals(6, response.body().as(PageResource.class).getContent().size());
-        assertEquals(6, response.body().as(PageResource.class).getTotalElements());
+        assertEquals(8, response.body().as(PageResource.class).getContent().size());
+        assertEquals(8, response.body().as(PageResource.class).getTotalElements());
         assertEquals(1, response.body().as(PageResource.class).getNumberOfPage());
     }
 
@@ -131,7 +131,6 @@ public class ProviderEndpointTest {
         assertTrue(validity.valid);
         assertEquals("ark", validity.type);
     }
-
 
     @Test
     public void notValidArk(){
@@ -218,7 +217,6 @@ public class ProviderEndpointTest {
         assertEquals("arXiv", validity.type);
     }
 
-
     @Test
     public void notValidArxiv(){
 
@@ -286,7 +284,6 @@ public class ProviderEndpointTest {
         assertTrue(validity.valid);
         assertEquals("swh", validity.type);
     }
-
 
     @Test
     public void notValidSwh(){
@@ -459,6 +456,74 @@ public class ProviderEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("ark:/13030/tf5p30086k doesn't belong to this type : doi.", informativeResponse.message);
+    }
+
+    @Test
+    public void validAGermanUriWithType(){
+
+        var validity = given()
+                .contentType(ContentType.JSON)
+                .queryParam("type", "urn:nbn:de")
+                .queryParam("pid", "urn:nbn:de:hbz:6-85659524771")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Validity.class);
+
+        assertTrue(validity.valid);
+        assertEquals("urn:nbn:de", validity.type);
+    }
+
+    @Test
+    public void validAFinishUriWithType(){
+
+        var validity = given()
+                .contentType(ContentType.JSON)
+                .queryParam("type", "urn:nbn:fi")
+                .queryParam("pid", "urn:nbn:fi-fe2021080942632")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Validity.class);
+
+        assertTrue(validity.valid);
+        assertEquals("urn:nbn:fi", validity.type);
+    }
+
+    @Test
+    public void validGermanUriUpper(){
+
+        var validity = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "uRn:nBn:DE:hbz:6-85659524771")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Validity.class);
+
+        assertTrue(validity.valid);
+    }
+
+    @Test
+    public void validFinishUriUpper(){
+
+        var validity = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "Urn:nbN:Fi-fe2021080942632")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Validity.class);
+
+        assertTrue(validity.valid);
     }
 
     @Test
