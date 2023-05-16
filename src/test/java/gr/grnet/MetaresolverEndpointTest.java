@@ -160,7 +160,7 @@ public class MetaresolverEndpointTest {
 
         Exception exception = assertThrows(
                 BadRequestException.class,
-                () -> metaresolverService.resolve("arXiv:1501.00001", "resource"));
+                () -> metaresolverService.resolve("doi:10.1186/2041-1480-3-9", "resource"));
 
 
         assertEquals("This mode {resource} is not supported.", exception.getMessage());
