@@ -202,6 +202,24 @@ public class MetaresolverEndpointTest {
         assertEquals("http://hdl.handle.net/21.T11973/MR@urn:nbn:fi-fe2021080942632", headers.get("location").getValue());
     }
 
+    @Test
+    public void resolveEpicOldViaAPI(){
+
+        var headers = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "11500/ATHENA-0000-0000-2401-6")
+                .get("/resolve")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .response()
+                .getHeaders();
+
+        assertEquals("GET", headers.get("http-method").getValue());
+        assertEquals("http://hdl.handle.net/11500/ATHENA-0000-0000-2401-6", headers.get("location").getValue());
+    }
+
     public class MockableProvider extends ProviderService {
 
         @Override
