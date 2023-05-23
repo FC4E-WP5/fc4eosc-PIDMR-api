@@ -420,7 +420,7 @@ public class ProviderEndpointTest {
                 .as(Validity.class);
 
         assertTrue(validity.valid);
-        assertEquals("11500", validity.type);
+        assertEquals("epic old", validity.type);
     }
 
     @Test
@@ -548,7 +548,7 @@ public class ProviderEndpointTest {
 
         var informativeResponse = given()
                 .contentType(ContentType.JSON)
-                .queryParam("pid", "13030/tf5p30086k")
+                .queryParam("pid", "lalala/tf5p30086k")
                 .get("/validate")
                 .then()
                 .assertThat()
@@ -556,7 +556,7 @@ public class ProviderEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("13030/tf5p30086k doesn't belong to any of the available types.", informativeResponse.message);
+        assertEquals("lalala/tf5p30086k doesn't belong to any of the available types.", informativeResponse.message);
     }
 
     public class MockableProvider extends ProviderService {

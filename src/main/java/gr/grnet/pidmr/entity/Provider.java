@@ -29,6 +29,10 @@ public class Provider {
     private int charactersToBeRemoved;
     @JsonProperty(value = "metaresolver", required = true)
     private String metaresolver;
+    @JsonProperty(value = "check_type_with_regex")
+    //Search for Providers by regex instead of variable type.
+    private boolean checkTypeWithRegex;
+
 
     private Set<String> actions = new HashSet<>();
 

@@ -99,10 +99,30 @@ public interface ProviderServiceI {
 
         var providers = getProviders();
 
-        return providers
+        var optionalType = providers
                 .stream()
                 .map(Provider::getType)
                 .filter(tp->belongsTo(pid, tp))
                 .findAny();
+
+        if(optionalType.isPresent()){
+
+            return optionalType;
+        } else{
+
+            return providers
+                    .stream()
+                    .filter(Provider::isCheckTypeWithRegex)
+                    .filter(pr->{
+
+                        var regex = pr.getRegex();
+
+                        return regex
+                                .stream()
+                                .anyMatch(pid::matches);
+                    })
+                    .map(Provider::getType)
+                    .findAny();
+        }
     }
 }
