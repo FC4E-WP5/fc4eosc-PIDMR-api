@@ -2,6 +2,11 @@ package org.grnet.pidmr.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import lombok.SneakyThrows;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import org.grnet.pidmr.entity.MetaResolver;
 import org.grnet.pidmr.exception.FailedToStartException;
 import org.grnet.pidmr.mapper.ProviderMapper;
@@ -26,6 +31,18 @@ public class MetaresolverService implements MetaresolverServiceI {
     @ConfigProperty(name = "list.metaresolvers.file")
     String path;
 
+    @ConfigProperty(name = "proxy.resolve.mode.url")
+    String proxy;
+
+    @ConfigProperty(name = "proxy.resolve.mode.body.attribute")
+    String bodyAttribute;
+
+    @ConfigProperty(name = "proxy.resolve.mode.body.attribute.prefix")
+    String bodyAttributePrefix;
+
+    @ConfigProperty(name = "proxy.resolve.mode.url.append.param")
+    String appendParam;
+
     @Inject
     ObjectMapper objectMapper;
 
@@ -43,18 +60,30 @@ public class MetaresolverService implements MetaresolverServiceI {
     }
 
     @Override
+    @SneakyThrows
     public String resolve(MetaResolver metaResolver, String pid, String mode) {
-        return metaResolver.getLocation().concat(pid).concat("?").concat(mode);
 
-//        var parameters = new Proxy.Parameters();
-//
-//        parameters.hdl = "21.T11973/MR@urn:nbn:de:hbz:6-85659524771?resource";
-//        parameters.clear = "resolve";
-//
-//
-//        var response = proxy.sendMultipart(parameters);
-//
-//        return response.header.request;
+        var attribute = new StringBuilder()
+                .append(bodyAttribute)
+                .append("=")
+                .append(bodyAttributePrefix)
+                .append(pid)
+                .append(appendParam)
+                .append(mode);
+
+        var client = new OkHttpClient().newBuilder()
+                .build();
+        var mediaType = MediaType.parse("application/x-www-form-urlencoded");
+        var body = RequestBody.create(attribute.toString(), mediaType);
+        var request = new Request.Builder()
+                .url(proxy)
+                .method("POST", body)
+                .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                .build();
+
+        var response = client.newCall(request).execute();
+
+        return response.request().url().toString();
     }
 
     void onStart(@Observes StartupEvent ev) {
@@ -111,5 +140,61 @@ public class MetaresolverService implements MetaresolverServiceI {
                     .orElseThrow(()->new BadRequestException(String.format("This mode {%s} is not supported.", mode)));
             return resolve(eoscMetaresolver, calibratedPid, mode);
         }
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getProxy() {
+        return proxy;
+    }
+
+    public void setProxy(String proxy) {
+        this.proxy = proxy;
+    }
+
+    public String getBodyAttribute() {
+        return bodyAttribute;
+    }
+
+    public void setBodyAttribute(String bodyAttribute) {
+        this.bodyAttribute = bodyAttribute;
+    }
+
+    public String getBodyAttributePrefix() {
+        return bodyAttributePrefix;
+    }
+
+    public void setBodyAttributePrefix(String bodyAttributePrefix) {
+        this.bodyAttributePrefix = bodyAttributePrefix;
+    }
+
+    public String getAppendParam() {
+        return appendParam;
+    }
+
+    public void setAppendParam(String appendParam) {
+        this.appendParam = appendParam;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public ProviderService getProviderService() {
+        return providerService;
+    }
+
+    public void setProviderService(ProviderService providerService) {
+        this.providerService = providerService;
     }
 }

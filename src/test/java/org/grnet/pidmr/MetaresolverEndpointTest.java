@@ -57,14 +57,31 @@ public class MetaresolverEndpointTest {
     @ConfigProperty(name = "list.actions.file")
     String actionsPath;
 
+    @ConfigProperty(name = "proxy.resolve.mode.url")
+    String proxy;
+
+    @ConfigProperty(name = "proxy.resolve.mode.body.attribute")
+    String bodyAttribute;
+
+    @ConfigProperty(name = "proxy.resolve.mode.body.attribute.prefix")
+    String bodyAttributePrefix;
+
+    @ConfigProperty(name = "proxy.resolve.mode.url.append.param")
+    String appendParam;
 
 
     @BeforeAll
     public void setup() {
 
         QuarkusMock.installMockForInstance(new MockableProvider(), providerService);
-        QuarkusMock.installMockForInstance(new MockableMetaresolver(objectMapper, providerService), metaresolverService);
 
+        var mockableMetaresolverService = new MockableMetaresolver(objectMapper, providerService);
+        mockableMetaresolverService.setProxy(proxy);
+        mockableMetaresolverService.setBodyAttribute(bodyAttribute);
+        mockableMetaresolverService.setBodyAttributePrefix(bodyAttributePrefix);
+        mockableMetaresolverService.setAppendParam(appendParam);
+
+        QuarkusMock.installMockForInstance(mockableMetaresolverService, metaresolverService);
     }
 
     @Test
@@ -112,7 +129,7 @@ public class MetaresolverEndpointTest {
                 .extract()
                 .as(LocationDto.class);
 
-        assertEquals("http://hdl.handle.net/21.T11973/MR@ark:/67531/metapth346793?metadata", location.url);
+        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/?", location.url);
     }
 
     @Test
@@ -138,7 +155,7 @@ public class MetaresolverEndpointTest {
 
         var location = metaresolverService.resolve("ark:/67531/metapth346793", "metadata");
 
-        assertEquals("http://hdl.handle.net/21.T11973/MR@ark:/67531/metapth346793?metadata", location);
+        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/?", location);
     }
 
     @Test
