@@ -19,8 +19,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This MetaresolverService initializes the available Metaresolvers provided in the metaresolvers.conf file.
@@ -49,6 +51,13 @@ public class MetaresolverService implements MetaresolverServiceI {
     @Inject
     ProviderService providerService;
 
+    public final OkHttpClient client = new OkHttpClient()
+            .newBuilder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS)
+            .build();
+
     public MetaresolverService(ObjectMapper objectMapper, ProviderService providerService) {
         this.objectMapper = objectMapper;
         this.providerService = providerService;
@@ -61,6 +70,7 @@ public class MetaresolverService implements MetaresolverServiceI {
 
     @Override
     @SneakyThrows
+    @CacheResult(cacheName = "pidMode")
     public String resolve(MetaResolver metaResolver, String pid, String mode) {
 
         var attribute = new StringBuilder()
@@ -71,8 +81,6 @@ public class MetaresolverService implements MetaresolverServiceI {
                 .append(appendParam)
                 .append(mode);
 
-        var client = new OkHttpClient().newBuilder()
-                .build();
         var mediaType = MediaType.parse("application/x-www-form-urlencoded");
         var body = RequestBody.create(attribute.toString(), mediaType);
         var request = new Request.Builder()
@@ -81,9 +89,13 @@ public class MetaresolverService implements MetaresolverServiceI {
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
                 .build();
 
-        var response = client.newCall(request).execute();
+        try (var response = client.newCall(request).execute()) {
 
-        return response.request().url().toString();
+            return response.request().url().toString();
+        } catch (Exception e) {
+
+            throw new InternalServerErrorException("Cannot communicate with metaresolver: "+e.getMessage());
+        }
     }
 
     void onStart(@Observes StartupEvent ev) {
