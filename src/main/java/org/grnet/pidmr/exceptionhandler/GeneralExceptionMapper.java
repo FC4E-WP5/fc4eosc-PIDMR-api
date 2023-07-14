@@ -15,7 +15,7 @@ public class GeneralExceptionMapper implements ExceptionMapper<Exception> {
     @Override
     public Response toResponse(Exception e) {
 
-        LOG.error("Server Error", e);
+        LOG.error("Internal Server Error", e);
 
         InformativeResponse response = new InformativeResponse();
         response.message = e.getMessage();
