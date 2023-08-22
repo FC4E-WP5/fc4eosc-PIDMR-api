@@ -1,6 +1,7 @@
 package org.grnet.pidmr.service;
 
 import org.grnet.pidmr.entity.MetaResolver;
+import org.grnet.pidmr.entity.Provider;
 
 import java.util.Map;
 import java.util.Set;
@@ -9,9 +10,9 @@ import java.util.stream.Collectors;
 
 public interface MetaresolverServiceI {
 
-     String resolve(MetaResolver metaResolver, String pid);
+     String resolve(Provider provider, String pid);
 
-     String resolve(MetaResolver metaResolver, String pid, String mode);
+     String resolve(Provider provider, String pid, String mode);
 
      String resolve(String pid, String mode);
 

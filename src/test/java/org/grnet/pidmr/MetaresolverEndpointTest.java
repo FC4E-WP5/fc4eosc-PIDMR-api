@@ -228,6 +228,40 @@ public class MetaresolverEndpointTest {
         assertEquals("http://hdl.handle.net/11500/ATHENA-0000-0000-2401-6", location.url);
     }
 
+    @Test
+    public void resolveZenodoMetadataModeViaAPI(){
+
+        var location = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "10.5281/zenodo.8056361")
+                .queryParam("pidMode", "metadata")
+                .get("/resolve")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(LocationDto.class);
+
+        assertEquals("https://zenodo.org/api/records/8056361", location.url);
+    }
+
+    @Test
+    public void resolveZenodoLandingPageModeViaAPI(){
+
+        var location = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "10.5281/zenodo.8056361")
+                .queryParam("pidMode", "landingpage")
+                .get("/resolve")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(LocationDto.class);
+
+        assertEquals("https://zenodo.org/record/8056361", location.url);
+    }
+
     public class MockableProvider extends ProviderService {
 
         @Override

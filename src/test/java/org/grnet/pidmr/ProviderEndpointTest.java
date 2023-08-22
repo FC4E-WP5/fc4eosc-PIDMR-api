@@ -61,8 +61,8 @@ public class ProviderEndpointTest {
                 .thenReturn();
 
         assertEquals(200, response.statusCode());
-        assertEquals(8, response.body().as(PageResource.class).getContent().size());
-        assertEquals(8, response.body().as(PageResource.class).getTotalElements());
+        assertEquals(9, response.body().as(PageResource.class).getContent().size());
+        assertEquals(9, response.body().as(PageResource.class).getTotalElements());
         assertEquals(1, response.body().as(PageResource.class).getNumberOfPage());
     }
 
@@ -524,6 +524,38 @@ public class ProviderEndpointTest {
                 .as(Validity.class);
 
         assertTrue(validity.valid);
+    }
+
+    @Test
+    public void validZenodo(){
+
+        var validity = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "10.5281/zenodo.8056361")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Validity.class);
+
+        assertTrue(validity.valid);
+    }
+
+    @Test
+    public void notValidZenodo(){
+
+        var informativeResponse = given()
+                .contentType(ContentType.JSON)
+                .queryParam("pid", "10.5281/zenodo.df")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(406)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("10.5281/zenodo.df doesn't belong to any of the available types.", informativeResponse.message);
     }
 
     @Test
