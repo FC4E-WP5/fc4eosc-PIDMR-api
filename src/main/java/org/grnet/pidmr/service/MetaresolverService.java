@@ -3,11 +3,10 @@ package org.grnet.pidmr.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.SneakyThrows;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import org.grnet.pidmr.entity.MetaResolver;
+import org.grnet.pidmr.entity.Provider;
 import org.grnet.pidmr.exception.FailedToStartException;
 import org.grnet.pidmr.mapper.ProviderMapper;
 import org.grnet.pidmr.util.Utility;
@@ -64,29 +63,30 @@ public class MetaresolverService implements MetaresolverServiceI {
     }
 
     @Override
-    public String resolve(MetaResolver metaResolver, String pid) {
-        return metaResolver.getLocation().concat(pid);
+    public String resolve(Provider provider, String pid) {
+
+        var eoscMetaresolver = getMetaresolverByKey(provider.getMetaresolver());
+        return provider.resolve(eoscMetaresolver, pid);
     }
 
     @Override
     @SneakyThrows
-    @CacheResult(cacheName = "pidMode")
-    public String resolve(MetaResolver metaResolver, String pid, String mode) {
+    //@CacheResult(cacheName = "pidMode")
+    public String resolve(Provider provider, String pid, String mode) {
 
-        var attribute = new StringBuilder()
-                .append(bodyAttribute)
-                .append("=")
-                .append(bodyAttributePrefix)
-                .append(pid)
-                .append(appendParam)
-                .append(mode);
+        ProviderMapper.INSTANCE.actions(provider.getActions())
+                .stream()
+                .filter(action->action.mode.equals(mode))
+                .findAny()
+                .orElseThrow(()->new BadRequestException(String.format("This mode {%s} is not supported.", mode)));
 
-        var mediaType = MediaType.parse("application/x-www-form-urlencoded");
-        var body = RequestBody.create(attribute.toString(), mediaType);
-        var request = new Request.Builder()
-                .url(proxy)
-                .method("POST", body)
+        var body = provider.getRequestBody(pid, mode, bodyAttribute, bodyAttributePrefix, appendParam);
+
+        var request = new Request
+                .Builder()
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                .url(proxy)
+                .post(body)
                 .build();
 
         try (var response = client.newCall(request).execute()) {
@@ -138,19 +138,10 @@ public class MetaresolverService implements MetaresolverServiceI {
 
         var provider = providerService.getProviderByType(candidateType);
 
-        var calibratedPid = provider.calibratePid(pid);
-
-        var eoscMetaresolver = getMetaresolverByKey(provider.getMetaresolver());
-
         if(mode.isEmpty()){
-            return resolve(eoscMetaresolver, calibratedPid);
+            return resolve(provider, pid);
         } else {
-            ProviderMapper.INSTANCE.actions(provider.getActions())
-                    .stream()
-                    .filter(action->action.mode.equals(mode))
-                    .findAny()
-                    .orElseThrow(()->new BadRequestException(String.format("This mode {%s} is not supported.", mode)));
-            return resolve(eoscMetaresolver, calibratedPid, mode);
+            return resolve(provider, pid, mode);
         }
     }
 

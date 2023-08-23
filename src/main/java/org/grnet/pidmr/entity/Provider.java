@@ -12,10 +12,8 @@ import java.util.Set;
  * The available Metaresolvers are declared in a configuration file named providers.conf as JSON objects.
  * Those objects are represented by the Provider class.
  */
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Getter
-@Setter
-public class Provider {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+public class Provider extends AbstractProvider{
 
     @EqualsAndHashCode.Include
     @JsonProperty(value = "type", required = true)
@@ -24,30 +22,80 @@ public class Provider {
     private String description;
     @JsonProperty(value = "regex", required = true)
     private Set<String> regex;
-    @JsonProperty(value = "characters_to_be_removed")
-    //To be able to resolve some pids, it is necessary to remove some of its first characters.
-    private int charactersToBeRemoved;
     @JsonProperty(value = "metaresolver", required = true)
     private String metaresolver;
     @JsonProperty(value = "check_type_with_regex")
     //Search for Providers by regex instead of variable type.
     private boolean checkTypeWithRegex;
 
+    @JsonProperty(value = "characters_to_be_removed")
+    //To be able to resolve some pids, it is necessary to remove some of its first characters.
+    private int charactersToBeRemoved;
 
     private Set<String> actions = new HashSet<>();
 
-    /**
-     * To be able to resolve some pids, it is necessary to remove some of its first characters.
-     * This method calibrates the pid by removing the number of characters declared in the "charactersToBeRemoved" property.
-     * @param pid The pid to be calibrated.
-     * @return The calibrated pid.
-     */
-    public String calibratePid(String pid){
-
-        if(charactersToBeRemoved!=0){
-            return pid.substring(charactersToBeRemoved);
-        } else {
-            return pid;
-        }
+    public String getType() {
+        return type;
     }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Set<String> getRegex() {
+        return regex;
+    }
+
+    public void setRegex(Set<String> regex) {
+        this.regex = regex;
+    }
+
+    public String getMetaresolver() {
+        return metaresolver;
+    }
+
+    public void setMetaresolver(String metaresolver) {
+        this.metaresolver = metaresolver;
+    }
+
+    public boolean isCheckTypeWithRegex() {
+        return checkTypeWithRegex;
+    }
+
+    public void setCheckTypeWithRegex(boolean checkTypeWithRegex) {
+        this.checkTypeWithRegex = checkTypeWithRegex;
+    }
+
+    public int getCharactersToBeRemoved() {
+        return charactersToBeRemoved;
+    }
+
+    public void setCharactersToBeRemoved(int charactersToBeRemoved) {
+        this.charactersToBeRemoved = charactersToBeRemoved;
+    }
+
+    public Set<String> getActions() {
+        return actions;
+    }
+
+    public void setActions(Set<String> actions) {
+        this.actions = actions;
+    }
+
 }
