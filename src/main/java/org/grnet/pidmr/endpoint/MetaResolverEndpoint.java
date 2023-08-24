@@ -71,8 +71,8 @@ public class MetaResolverEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response resolve(@Parameter(name = "pid", in = QUERY, required = true, example = "ark:/13030/tf5p30086k", allowReserved = true,
             description = "The PID to be resolved.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("pid") @NotEmpty(message = "pid may not be empty.") String pid, @Parameter(name = "pidMode", in = QUERY,
-            description = "The display mode of PID.", examples = {@ExampleObject(name = "Landing Page", value = "landingpage"), @ExampleObject(name = "Metadata", value = "metadata"), @ExampleObject(name = "Resource", value = "resource")}, schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("pidMode") String pidMode, @Parameter(name = "redirect", in = QUERY, example = "true",
-                                    description = "Redirects the request to the URL resolving the PID.", schema = @Schema(type = SchemaType.BOOLEAN)) @DefaultValue("false") @QueryParam("redirect") boolean redirect) {
+            description = "The display mode of PID.", examples = {@ExampleObject(name = "Landing Page", value = "landingpage"), @ExampleObject(name = "Metadata", value = "metadata"), @ExampleObject(name = "Resource", value = "resource")}, schema = @Schema(type = SchemaType.STRING, defaultValue = "landingpage")) @DefaultValue("landingpage") @QueryParam("pidMode") String pidMode, @Parameter(name = "redirect", in = QUERY, example = "false",
+                                    description = "Redirects the request to the URL resolving the PID.", schema = @Schema(type = SchemaType.BOOLEAN, defaultValue = "false")) @DefaultValue("false") @QueryParam("redirect") boolean redirect) {
 
         var resolvable = metaresolverService.resolve(pid, pidMode);
 

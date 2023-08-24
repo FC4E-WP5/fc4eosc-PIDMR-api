@@ -112,7 +112,7 @@ public class MetaresolverEndpointTest {
                 .extract()
                 .as(LocationDto.class);
 
-        assertEquals("http://hdl.handle.net/21.T11973/MR@ark:/67531/metapth346793", location.url);
+        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location.url);
     }
 
     @Test
@@ -145,9 +145,9 @@ public class MetaresolverEndpointTest {
     @Test
     public void resolvePID(){
 
-       var location = metaresolverService.resolve("ark:/67531/metapth346793", "");
+       var location = metaresolverService.resolve("ark:/67531/metapth346793", "landingpage");
 
-        assertEquals("http://hdl.handle.net/21.T11973/MR@ark:/67531/metapth346793", location);
+        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class MetaresolverEndpointTest {
                 .extract()
                 .as(LocationDto.class);
 
-        assertEquals("http://hdl.handle.net/21.T11973/MR@urn:nbn:de:hbz:6-85659524771", location.url);
+        assertEquals("https://miami.uni-muenster.de/Record/2a2bf27d-5d02-4695-a35f-89e22f88a8ee", location.url);
     }
 
     @Test
@@ -209,23 +209,7 @@ public class MetaresolverEndpointTest {
                 .extract()
                 .as(LocationDto.class);
 
-        assertEquals("http://hdl.handle.net/21.T11973/MR@urn:nbn:fi-fe2021080942632", location.url);
-    }
-
-    @Test
-    public void resolveEpicOldViaAPI(){
-
-        var location = given()
-                .contentType(ContentType.JSON)
-                .queryParam("pid", "11500/ATHENA-0000-0000-2401-6")
-                .get("/resolve")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(LocationDto.class);
-
-        assertEquals("http://hdl.handle.net/11500/ATHENA-0000-0000-2401-6", location.url);
+        assertEquals("https://www.doria.fi/handle/10024/181584", location.url);
     }
 
     @Test

@@ -52,9 +52,9 @@ public class MetaresolverService implements MetaresolverServiceI {
 
     public final OkHttpClient client = new OkHttpClient()
             .newBuilder()
-            .connectTimeout(5, TimeUnit.SECONDS)
-            .readTimeout(5, TimeUnit.SECONDS)
-            .writeTimeout(5, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build();
 
     public MetaresolverService(ObjectMapper objectMapper, ProviderService providerService) {
@@ -63,15 +63,8 @@ public class MetaresolverService implements MetaresolverServiceI {
     }
 
     @Override
-    public String resolve(Provider provider, String pid) {
-
-        var eoscMetaresolver = getMetaresolverByKey(provider.getMetaresolver());
-        return provider.resolve(eoscMetaresolver, pid);
-    }
-
-    @Override
     @SneakyThrows
-    //@CacheResult(cacheName = "pidMode")
+    @CacheResult(cacheName = "pidMode")
     public String resolve(Provider provider, String pid, String mode) {
 
         ProviderMapper.INSTANCE.actions(provider.getActions())
@@ -138,11 +131,7 @@ public class MetaresolverService implements MetaresolverServiceI {
 
         var provider = providerService.getProviderByType(candidateType);
 
-        if(mode.isEmpty()){
-            return resolve(provider, pid);
-        } else {
-            return resolve(provider, pid, mode);
-        }
+        return resolve(provider, pid, mode);
     }
 
     public String getPath() {
