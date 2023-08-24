@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 
 public interface MetaresolverServiceI {
 
-     String resolve(Provider provider, String pid);
-
      String resolve(Provider provider, String pid, String mode);
 
      String resolve(String pid, String mode);
