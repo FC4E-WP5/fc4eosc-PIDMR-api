@@ -29,6 +29,12 @@ To define these files, please export the following variables:
 - export LIST_PROVIDERS_FILE=the absolute path of the file encapsulating the Providers
 ```
 
+### Access the Dev Service Database
+
+To access the dev database, please execute the following command:
+
+`mysql -h localhost -P 3306 -u pidmr -p pidmr --protocol=tcp`
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:

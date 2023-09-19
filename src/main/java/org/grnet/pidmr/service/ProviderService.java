@@ -18,17 +18,24 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
+import javax.inject.Named;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * This ProviderService initializes the available Providers provided in the providers.conf file.
  */
 @ApplicationScoped
+@Named("json-provider-service")
 public class ProviderService implements ProviderServiceI {
 
     @ConfigProperty(name = "list.providers.file")
@@ -71,7 +78,6 @@ public class ProviderService implements ProviderServiceI {
      * @return A set of Providers.
      */
     @CacheResult(cacheName = "providers")
-    @Override
     public Set<Provider> getProviders(){
 
         var mapper = JsonMapper
@@ -87,7 +93,6 @@ public class ProviderService implements ProviderServiceI {
      * @return A set of Providers.
      */
     @CacheResult(cacheName = "actions")
-    @Override
     public Set<Action> getActions() {
 
         var mapper = JsonMapper
@@ -153,6 +158,106 @@ public class ProviderService implements ProviderServiceI {
             Utility.toSet(Provider.class, mapper, providersPath);
         } catch (Exception e) {
             throw new FailedToStartException("The file containing the Providers cannot be read.");
+        }
+    }
+
+    /**
+     * Each identifier should match the regular expression provided by its Provider.
+     *
+     * @param pid The pid to be validated.
+     * @param provider The provider that pid belongs to.
+     * @return An object representing whether a PID is valid.
+     */
+    public Validity valid(Provider provider, String pid){
+
+        var regex = provider.getRegex();
+
+        var valid = regex
+                .stream()
+                .anyMatch(pid::matches);
+
+        var validity = new Validity();
+        validity.valid = valid;
+        validity.type = provider.getType();
+
+        return validity;
+    }
+
+    public Provider getProviderByPid(String pid, String mode){
+
+
+        var type = getPidType(pid);
+
+        var candidateType = type.orElseThrow(()->new NotAcceptableException(String.format("%s doesn't belong to any of the available types.", pid)));
+
+        var provider = getProviderByType(candidateType);
+
+        ProviderMapper.INSTANCE.actions(provider.getActions())
+                .stream()
+                .filter(action->action.mode.equals(mode))
+                .findAny()
+                .orElseThrow(()->new BadRequestException(String.format("This mode {%s} is not supported.", mode)));
+
+        return provider;
+    }
+
+    public Map<String, Action> actionsToMap(){
+
+        return getActions().stream()
+                .collect(Collectors.toMap(Action::getId, Function.identity()));
+    }
+
+    /**
+     * This method returns the Provider that corresponds to a particular type.
+     *
+     * @param type The type of Provider.
+     * @return The corresponding Provider.
+     */
+
+    @CacheResult(cacheName = "providersToMap")
+    public Provider getProviderByType(String type){
+
+        var map = getProviders()
+                .stream()
+                .collect(Collectors.toMap(Provider::getType, Function.identity()));
+
+        return map.get(type);
+    }
+
+    /**
+     * This method finds and returns the pid type. If there is no available pid type, it returns an empty Optional object.
+     *
+     * @param pid The incoming pid.
+     * @return The pid type.
+     */
+    public Optional<String> getPidType(String pid){
+
+        var providers = getProviders();
+
+        var optionalType = providers
+                .stream()
+                .map(Provider::getType)
+                .filter(tp->belongsTo(pid, tp))
+                .findAny();
+
+        if(optionalType.isPresent()){
+
+            return optionalType;
+        } else{
+
+            return providers
+                    .stream()
+                    .filter(Provider::isCheckTypeWithRegex)
+                    .filter(pr->{
+
+                        var regex = pr.getRegex();
+
+                        return regex
+                                .stream()
+                                .anyMatch(pid::matches);
+                    })
+                    .map(Provider::getType)
+                    .findAny();
         }
     }
 }

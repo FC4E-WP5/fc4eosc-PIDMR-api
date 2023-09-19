@@ -1,79 +1,52 @@
 package org.grnet.pidmr.service;
 
+import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
-import org.grnet.pidmr.entity.Action;
-import org.grnet.pidmr.entity.Provider;
-import io.quarkus.cache.CacheResult;
+import org.grnet.pidmr.entity.AbstractProvider;
+import org.grnet.pidmr.pagination.PageResource;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import javax.ws.rs.core.UriInfo;
 import java.util.stream.IntStream;
 
 public interface ProviderServiceI {
 
-     Validity valid(String pid);
-
-     Validity valid(String pid, String type);
-
-     Set<Provider> getProviders();
-
-     Set<Action> getActions();
+    /**
+     * Checks whether a given Personal Identification Number (PID) is valid based on the regular expressions provided by different Providers.
+     *
+     * @param pid The pid to be checked.
+     * @return An object that represents whether the PID is valid according to any of the provided regular expressions.
+     */
+    Validity valid(String pid);
 
     /**
-     * Each identifier should match the regular expression provided by its Provider.
+     * This method accepts the provider type and checks whether a given Personal Identification Number (PID) is valid based on the regular expressions provided by this Provider.
      *
-     * @param pid The pid to be validated.
-     * @param provider The provider that pid belongs to.
-     * @return An object representing whether a PID is valid.
+     * @param pid The pid to be checked.
+     * @param type The provider type.
+     * @return An object that represents whether the PID is valid according to any of the provided regular expressions by this Provider.
      */
-     default Validity valid(Provider provider, String pid){
+    Validity valid(String pid, String type);
 
-        var regex = provider.getRegex();
+    AbstractProvider getProviderByPid(String pid, String mode);
 
-        var valid = regex
-                .stream()
-                .anyMatch(pid::matches);
+    /**
+     * This method is responsible for paginating the available Providers.
+     * It returns from a specific page as many Providers as the client requests.
+     *
+     * @param page    Indicates the page number.
+     * @param size    The total number of Providers to be retrieved.
+     * @param uriInfo The current uri.
+     * @return An object represents the paginated results.
+     */
+    PageResource<ProviderDto> pagination(int page, int size, UriInfo uriInfo);
 
-        var validity = new Validity();
-        validity.valid = valid;
-        validity.type = provider.getType();
+    default Validity validation(String pid, String type) {
 
-        return validity;
-    }
-
-    default Validity validation(String pid, String type){
-
-        if(type.isEmpty()){
+        if (type.isEmpty()) {
             return valid(pid);
-        } else{
+        } else {
             return valid(pid, type);
         }
-    }
-
-    default Map<String, Action> actionsToMap(){
-
-        return getActions().stream()
-                .collect(Collectors.toMap(Action::getId, Function.identity()));
-    }
-
-    /**
-     * This method returns the Provider that corresponds to a particular type.
-     *
-     * @param type The type of Provider.
-     * @return The corresponding Provider.
-     */
-
-    @CacheResult(cacheName = "providersToMap")
-    default Provider getProviderByType(String type){
-
-        var map = getProviders()
-                .stream()
-                .collect(Collectors.toMap(Provider::getType, Function.identity()));
-
-        return map.get(type);
     }
 
     /**
@@ -87,42 +60,5 @@ public interface ProviderServiceI {
         return IntStream
                 .range(0, type.length())
                 .allMatch(index->Character.toLowerCase(type.charAt(index)) == Character.toLowerCase(pid.charAt(index)));
-    }
-
-    /**
-     * This method finds and returns the pid type. If there is no available pid type, it returns an empty Optional object.
-     *
-     * @param pid The incoming pid.
-     * @return The pid type.
-     */
-    default Optional<String> getPidType(String pid){
-
-        var providers = getProviders();
-
-        var optionalType = providers
-                .stream()
-                .map(Provider::getType)
-                .filter(tp->belongsTo(pid, tp))
-                .findAny();
-
-        if(optionalType.isPresent()){
-
-            return optionalType;
-        } else{
-
-            return providers
-                    .stream()
-                    .filter(Provider::isCheckTypeWithRegex)
-                    .filter(pr->{
-
-                        var regex = pr.getRegex();
-
-                        return regex
-                                .stream()
-                                .anyMatch(pid::matches);
-                    })
-                    .map(Provider::getType)
-                    .findAny();
-        }
     }
 }
