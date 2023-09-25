@@ -31,12 +31,6 @@ public interface ProviderMapper {
     @Named("providerToDto")
     ProviderDto providerToDto(Provider provider);
 
-    @Named("databaseProviderToDto")
-    ProviderDto databaseProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
-
-    @IterableMapping(qualifiedByName = "databaseProviderToDto")
-    List<ProviderDto> databaseProvidersToDto(List<org.grnet.pidmr.entity.database.Provider> providers);
-
 
     @Named("actions")
     default Set<ActionDto> actions(Set<String> actions) {
