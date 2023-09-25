@@ -91,28 +91,6 @@ public class PageResource<R> {
         }
     }
 
-    public PageResource(Pageable pageQuery, List<R> content, UriInfo uriInfo) {
-
-        links = new ArrayList<>();
-        this.content = content;
-        this.sizeOfPage = pageQuery.list().size();
-        this.numberOfPage = pageQuery.page().index + 1;
-        this.totalElements = pageQuery.count();
-        this.totalPages = pageQuery.pageCount();
-        if (totalPages != 1 && numberOfPage <= totalPages) {
-            links.add(buildPageLink(uriInfo, 1, sizeOfPage, "first"));
-            links.add(buildPageLink(uriInfo, totalPages, sizeOfPage, "last"));
-            links.add(buildPageLink(uriInfo, numberOfPage, sizeOfPage, "self"));
-
-            if (pageQuery.hasPreviousPage() && pageQuery.list().size() != 0) {
-                links.add(buildPageLink(uriInfo, numberOfPage - 1, sizeOfPage, "prev"));
-            }
-
-            if (pageQuery.hasNextPage()) {
-                links.add(buildPageLink(uriInfo, numberOfPage + 1, sizeOfPage, "next"));
-            }
-        }
-    }
 
     private PageLink buildPageLink(UriInfo uriInfo, int page, int size, String rel) {
 

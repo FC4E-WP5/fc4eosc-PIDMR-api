@@ -4,6 +4,7 @@ import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.pagination.PageResource;
+import org.grnet.pidmr.service.ProviderService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -11,10 +12,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.grnet.pidmr.service.ProviderServiceI;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -36,8 +35,11 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 public class ProviderEndpoint {
 
     @Inject
-    @Named("database-provider-service")
-    ProviderServiceI providerService;
+    ProviderService providerService;
+
+    public ProviderEndpoint(ProviderService providerService) {
+        this.providerService = providerService;
+    }
 
     @Tag(name = "Provider")
     @Operation(
