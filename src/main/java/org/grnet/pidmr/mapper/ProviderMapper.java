@@ -3,6 +3,7 @@ package org.grnet.pidmr.mapper;
 import org.grnet.pidmr.dto.ActionDto;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.entity.Provider;
+import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.service.ProviderService;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
@@ -28,15 +29,26 @@ public interface ProviderMapper {
     List<ProviderDto> providersToDto(List<Provider> providers);
 
     @Mapping(source = "actions", target = "actions", qualifiedByName = "actions")
+    @Mapping(source = "regex", target = "regexes")
+    @Mapping(target = "id", ignore = true)
     @Named("providerToDto")
     ProviderDto providerToDto(Provider provider);
 
     @Named("databaseProviderToDto")
+    @Mapping(source = "regexes", target = "regexes", qualifiedByName = "database-regexes")
     ProviderDto databaseProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
 
     @IterableMapping(qualifiedByName = "databaseProviderToDto")
     List<ProviderDto> databaseProvidersToDto(List<org.grnet.pidmr.entity.database.Provider> providers);
 
+    @Named("database-regexes")
+    default Set<String> databaseRegexes(List<Regex> regexes) {
+
+        return regexes
+                    .stream()
+                    .map(Regex::getRegex)
+                    .collect(Collectors.toSet());
+    }
 
     @Named("actions")
     default Set<ActionDto> actions(Set<String> actions) {

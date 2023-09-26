@@ -13,21 +13,6 @@ OpenAPI Specifications are accessible at `/open-api` endpoint.
 
 Swagger UI is accessible at `/swagger-ui` endpoint.
 
-## Configuration files
-
-To run the API, the following configuration files should be defined:
-
-- The list of Metaresolvers that the API supports
-- The list of Providers that the API supports
-
-Examples of these files can be found in the following [folder](files).
-
-To define these files, please export the following variables:
-
-```bash
-- export LIST_METARESOLVERS_FILE=the absolute path of the file encapsulating the Metaresolvers
-- export LIST_PROVIDERS_FILE=the absolute path of the file encapsulating the Providers
-```
 
 ### Access the Dev Service Database
 
