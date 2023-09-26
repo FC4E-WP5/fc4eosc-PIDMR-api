@@ -24,6 +24,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -192,6 +193,55 @@ public class ProviderEndpoint {
         var response = providerService.getProviderById(id);
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Delete a Provider by ID.",
+            description = "Endpoint for deleting a Provider by its ID.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The Provider has been successfully deleted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @DELETE
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response deleteProviderById(@Parameter(
+            description = "The ID of the Provider to delete.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                                    @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id:") Long id) {
+
+        var deleted = providerService.deleteProviderById(id);
+
+        var response = new InformativeResponse();
+
+        if(deleted){
+
+            response.code = 200;
+            response.message = "The Provider has been successfully deleted.";
+            return Response.ok().entity(response).build();
+        } else {
+
+            response.code = 500;
+            response.message = "A problem occurred during the Provider deletion.";
+            return Response.serverError().entity(response).build();
+        }
     }
 
     public static class PageableProvider extends PageResource<ProviderDto> {
