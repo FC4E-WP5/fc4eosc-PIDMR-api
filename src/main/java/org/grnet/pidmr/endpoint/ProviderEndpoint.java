@@ -13,8 +13,10 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.grnet.pidmr.util.ServiceUriInfo;
+import org.grnet.pidmr.validator.constraints.NotFoundEntity;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -26,6 +28,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -152,6 +155,43 @@ public class ProviderEndpoint {
         var serverInfo = new ServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Get Provider by ID.",
+            description = "Endpoint for retrieving a Provider by its ID.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Provider.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderDto.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getProviderById(@Parameter(
+            description = "The ID of the Provider to retrieve.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                                        @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id:") Long id) {
+
+        var response = providerService.getProviderById(id);
+
+        return Response.ok().entity(response).build();
     }
 
     public static class PageableProvider extends PageResource<ProviderDto> {
