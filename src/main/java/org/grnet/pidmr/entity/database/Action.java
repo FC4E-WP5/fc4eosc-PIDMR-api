@@ -1,5 +1,7 @@
 package org.grnet.pidmr.entity.database;
 
+import lombok.EqualsAndHashCode;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -13,6 +15,7 @@ import java.util.Set;
  *
  */
 @Entity
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Action {
 
     /**
@@ -26,6 +29,7 @@ public class Action {
      */
     @Column
     @NotNull
+    @EqualsAndHashCode.Include
     private String mode;
 
     /**

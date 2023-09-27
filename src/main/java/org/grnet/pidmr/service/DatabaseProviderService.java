@@ -1,8 +1,11 @@
 package org.grnet.pidmr.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
+import org.grnet.pidmr.dto.UpdateProviderDto;
 import org.grnet.pidmr.dto.Validity;
+import org.grnet.pidmr.entity.database.Action;
 import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.exception.ConflictException;
@@ -19,6 +22,9 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This ProviderService initializes the available Providers provided in the providers.conf file.
@@ -91,22 +97,13 @@ public class DatabaseProviderService implements ProviderServiceI{
      * This method stores a new Provider in the database.
      * @param request The Provider to be created.
      * @return The created Provider.
+     * @throws
      */
     @Transactional
     public ProviderDto create(ProviderRequest request){
 
-        var optionalType = providerRepository.find("from Provider p where p.type = ?1", request.type)
-                .stream()
-                .findFirst();
-
-        if(optionalType.isPresent()){
-
-            throw new ConflictException(String.format("This Provider type {%s} exists.", request.type));
-        }
-
-        request
-                .actions
-                .forEach(action-> actionRepository.findByIdOptional(action).orElseThrow(()-> new NotFoundException("There is an action that is not supported.")));
+        checkIfTypeExists(request.type);
+        checkIfActionsSupported(request.actions);
 
         var newProvider = new Provider();
         newProvider.setName(request.name);
@@ -151,5 +148,103 @@ public class DatabaseProviderService implements ProviderServiceI{
         var provider = providerRepository.findById(providerId);
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+    }
+
+    /**
+     * This method updates one or more attributes of a Provider.
+     * @param request The Provider attributes to be updated.
+     * @param id The Provider to be updated.
+     * @return The updated Provider.
+     */
+    @Transactional
+    public ProviderDto update(UpdateProviderDto request, Long id){
+
+        var provider = providerRepository.findById(id);
+
+        if(StringUtils.isNotEmpty(request.type)){
+
+            checkIfTypeExists(request.type);
+            provider.setType(request.type);
+        }
+
+        if(!request.actions.isEmpty()){
+            checkIfActionsSupported(request.actions);
+
+            var actions = provider.getActions();
+            new ArrayList<>(actions).forEach(provider::removeAction);
+            request.actions.forEach(newAction-> provider.addAction(actionRepository.findById(newAction)));
+        }
+
+        if(!request.regexes.isEmpty()){
+
+            var regexes = provider.getRegexes();
+            new ArrayList<>(regexes).forEach(provider::removeRegex);
+            request.
+                    regexes
+                    .forEach(regex->{
+                        var regexp = new Regex();
+                        regexp.setRegex(regex);
+                        provider.addRegex(regexp);
+                    });
+
+        }
+
+        if(StringUtils.isNotEmpty(request.name)){
+
+            provider.setName(request.name);
+        }
+
+        if(StringUtils.isNotEmpty(request.description)){
+
+            provider.setDescription(request.description);
+        }
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+    }
+
+    /**
+     * Retrieves the available resolution modes.
+     *
+     * @return A list containing the available resolution modes.
+     */
+    public Set<String> getResolutionModes() {
+
+        var actions = actionRepository.findAll().list();
+
+        return actions.
+                stream()
+                .map(Action::getMode)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * This method checks if the given provider type exists in the database. If not, it throws a ConflictException.
+     * @param type The Provider type.
+     * @throws ConflictException If type exists.
+     */
+    private void checkIfTypeExists(String type){
+
+        var optionalType = providerRepository.find("from Provider p where p.type = ?1", type)
+                .stream()
+                .findFirst();
+
+        if(optionalType.isPresent()){
+
+            throw new ConflictException(String.format("This Provider type {%s} exists.", type));
+        }
+
+    }
+
+    /**
+     * This method checks if the given actions are supported. If there is one that is not supported, it throws a NotFoundException.
+     * @param actions The Provider actions;
+     * @throws NotFoundException If there is an action that is not supported.
+     */
+    private void checkIfActionsSupported(Set<String> actions) {
+
+
+        actions
+                .forEach(action -> actionRepository.findByIdOptional(action).orElseThrow(() -> new NotFoundException("There is an action that is not supported.")));
+
     }
 }

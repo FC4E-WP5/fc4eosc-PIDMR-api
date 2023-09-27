@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.Action;
 import org.grnet.pidmr.entity.Provider;
-import org.grnet.pidmr.exception.FailedToStartException;
 import org.grnet.pidmr.mapper.ProviderMapper;
 import org.grnet.pidmr.pagination.Page;
 import org.grnet.pidmr.pagination.PageResource;
@@ -13,11 +12,9 @@ import org.grnet.pidmr.pagination.PageableImpl;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.util.Utility;
 import io.quarkus.cache.CacheResult;
-import io.quarkus.runtime.StartupEvent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 import javax.inject.Named;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
@@ -145,22 +142,6 @@ public class ProviderService implements ProviderServiceI {
         return valid(provider, pid);
     }
 
-
-    void onStart(@Observes StartupEvent ev) {
-
-        var mapper = JsonMapper
-                .builder()
-                .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
-                .build();
-
-        // try to read the providers file. If the file cannot be read, the application cannot start.
-        try {
-            Utility.toSet(Provider.class, mapper, providersPath);
-        } catch (Exception e) {
-            throw new FailedToStartException("The file containing the Providers cannot be read.");
-        }
-    }
-
     /**
      * Each identifier should match the regular expression provided by its Provider.
      *
@@ -184,7 +165,6 @@ public class ProviderService implements ProviderServiceI {
     }
 
     public Provider getProviderByPid(String pid, String mode){
-
 
         var type = getPidType(pid);
 

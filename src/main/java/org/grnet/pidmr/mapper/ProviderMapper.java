@@ -1,6 +1,6 @@
 package org.grnet.pidmr.mapper;
 
-import org.grnet.pidmr.dto.ActionDto;
+import org.grnet.pidmr.dto.ResolutionModeDto;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.entity.Provider;
 import org.grnet.pidmr.entity.database.Regex;
@@ -51,7 +51,7 @@ public interface ProviderMapper {
     }
 
     @Named("actions")
-    default Set<ActionDto> actions(Set<String> actions) {
+    default Set<ResolutionModeDto> actions(Set<String> actions) {
 
         if (actions.isEmpty()){
             return Collections.EMPTY_SET;
@@ -66,7 +66,7 @@ public interface ProviderMapper {
                     .map(providerActions::get)
                     .map(providerAction->{
 
-                        var dto = new ActionDto();
+                        var dto = new ResolutionModeDto();
                         dto.mode = providerAction.getMode();
                         dto.name = providerAction.getName();
 

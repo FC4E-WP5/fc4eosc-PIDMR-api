@@ -7,7 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
-@Schema(name="ProviderRequest", description="Request to create a new Provider.")
+@Schema(name="ProviderRequest", description="Request to create/modify a Provider.")
 public class ProviderRequest {
 
     @Schema(
@@ -53,9 +53,9 @@ public class ProviderRequest {
     @Schema(
             type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "The actions supported by Provider. The available actions are : landingpage, metadata, resource."
+            description = "The resolution modes supported by Provider. The available resolution modes are : landingpage, metadata, resource."
     )
-    @JsonProperty("actions")
-    @NotEmpty(message = "actions should have at least one entry.")
+    @JsonProperty("resolution_modes")
+    @NotEmpty(message = "resolution_modes should have at least one entry.")
     public Set<String> actions;
 }
