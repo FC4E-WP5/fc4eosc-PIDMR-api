@@ -1,26 +1,16 @@
 package org.grnet.pidmr.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import org.grnet.pidmr.entity.MetaResolver;
-import org.grnet.pidmr.entity.Provider;
-import org.grnet.pidmr.exception.FailedToStartException;
-import org.grnet.pidmr.mapper.ProviderMapper;
-import org.grnet.pidmr.util.Utility;
+import org.grnet.pidmr.entity.AbstractProvider;
 import io.quarkus.cache.CacheResult;
-import io.quarkus.runtime.StartupEvent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
+import javax.inject.Named;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotAcceptableException;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,10 +35,8 @@ public class MetaresolverService implements MetaresolverServiceI {
     String appendParam;
 
     @Inject
-    ObjectMapper objectMapper;
-
-    @Inject
-    ProviderService providerService;
+    @Named("database-provider-service")
+    ProviderServiceI providerService;
 
     public final OkHttpClient client = new OkHttpClient()
             .newBuilder()
@@ -57,21 +45,10 @@ public class MetaresolverService implements MetaresolverServiceI {
             .writeTimeout(30, TimeUnit.SECONDS)
             .build();
 
-    public MetaresolverService(ObjectMapper objectMapper, ProviderService providerService) {
-        this.objectMapper = objectMapper;
-        this.providerService = providerService;
-    }
 
-    @Override
     @SneakyThrows
     @CacheResult(cacheName = "pidMode")
-    public String resolve(Provider provider, String pid, String mode) {
-
-        ProviderMapper.INSTANCE.actions(provider.getActions())
-                .stream()
-                .filter(action->action.mode.equals(mode))
-                .findAny()
-                .orElseThrow(()->new BadRequestException(String.format("This mode {%s} is not supported.", mode)));
+    public String resolve(AbstractProvider provider, String pid, String mode) {
 
         var body = provider.getRequestBody(pid, mode, bodyAttribute, bodyAttributePrefix, appendParam);
 
@@ -91,31 +68,6 @@ public class MetaresolverService implements MetaresolverServiceI {
         }
     }
 
-    void onStart(@Observes StartupEvent ev) {
-
-        var mapper = JsonMapper
-                .builder()
-                .build();
-
-        // try to read the metaresolvers file. If the file cannot be read, the application cannot start.
-        try {
-            Utility.toSet(MetaResolver.class, mapper, path);
-        } catch (Exception e) {
-            throw new FailedToStartException("The file containing the Metaresolvers cannot be read.");
-        }
-    }
-
-    /**
-     * This method returns the available Metaresolvers.
-     *
-     * @return A set of Metaresolvers.
-     */
-    @CacheResult(cacheName = "metaresolvers")
-    public Set<MetaResolver> getMetaresolvers(){
-
-        return Utility.toSet(MetaResolver.class, objectMapper, path);
-    }
-
     /**
      * This method returns the Metaresolver location that resolves the PID.
      *
@@ -125,11 +77,7 @@ public class MetaresolverService implements MetaresolverServiceI {
      */
     public String resolve(String pid, String mode) {
 
-        var type = providerService.getPidType(pid);
-
-        var candidateType = type.orElseThrow(()->new NotAcceptableException(String.format("%s doesn't belong to any of the available types.", pid)));
-
-        var provider = providerService.getProviderByType(candidateType);
+        var provider = providerService.getProviderByPid(pid, mode);
 
         return resolve(provider, pid, mode);
     }
@@ -172,21 +120,5 @@ public class MetaresolverService implements MetaresolverServiceI {
 
     public void setAppendParam(String appendParam) {
         this.appendParam = appendParam;
-    }
-
-    public ObjectMapper getObjectMapper() {
-        return objectMapper;
-    }
-
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
-    public ProviderService getProviderService() {
-        return providerService;
-    }
-
-    public void setProviderService(ProviderService providerService) {
-        this.providerService = providerService;
     }
 }

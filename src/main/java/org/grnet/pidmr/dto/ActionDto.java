@@ -13,6 +13,7 @@ public class ActionDto {
             example = "landingpage"
     )
     public String mode;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

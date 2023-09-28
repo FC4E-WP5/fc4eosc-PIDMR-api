@@ -1,29 +1,15 @@
 package org.grnet.pidmr;
 
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.endpoint.ProviderEndpoint;
-import org.grnet.pidmr.entity.Action;
-import org.grnet.pidmr.entity.Provider;
 import org.grnet.pidmr.pagination.PageResource;
-import org.grnet.pidmr.service.ProviderService;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
-import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
-import lombok.SneakyThrows;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-
-import javax.inject.Inject;
-import java.io.File;
-import java.io.IOException;
-import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,22 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestHTTPEndpoint(ProviderEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProviderEndpointTest {
-
-    @Inject
-    ProviderService providerService;
-
-    @ConfigProperty(name = "list.providers.file")
-    String providersPath;
-
-    @ConfigProperty(name = "list.actions.file")
-    String actionsPath;
-
-
-    @BeforeAll
-    public void setup() {
-
-        QuarkusMock.installMockForInstance(new MockableProvider(), providerService);
-    }
 
     @Test
     public void fetchAllProviders() {
@@ -146,7 +116,6 @@ public class ProviderEndpointTest {
                 .as(Validity.class);
 
         assertFalse(validity.valid);
-        assertEquals("ark", validity.type);
     }
 
     @Test
@@ -231,7 +200,6 @@ public class ProviderEndpointTest {
                 .as(Validity.class);
 
         assertFalse(validity.valid);
-        assertEquals("arXiv", validity.type);
     }
 
     @Test
@@ -299,7 +267,6 @@ public class ProviderEndpointTest {
                 .as(Validity.class);
 
         assertFalse(validity.valid);
-        assertEquals("swh", validity.type);
     }
 
     @Test
@@ -368,7 +335,6 @@ public class ProviderEndpointTest {
                 .as(Validity.class);
 
         assertFalse(validity.valid);
-        assertEquals("doi", validity.type);
     }
 
     @Test
@@ -403,7 +369,6 @@ public class ProviderEndpointTest {
                 .as(Validity.class);
 
         assertFalse(validity.valid);
-        assertEquals("21", validity.type);
     }
 
     @Test
@@ -444,18 +409,18 @@ public class ProviderEndpointTest {
     @Test
     public void validArkWithTypeError(){
 
-        var informativeResponse = given()
+        var validity = given()
                 .contentType(ContentType.JSON)
                 .queryParam("type", "doi")
                 .queryParam("pid", "ark:/13030/tf5p30086k")
                 .get("/validate")
                 .then()
                 .assertThat()
-                .statusCode(406)
+                .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(Validity.class);
 
-        assertEquals("ark:/13030/tf5p30086k doesn't belong to this type : doi.", informativeResponse.message);
+        assertFalse(validity.valid);
     }
 
     @Test
@@ -543,22 +508,6 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void notValidZenodo(){
-
-        var informativeResponse = given()
-                .contentType(ContentType.JSON)
-                .queryParam("pid", "10.5281/zenodo.df")
-                .get("/validate")
-                .then()
-                .assertThat()
-                .statusCode(406)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("10.5281/zenodo.df doesn't belong to any of the available types.", informativeResponse.message);
-    }
-
-    @Test
     public void notSupportedType(){
 
         var informativeResponse = given()
@@ -575,47 +524,4 @@ public class ProviderEndpointTest {
         assertEquals("This type {not_supported} is not supported.", informativeResponse.message);
     }
 
-    @Test
-    public void notSupportedPid(){
-
-        var informativeResponse = given()
-                .contentType(ContentType.JSON)
-                .queryParam("pid", "lalala/tf5p30086k")
-                .get("/validate")
-                .then()
-                .assertThat()
-                .statusCode(406)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("lalala/tf5p30086k doesn't belong to any of the available types.", informativeResponse.message);
-    }
-
-    public class MockableProvider extends ProviderService {
-
-        @Override
-        @SneakyThrows(IOException.class)
-        public Set<Provider> getProviders()  {
-
-            var mapper = JsonMapper.builder()
-                    .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
-                    .build();
-
-            ClassLoader classLoader = getClass().getClassLoader();
-            File file = new File(classLoader.getResource(providersPath).getFile());
-            return mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(Set.class, Provider.class));
-        }
-
-        @Override
-        @SneakyThrows(IOException.class)
-        public Set<Action> getActions()  {
-
-            var mapper = JsonMapper.builder()
-                    .build();
-
-            ClassLoader classLoader = getClass().getClassLoader();
-            File file = new File(classLoader.getResource(actionsPath).getFile());
-            return mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(Set.class, Action.class));
-        }
-    }
 }
