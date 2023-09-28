@@ -2,6 +2,7 @@ package org.grnet.pidmr.exceptionhandler;
 
 import org.grnet.pidmr.dto.InformativeResponse;
 import io.quarkus.hibernate.validator.runtime.jaxrs.ResteasyReactiveViolationException;
+import org.grnet.pidmr.exception.CustomValidationException;
 import org.jboss.logging.Logger;
 
 import javax.validation.ValidationException;
@@ -26,6 +27,12 @@ public class ValidationExceptionMapper implements ExceptionMapper<ValidationExce
             response.message = ((ResteasyReactiveViolationException) e).getConstraintViolations().stream().findFirst().get().getMessageTemplate();
             response.code = Response.Status.BAD_REQUEST.getStatusCode();
             return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        } else if(e.getCause() instanceof CustomValidationException){
+
+            CustomValidationException exception = (CustomValidationException) e.getCause();
+            response.message = exception.getMessage();
+            response.code = exception.getCode();
+            return Response.status(exception.getCode()).entity(response).build();
         } else {
 
             response.message = e.getMessage();

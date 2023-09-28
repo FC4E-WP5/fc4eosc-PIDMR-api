@@ -139,4 +139,17 @@ public class DatabaseProviderService implements ProviderServiceI{
 
         return providerRepository.deleteById(id);
     }
+
+    /**
+     * Retrieves a specific Provider by its ID.
+     *
+     * @param providerId The ID of the Provider to retrieve.
+     * @return The Provider stored in the database.
+     */
+    public ProviderDto getProviderById(Long providerId) {
+
+        var provider = providerRepository.findById(providerId);
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+    }
 }

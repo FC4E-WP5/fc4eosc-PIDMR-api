@@ -637,4 +637,54 @@ public class ProviderEndpointTest {
 
         providerService.deleteProviderById(provider.id);
     }
+
+    @Test
+    public void getProvider(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-get-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource", "metadata");
+
+        var provider = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var response = given()
+                .contentType(ContentType.JSON)
+                .get("/{id}", provider.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ProviderDto.class);
+
+        assertEquals(request.name, response.name);
+        assertEquals(request.type, response.type);
+
+        providerService.deleteProviderById(provider.id);
+    }
+
+    @Test
+    public void getProviderNotFound(){
+
+        var response = given()
+                .contentType(ContentType.JSON)
+                .get("/{id}", 1000L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Provider with the following id: "+1000L, response.message);
+    }
 }
