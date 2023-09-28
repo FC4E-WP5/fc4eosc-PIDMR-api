@@ -1,5 +1,7 @@
 package org.grnet.pidmr.entity.database;
 
+import lombok.EqualsAndHashCode;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,6 +16,7 @@ import javax.persistence.ManyToOne;
  *
  */
 @Entity
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Regex {
 
     /**
@@ -21,6 +24,7 @@ public class Regex {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     /**

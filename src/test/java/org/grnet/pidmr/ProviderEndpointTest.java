@@ -3,6 +3,7 @@ package org.grnet.pidmr;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
+import org.grnet.pidmr.dto.UpdateProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.endpoint.ProviderEndpoint;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -639,6 +640,52 @@ public class ProviderEndpointTest {
     }
 
     @Test
+    public void createProviderWithoutActions(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-regex-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+
+        var response = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+
+        assertEquals("resolution_modes should have at least one entry.", response.message);
+    }
+
+    @Test
+    public void createProviderWithoutRegexes(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-regex-provider";
+        request.description = "Test Provider.";
+        request.actions = Set.of("resource", "metadata");
+
+        var response = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+
+        assertEquals("regexes should have at least one entry.", response.message);
+    }
+
+    @Test
     public void getProvider(){
 
         var request = new ProviderRequest();
@@ -718,5 +765,92 @@ public class ProviderEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("The Provider has been successfully deleted.", response.message);
+    }
+
+    @Test
+    public void updateBasicProviderInformation(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-change-basic-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource");
+
+        var provider = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var updateRequest = new UpdateProviderDto();
+        updateRequest.name = "Update Test Provider.";
+        updateRequest.type = "test-update-provider";
+        updateRequest.description = "Update Test Provider.";
+
+        var updatedProvider = given()
+                .body(updateRequest)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", provider.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ProviderDto.class);
+
+        assertEquals(updateRequest.type, updatedProvider.type);
+        assertEquals(updateRequest.name, updatedProvider.name);
+        assertEquals(updateRequest.description, updatedProvider.description);
+        assertEquals(request.regexes.stream().findFirst().get(), updatedProvider.regexes.stream().findFirst().get());
+        assertEquals(request.actions.stream().findFirst().get(), updatedProvider.actions.stream().findFirst().get().mode);
+
+        providerService.deleteProviderById(provider.id);
+    }
+
+    @Test
+    public void updateProviderRegexesAndActions(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-change-regex-action-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource");
+
+        var provider = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var updateRequest = new UpdateProviderDto();
+        updateRequest.regexes = Set.of("this is text");
+        updateRequest.actions = Set.of("metadata");
+
+        var updatedProvider = given()
+                .body(updateRequest)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", provider.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ProviderDto.class);
+
+        assertEquals(request.type, updatedProvider.type);
+        assertEquals(request.name, updatedProvider.name);
+        assertEquals(request.description, updatedProvider.description);
+        assertEquals(updateRequest.regexes.stream().findFirst().get(), updatedProvider.regexes.stream().findFirst().get());
+        assertEquals(updateRequest.actions.stream().findFirst().get(), updatedProvider.actions.stream().findFirst().get().mode);
+
+        providerService.deleteProviderById(provider.id);
     }
 }
