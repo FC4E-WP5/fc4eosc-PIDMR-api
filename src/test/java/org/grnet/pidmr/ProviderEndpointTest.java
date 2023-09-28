@@ -687,4 +687,36 @@ public class ProviderEndpointTest {
 
         assertEquals("There is no Provider with the following id: "+1000L, response.message);
     }
+
+    @Test
+    public void deleteProvider(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-delete-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource", "metadata");
+
+        var provider = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var response = given()
+                .contentType(ContentType.JSON)
+                .delete("/{id}", provider.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The Provider has been successfully deleted.", response.message);
+    }
 }
