@@ -14,6 +14,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -67,8 +68,10 @@ public class Provider extends AbstractProvider {
     @OneToMany(
             mappedBy = "provider",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
     )
+    @NotEmpty
     private List<Regex> regexes = new ArrayList<>();
 
     @ManyToMany(fetch= FetchType.EAGER,
@@ -80,6 +83,7 @@ public class Provider extends AbstractProvider {
             joinColumns = @JoinColumn(name = "provider_id"),
             inverseJoinColumns = @JoinColumn(name = "action_id")
     )
+    @NotEmpty
     private Set<Action> actions = new HashSet<>();
 
     public Set<Action> getActions() {

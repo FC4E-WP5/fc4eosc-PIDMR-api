@@ -1,15 +1,20 @@
 package org.grnet.pidmr;
 
 import org.grnet.pidmr.dto.InformativeResponse;
+import org.grnet.pidmr.dto.ProviderDto;
+import org.grnet.pidmr.dto.ProviderRequest;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.endpoint.ProviderEndpoint;
-import org.grnet.pidmr.pagination.PageResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
+import org.grnet.pidmr.service.DatabaseProviderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+
+import javax.inject.Inject;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,19 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProviderEndpointTest {
 
-    @Test
-    public void fetchAllProviders() {
-
-        var response = given()
-                .contentType(ContentType.JSON)
-                .get()
-                .thenReturn();
-
-        assertEquals(200, response.statusCode());
-        assertEquals(9, response.body().as(PageResource.class).getContent().size());
-        assertEquals(9, response.body().as(PageResource.class).getTotalElements());
-        assertEquals(1, response.body().as(PageResource.class).getNumberOfPage());
-    }
+    @Inject
+    DatabaseProviderService providerService;
 
     @Test
     public void pidNotEmpty(){
@@ -524,4 +518,123 @@ public class ProviderEndpointTest {
         assertEquals("This type {not_supported} is not supported.", informativeResponse.message);
     }
 
+    @Test
+    public void createProviderNotValidAction(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-not-valid";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("regexp");
+        request.actions = Set.of("not_valid_action");
+
+        var informativeResponse = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is an action that is not supported.", informativeResponse.message);
+    }
+
+    @Test
+    public void createProvider(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-create-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("regexp");
+        request.actions = Set.of("resource");
+
+        var provider = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        assertEquals("test-create-provider", provider.type);
+
+        providerService.deleteProviderById(provider.id);
+    }
+
+    @Test
+    public void createProviderExists(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-exist-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("regexp");
+        request.actions = Set.of("resource");
+
+        var provider = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+
+        var informativeResponse = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("This Provider type {test-exist-provider} exists.", informativeResponse.message);
+
+        providerService.deleteProviderById(provider.id);
+    }
+
+    @Test
+    public void createProviderWithRegex(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-regex-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource", "metadata");
+
+        var provider = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var validity = given()
+                .contentType(ContentType.JSON)
+                .queryParam("type", provider.type)
+                .queryParam("pid", "regexps")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Validity.class);
+
+        assertTrue(validity.valid);
+
+        providerService.deleteProviderById(provider.id);
+    }
 }

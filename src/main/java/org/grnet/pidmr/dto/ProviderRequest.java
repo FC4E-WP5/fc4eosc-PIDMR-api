@@ -1,25 +1,14 @@
 package org.grnet.pidmr.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import java.util.HashSet;
+import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
-@Schema(name="Provider", description="An object represents a Provider.")
-public class ProviderDto {
-
-    @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Long.class,
-            description = "Provider id.",
-            example = "5"
-    )
-    @JsonProperty("id")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Long id;
+@Schema(name="ProviderRequest", description="Request to create a new Provider.")
+public class ProviderRequest {
 
     @Schema(
             type = SchemaType.STRING,
@@ -28,6 +17,7 @@ public class ProviderDto {
             example = "ark"
     )
     @JsonProperty("type")
+    @NotEmpty(message = "type may not be empty.")
     public String type;
 
     @Schema(
@@ -37,6 +27,7 @@ public class ProviderDto {
             example = "ARK alliance"
     )
     @JsonProperty("name")
+    @NotEmpty(message = "name may not be empty.")
     public String name;
 
     @Schema(
@@ -46,21 +37,25 @@ public class ProviderDto {
             example = "Archival Resource Keys (ARKs) serve as persistent identifiers, or stable, trusted references for information objects."
     )
     @JsonProperty("description")
+    @NotEmpty(message = "description may not be empty.")
     public String description;
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = ActionDto.class,
-            description = "The actions supported by Provider."
+            implementation = String.class,
+            description = "List of regular expressions that validate all the PIDs (Product Identifiers) associated with this Provider.",
+            example = "^(a|A)(r|R)(k|K):(?:/d{5,9})+/[a-zA-Zd]+(-[a-zA-Zd]+)*$."
     )
-    @JsonProperty("actions")
-    public Set<ActionDto> actions = new HashSet<>();
+    @JsonProperty("regexes")
+    @NotEmpty(message = "regexes should have at least one entry.")
+    public Set<String> regexes;
 
     @Schema(
             type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "The regexes supported by Provider."
+            description = "The actions supported by Provider. The available actions are : landingpage, metadata, resource."
     )
-    @JsonProperty("regexes")
-    public Set<String> regexes = new HashSet<>();
+    @JsonProperty("actions")
+    @NotEmpty(message = "actions should have at least one entry.")
+    public Set<String> actions;
 }
