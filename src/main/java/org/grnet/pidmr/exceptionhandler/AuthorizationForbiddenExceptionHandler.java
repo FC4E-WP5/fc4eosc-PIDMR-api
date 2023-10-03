@@ -1,0 +1,28 @@
+package org.grnet.pidmr.exceptionhandler;
+
+import io.quarkus.security.ForbiddenException;
+import org.grnet.pidmr.dto.InformativeResponse;
+import org.jboss.logging.Logger;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+
+@Provider
+public class AuthorizationForbiddenExceptionHandler implements ExceptionMapper<ForbiddenException> {
+
+    private static final Logger LOG = Logger.getLogger(AuthorizationForbiddenExceptionHandler.class);
+
+    @Override
+    public Response toResponse(ForbiddenException e) {
+
+        LOG.error("Authorization Error", e);
+
+        var response = new InformativeResponse();
+        response.code = 403;
+        response.message = "You do not have permission to access this resource.";
+
+        return Response.status(403).entity(response).build();
+    }
+}
+

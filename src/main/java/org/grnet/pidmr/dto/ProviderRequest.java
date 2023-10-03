@@ -44,7 +44,7 @@ public class ProviderRequest {
             type = SchemaType.ARRAY,
             implementation = String.class,
             description = "List of regular expressions that validate all the PIDs (Product Identifiers) associated with this Provider.",
-            example = "^(a|A)(r|R)(k|K):(?:/d{5,9})+/[a-zA-Zd]+(-[a-zA-Zd]+)*$."
+            example = "[\"^(a|A)(r|R)(k|K):(?:/d{5,9})+/[a-zA-Zd]+(-[a-zA-Zd]+)*$.\"]"
     )
     @JsonProperty("regexes")
     @NotEmpty(message = "regexes should have at least one entry.")
@@ -53,7 +53,8 @@ public class ProviderRequest {
     @Schema(
             type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "The resolution modes supported by Provider. The available resolution modes are : landingpage, metadata, resource."
+            description = "The resolution modes supported by Provider. The available resolution modes are : landingpage, metadata, resource.",
+            example = "[\"resource\", \"metadata\"]"
     )
     @JsonProperty("resolution_modes")
     @NotEmpty(message = "resolution_modes should have at least one entry.")
