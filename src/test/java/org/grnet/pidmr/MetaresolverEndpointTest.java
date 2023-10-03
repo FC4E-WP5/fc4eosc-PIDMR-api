@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
-@TestProfile(MetaResolverTestProfile.class)
 @TestHTTPEndpoint(MetaResolverEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MetaresolverEndpointTest {
