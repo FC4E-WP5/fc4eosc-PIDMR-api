@@ -63,4 +63,13 @@ public class ProviderDto {
     )
     @JsonProperty("regexes")
     public Set<String> regexes = new HashSet<>();
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "A PID example.",
+            example = "ark:/13030/tf5p30086k"
+    )
+    @JsonProperty("example")
+    public String example;
 }

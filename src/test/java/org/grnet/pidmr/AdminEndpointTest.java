@@ -37,6 +37,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.description = "Test Provider.";
         request.regexes = Set.of("regexp");
         request.actions = Set.of("not_valid_action");
+        request.example = "example";
 
         var informativeResponse = given()
                 .auth()
@@ -62,6 +63,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.description = "Test Provider.";
         request.regexes = Set.of("regexp");
         request.actions = Set.of("resource");
+        request.example = "example";
 
         var provider = given()
                 .auth()
@@ -89,6 +91,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.description = "Test Provider.";
         request.regexes = Set.of("regexp");
         request.actions = Set.of("resource");
+        request.example = "example";
 
         var provider = given()
                 .auth()
@@ -129,6 +132,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource", "metadata");
+        request.example = "example";
 
         var provider = given()
                 .auth()
@@ -167,6 +171,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.type = "test-regex-provider";
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.example = "example";
 
         var response = given()
                 .auth()
@@ -192,6 +197,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.type = "test-regex-provider";
         request.description = "Test Provider.";
         request.actions = Set.of("resource", "metadata");
+        request.example = "example";
 
         var response = given()
                 .auth()
@@ -218,6 +224,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource", "metadata");
+        request.example = "example";
 
         var provider = given()
                 .auth()
@@ -274,6 +281,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource", "metadata");
+        request.example = "example";
 
         var provider = given()
                 .auth()
@@ -310,6 +318,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource");
+        request.example = "example";
 
         var provider = given()
                 .auth()
@@ -327,6 +336,7 @@ public class AdminEndpointTest extends KeycloakTest{
         updateRequest.name = "Update Test Provider.";
         updateRequest.type = "test-update-provider";
         updateRequest.description = "Update Test Provider.";
+        updateRequest.example = "updated example";
 
         var updatedProvider = given()
                 .auth()
@@ -343,6 +353,7 @@ public class AdminEndpointTest extends KeycloakTest{
         assertEquals(updateRequest.type, updatedProvider.type);
         assertEquals(updateRequest.name, updatedProvider.name);
         assertEquals(updateRequest.description, updatedProvider.description);
+        assertEquals(updateRequest.example, updatedProvider.example);
         assertEquals(request.regexes.stream().findFirst().get(), updatedProvider.regexes.stream().findFirst().get());
         assertEquals(request.actions.stream().findFirst().get(), updatedProvider.actions.stream().findFirst().get().mode);
 
@@ -358,6 +369,7 @@ public class AdminEndpointTest extends KeycloakTest{
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource");
+        request.example = "example";
 
         var provider = given()
                 .auth()
@@ -390,6 +402,7 @@ public class AdminEndpointTest extends KeycloakTest{
         assertEquals(request.type, updatedProvider.type);
         assertEquals(request.name, updatedProvider.name);
         assertEquals(request.description, updatedProvider.description);
+        assertEquals(request.example, updatedProvider.example);
         assertEquals(updateRequest.regexes.stream().findFirst().get(), updatedProvider.regexes.stream().findFirst().get());
         assertEquals(updateRequest.actions.stream().findFirst().get(), updatedProvider.actions.stream().findFirst().get().mode);
 

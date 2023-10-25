@@ -2,6 +2,7 @@ package org.grnet.pidmr.service;
 
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.Action;
 import org.grnet.pidmr.entity.Provider;
@@ -18,6 +19,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +70,12 @@ public class ProviderService implements ProviderServiceI {
         pageable.page = Page.of(page, size);
 
         return new PageResource<>(pageable, uriInfo);
+    }
+
+    @Override
+    public Identification identify(String text) {
+
+        throw new NotSupportedException("Not implemented yet!");
     }
 
     /**

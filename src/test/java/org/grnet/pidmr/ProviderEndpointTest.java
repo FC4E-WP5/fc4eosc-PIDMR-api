@@ -1,5 +1,6 @@
 package org.grnet.pidmr;
 
+import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.endpoint.ProviderEndpoint;
@@ -505,5 +506,33 @@ public class ProviderEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("This type {not_supported} is not supported.", informativeResponse.message);
+    }
+
+    @Test
+    public void identifyText(){
+
+        var identification = given()
+                .contentType(ContentType.JSON)
+                .queryParam("text", "ark:")
+                .get("/identify")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Identification.class);
+
+        assertEquals("ark", identification.type);
+
+        var identification1 = given()
+                .contentType(ContentType.JSON)
+                .queryParam("text", "10.")
+                .get("/identify")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Identification.class);
+
+        assertEquals("10.5281/zenodo", identification1.type);
     }
 }

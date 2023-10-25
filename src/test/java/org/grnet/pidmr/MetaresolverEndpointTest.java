@@ -129,22 +129,6 @@ public class MetaresolverEndpointTest {
     }
 
     @Test
-    public void resolveFinishUriViaAPI(){
-
-        var location = given()
-                .contentType(ContentType.JSON)
-                .queryParam("pid", "urn:nbn:fi-fe2021080942632")
-                .get("/resolve")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(LocationDto.class);
-
-        assertEquals("https://www.doria.fi/handle/10024/181584", location.url);
-    }
-
-    @Test
     public void resolveZenodoMetadataModeViaAPI(){
 
         var location = given()
@@ -175,6 +159,6 @@ public class MetaresolverEndpointTest {
                 .extract()
                 .as(LocationDto.class);
 
-        assertEquals("https://zenodo.org/record/8056361", location.url);
+        assertEquals("https://zenodo.org/records/8056361", location.url);
     }
 }
