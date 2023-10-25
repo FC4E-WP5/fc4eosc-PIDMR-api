@@ -86,6 +86,13 @@ public class Provider extends AbstractProvider {
     @NotEmpty
     private Set<Action> actions = new HashSet<>();
 
+    /**
+     * A PID example.
+     */
+    @Column
+    @NotNull
+    private String example;
+
     public Set<Action> getActions() {
         return actions;
     }
@@ -169,5 +176,13 @@ public class Provider extends AbstractProvider {
 
     public void setMetaresolver(Metaresolver metaresolver) {
         this.metaresolver = metaresolver;
+    }
+
+    public String getExample() {
+        return example;
+    }
+
+    public void setExample(String example) {
+        this.example = example;
     }
 }

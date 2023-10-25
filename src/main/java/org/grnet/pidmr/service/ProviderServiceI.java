@@ -1,5 +1,6 @@
 package org.grnet.pidmr.service;
 
+import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.AbstractProvider;
@@ -11,7 +12,7 @@ import java.util.stream.IntStream;
 public interface ProviderServiceI {
 
     /**
-     * Checks whether a given Personal Identification Number (PID) is valid based on the regular expressions provided by different Providers.
+     * This method checks whether a given Personal Identification Number (PID) is valid based on the regular expressions provided by different Providers.
      *
      * @param pid The pid to be checked.
      * @return An object that represents whether the PID is valid according to any of the provided regular expressions.
@@ -61,4 +62,12 @@ public interface ProviderServiceI {
                 .range(0, type.length())
                 .allMatch(index->Character.toLowerCase(type.charAt(index)) == Character.toLowerCase(pid.charAt(index)));
     }
+
+    /**
+     * This method identifies PIDs from the provided text.
+     *
+     * @param text The text to be checked for PID.
+     * @return An object containing identification status, possible type, and an example of PID.
+     */
+    Identification identify(String text);
 }

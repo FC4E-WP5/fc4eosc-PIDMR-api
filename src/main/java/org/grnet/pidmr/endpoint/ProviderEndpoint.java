@@ -1,6 +1,7 @@
 package org.grnet.pidmr.endpoint;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
@@ -99,6 +100,33 @@ public class ProviderEndpoint {
         var validity = providerService.validation(pid, type);
 
         return Response.ok().entity(validity).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "This endpoint identifies PIDs.",
+            description = "This endpoint identifies PIDs from the provided text.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The result of text identification.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = Identification.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/identify")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response identify(@Parameter(name = "text", in = QUERY, required = true, example = "ark:/", allowReserved = true,
+            description = "Text to be checked for PID.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("text") @NotEmpty(message = "text may not be empty.") String text) {
+
+        var identification = providerService.identify(text);
+
+        return Response.ok().entity(identification).build();
     }
 
     @Tag(name = "Provider")

@@ -59,4 +59,15 @@ public class ProviderRequest {
     @JsonProperty("resolution_modes")
     @NotEmpty(message = "resolution_modes should have at least one entry.")
     public Set<String> actions;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "A PID example.",
+            example = "ark:/13030/tf5p30086k"
+    )
+    @JsonProperty("example")
+    @NotEmpty(message = "example may not be empty.")
+    public String example;
+
 }

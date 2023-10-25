@@ -1,6 +1,7 @@
 package org.grnet.pidmr.service;
 
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
 import org.grnet.pidmr.dto.UpdateProviderDto;
@@ -13,6 +14,7 @@ import org.grnet.pidmr.mapper.ProviderMapper;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ActionRepository;
 import org.grnet.pidmr.repository.ProviderRepository;
+import org.grnet.pidmr.repository.RegexRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -24,6 +26,8 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +42,9 @@ public class DatabaseProviderService implements ProviderServiceI{
 
     @Inject
     ActionRepository actionRepository;
+
+    @Inject
+    RegexRepository regexRepository;
 
     @Override
     public Validity valid(String pid) {
@@ -93,6 +100,54 @@ public class DatabaseProviderService implements ProviderServiceI{
         return new PageResource<>(providers, ProviderMapper.INSTANCE.databaseProvidersToDto(providers.list()), uriInfo);
     }
 
+    @Override
+    public Identification identify(String text) {
+
+        var regexes = regexRepository
+                .findAll()
+                .list();
+
+        var identification = new Identification();
+        identification.status = Identification.Status.INVALID;
+        identification.type = "";
+        identification.example = "";
+
+        for(Regex regex: regexes){
+
+            var identified = check(text, Pattern.compile(regex.getRegex()), regex.getProvider(), identification);
+
+            if(identified.status.equals(Identification.Status.VALID) || identified.status.equals(Identification.Status.INCOMPLETE)){
+
+                break;
+            }
+        }
+
+        return identification;
+    }
+
+    private Identification check(CharSequence cs, Pattern pattern, Provider provider, Identification identification) {
+
+        Matcher matcher = pattern.matcher(cs);
+
+        if(matcher.matches()){
+
+            identification.status = Identification.Status.VALID;
+            identification.type = provider.getType();
+            identification.example = provider.getExample();
+            return identification;
+        }
+
+        if (matcher.hitEnd()) {
+
+            identification.status = Identification.Status.INCOMPLETE;
+            identification.type = provider.getType();
+            identification.example = provider.getExample();
+        }
+
+        return identification;
+    }
+
+
     /**
      * This method stores a new Provider in the database.
      * @param request The Provider to be created.
@@ -109,6 +164,7 @@ public class DatabaseProviderService implements ProviderServiceI{
         newProvider.setName(request.name);
         newProvider.setType(request.type);
         newProvider.setDescription(request.description);
+        newProvider.setExample(request.example);
         request
                 .actions
                 .forEach(action->newProvider.addAction(actionRepository.findById(action)));
@@ -199,6 +255,10 @@ public class DatabaseProviderService implements ProviderServiceI{
             provider.setDescription(request.description);
         }
 
+        if(StringUtils.isNotEmpty(request.example)){
+            provider.setExample(request.example);
+        }
+
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }
 
@@ -241,7 +301,6 @@ public class DatabaseProviderService implements ProviderServiceI{
      * @throws NotFoundException If there is an action that is not supported.
      */
     private void checkIfActionsSupported(Set<String> actions) {
-
 
         actions
                 .forEach(action -> actionRepository.findByIdOptional(action).orElseThrow(() -> new NotFoundException("There is an action that is not supported.")));
