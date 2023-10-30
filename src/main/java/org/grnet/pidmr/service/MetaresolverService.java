@@ -50,6 +50,11 @@ public class MetaresolverService implements MetaresolverServiceI {
     @CacheResult(cacheName = "pidMode")
     public String resolve(AbstractProvider provider, String pid, String mode) {
 
+        if(provider.directResolution() && mode.equals("metadata")){
+
+            return proxy.concat(pid).concat("?noredirect");
+        }
+
         var body = provider.getRequestBody(pid, mode, bodyAttribute, bodyAttributePrefix, appendParam);
 
         var request = new Request

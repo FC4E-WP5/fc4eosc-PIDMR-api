@@ -9,6 +9,8 @@ public abstract class AbstractProvider {
 
     public abstract String getType();
 
+    public abstract boolean directResolution();
+
     public String resolve(MetaResolver metaResolver, String pid) {
         return metaResolver.getLocation().concat(calibratePid(pid));
     }
@@ -31,11 +33,20 @@ public abstract class AbstractProvider {
 
     public RequestBody getRequestBody(String pid, String mode, String bodyAttribute, String bodyAttributePrefix, String appendParam) {
 
-        return new FormBody.Builder()
-                .addEncoded(bodyAttribute, bodyAttributePrefix +
-                        calibratePid(pid) +
-                        appendParam +
-                        mode)
-                .build();
+        if(directResolution()){
+
+            return new FormBody.Builder()
+                    .addEncoded(bodyAttribute,
+                            calibratePid(pid))
+                    .build();
+        } else {
+
+            return new FormBody.Builder()
+                    .addEncoded(bodyAttribute, bodyAttributePrefix +
+                            calibratePid(pid) +
+                            appendParam +
+                            mode)
+                    .build();
+        }
     }
 }

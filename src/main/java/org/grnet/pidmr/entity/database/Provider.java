@@ -86,6 +86,10 @@ public class Provider extends AbstractProvider {
     @NotEmpty
     private Set<Action> actions = new HashSet<>();
 
+    @Column(name = "direct_resolution")
+    @NotNull
+    private boolean directResolution;
+
     /**
      * A PID example.
      */
@@ -142,6 +146,11 @@ public class Provider extends AbstractProvider {
         return type;
     }
 
+    @Override
+    public boolean directResolution() {
+        return isDirectResolution();
+    }
+
     public void setType(String type) {
         this.type = type;
     }
@@ -185,4 +194,14 @@ public class Provider extends AbstractProvider {
     public void setExample(String example) {
         this.example = example;
     }
+
+    public boolean isDirectResolution() {
+        return directResolution;
+    }
+
+    public void setDirectResolution(boolean directResolution) {
+        this.directResolution = directResolution;
+    }
 }
+
+
