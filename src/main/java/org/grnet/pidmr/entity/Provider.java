@@ -38,6 +38,11 @@ public class Provider extends AbstractProvider{
         return type;
     }
 
+    @Override
+    public boolean directResolution() {
+        return false;
+    }
+
     public void setType(String type) {
         this.type = type;
     }

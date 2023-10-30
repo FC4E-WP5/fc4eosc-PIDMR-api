@@ -6,7 +6,6 @@ import org.grnet.pidmr.endpoint.MetaResolverEndpoint;
 import org.grnet.pidmr.service.MetaresolverService;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
