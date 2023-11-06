@@ -1,6 +1,5 @@
 package org.grnet.pidmr.endpoint;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
