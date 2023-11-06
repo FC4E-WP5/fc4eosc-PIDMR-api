@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Schema(name="Identification", description="An object representing the result of text identification.")
 public class Identification {
@@ -12,7 +13,7 @@ public class Identification {
     @Schema(
             type = SchemaType.STRING,
             implementation = Identification.Status.class,
-            description = "Indicates the identification status (VALID, INVALID, INCOMPLETE).",
+            description = "Indicates the identification status (VALID, INVALID, AMBIGUOUS).",
             example = "VALID"
     )
     @JsonProperty("status")
@@ -34,6 +35,14 @@ public class Identification {
     )
     public String example;
 
-   public enum Status { VALID, INVALID, INCOMPLETE }
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = ResolutionModeDto.class,
+            description = "The resolution modes supported by Provider."
+    )
+    @JsonProperty("resolution_modes")
+    public Set<ResolutionModeDto> actions = new HashSet<>();
+
+    public enum Status { VALID, INVALID, AMBIGUOUS }
 }
 

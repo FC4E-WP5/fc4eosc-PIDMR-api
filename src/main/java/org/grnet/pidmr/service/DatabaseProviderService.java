@@ -116,7 +116,7 @@ public class DatabaseProviderService implements ProviderServiceI{
 
             var identified = check(text, Pattern.compile(regex.getRegex()), regex.getProvider(), identification);
 
-            if(identified.status.equals(Identification.Status.VALID) || identified.status.equals(Identification.Status.INCOMPLETE)){
+            if(identified.status.equals(Identification.Status.VALID) || identified.status.equals(Identification.Status.AMBIGUOUS)){
 
                 break;
             }
@@ -129,24 +129,27 @@ public class DatabaseProviderService implements ProviderServiceI{
 
         Matcher matcher = pattern.matcher(cs);
 
+        var dto = ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+
         if(matcher.matches()){
 
             identification.status = Identification.Status.VALID;
             identification.type = provider.getType();
             identification.example = provider.getExample();
+            identification.actions = dto.actions;
             return identification;
         }
 
         if (matcher.hitEnd()) {
 
-            identification.status = Identification.Status.INCOMPLETE;
+            identification.status = Identification.Status.AMBIGUOUS;
             identification.type = provider.getType();
             identification.example = provider.getExample();
+            identification.actions = dto.actions;
         }
 
         return identification;
     }
-
 
     /**
      * This method stores a new Provider in the database.
