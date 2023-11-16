@@ -66,6 +66,12 @@ public class MetaResolverEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
     @GET
     @Path("/resolve")
     @Produces(value = MediaType.APPLICATION_JSON)
