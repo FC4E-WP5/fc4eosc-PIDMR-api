@@ -25,7 +25,14 @@ public abstract class AbstractProvider {
     public String calibratePid(String pid) {
 
         if (getCharactersToBeRemoved() != 0) {
-            return pid.substring(getCharactersToBeRemoved());
+
+            if (pid.startsWith("doi")) {
+
+                return pid.substring(getCharactersToBeRemoved());
+            } else {
+
+                return pid;
+            }
         } else {
             return pid;
         }
