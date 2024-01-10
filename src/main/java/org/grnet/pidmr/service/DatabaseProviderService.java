@@ -222,7 +222,6 @@ public class DatabaseProviderService implements ProviderServiceI{
 
         if(StringUtils.isNotEmpty(request.type)){
 
-            checkIfTypeExists(request.type);
             provider.setType(request.type);
         }
 

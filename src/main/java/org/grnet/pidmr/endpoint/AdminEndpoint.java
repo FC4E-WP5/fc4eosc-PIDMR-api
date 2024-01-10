@@ -1,5 +1,6 @@
 package org.grnet.pidmr.endpoint;
 
+import io.quarkus.arc.ArcUndeclaredThrowableException;
 import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -16,16 +17,19 @@ import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
 import org.grnet.pidmr.dto.UpdateProviderDto;
+import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.grnet.pidmr.util.ServiceUriInfo;
 import org.grnet.pidmr.validator.constraints.NotFoundEntity;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -35,6 +39,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.Objects;
 
 @Path("v1/admin")
 @Authenticated
@@ -280,7 +285,19 @@ public class AdminEndpoint {
                            @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id:") Long id,
                            @Valid @NotNull(message = "The request body is empty.") UpdateProviderDto request) {
 
-        var response = providerService.update(request, id);
+        ProviderDto response = null;
+        try {
+            response = providerService.update(request, id);
+
+        } catch (ArcUndeclaredThrowableException e) {
+
+            if(!Objects.isNull(e.getCause()) && !Objects.isNull(e.getCause().getCause()) && !Objects.isNull(e.getCause().getCause().getCause()) && e.getCause().getCause().getCause() instanceof ConstraintViolationException){
+
+                throw new ConflictException(String.format("This Provider type {%s} exists.", request.type));
+            } else {
+                throw new InternalServerErrorException("Internal Server Error");
+            }
+        }
 
         return Response.ok().entity(response).build();
     }
