@@ -9,12 +9,14 @@ import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.database.Action;
 import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.entity.database.Regex;
+import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.mapper.ProviderMapper;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ActionRepository;
 import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.repository.RegexRepository;
+import org.grnet.pidmr.util.RequestUserContext;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -46,6 +48,8 @@ public class DatabaseProviderService implements ProviderServiceI{
     @Inject
     RegexRepository regexRepository;
 
+    @Inject
+    RequestUserContext requestUserContext;
     @Override
     public Validity valid(String pid) {
 
@@ -168,6 +172,8 @@ public class DatabaseProviderService implements ProviderServiceI{
         newProvider.setType(request.type);
         newProvider.setDescription(request.description);
         newProvider.setExample(request.example);
+        newProvider.setCreatedBy(requestUserContext.getVopersonID());
+        newProvider.setStatus(ProviderStatus.PENDING);
         request
                 .actions
                 .forEach(action->newProvider.addAction(actionRepository.findById(action)));
@@ -260,6 +266,8 @@ public class DatabaseProviderService implements ProviderServiceI{
         if(StringUtils.isNotEmpty(request.example)){
             provider.setExample(request.example);
         }
+
+        provider.setStatus(ProviderStatus.PENDING);
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }

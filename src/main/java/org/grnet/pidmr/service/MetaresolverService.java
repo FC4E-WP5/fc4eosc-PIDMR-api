@@ -10,7 +10,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.ServerErrorException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -69,7 +69,7 @@ public class MetaresolverService implements MetaresolverServiceI {
             return response.request().url().toString();
         } catch (Exception e) {
 
-            throw new InternalServerErrorException("Cannot communicate with metaresolver: "+e.getMessage());
+            throw new ServerErrorException("Cannot communicate with metaresolver: "+e.getMessage(), 500);
         }
     }
 
