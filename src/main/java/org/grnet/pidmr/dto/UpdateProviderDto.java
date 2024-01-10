@@ -40,7 +40,8 @@ public class UpdateProviderDto {
     @Schema(
             type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "The resolution modes supported by Provider."
+            description = "The resolution modes supported by Provider.",
+            example = "[\"resource\", \"metadata\"]"
     )
     @JsonProperty("resolution_modes")
     public Set<String> actions = new HashSet<>();
@@ -48,7 +49,8 @@ public class UpdateProviderDto {
     @Schema(
             type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "The regexes supported by Provider."
+            description = "The regexes supported by Provider.",
+            example = "[\"^(a|A)(r|R)(k|K):(?:/d{5,9})+/[a-zA-Zd]+(-[a-zA-Zd]+)*$.\"]"
     )
     @JsonProperty("regexes")
     public Set<String> regexes = new HashSet<>();
