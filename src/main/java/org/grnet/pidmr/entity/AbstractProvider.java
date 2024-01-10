@@ -3,15 +3,15 @@ package org.grnet.pidmr.entity;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
 
-public abstract class AbstractProvider {
+public interface AbstractProvider {
 
-    public abstract int getCharactersToBeRemoved();
+    int getCharactersToBeRemoved();
 
-    public abstract String getType();
+    String getType();
 
-    public abstract boolean directResolution();
+    boolean directResolution();
 
-    public String resolve(MetaResolver metaResolver, String pid) {
+    default String resolve(MetaResolver metaResolver, String pid) {
         return metaResolver.getLocation().concat(calibratePid(pid));
     }
 
@@ -22,7 +22,7 @@ public abstract class AbstractProvider {
      * @param pid The pid to be calibrated.
      * @return The calibrated pid.
      */
-    public String calibratePid(String pid) {
+    default String calibratePid(String pid) {
 
         if (getCharactersToBeRemoved() != 0) {
 
@@ -38,7 +38,7 @@ public abstract class AbstractProvider {
         }
     }
 
-    public RequestBody getRequestBody(String pid, String mode, String bodyAttribute, String bodyAttributePrefix, String appendParam) {
+    default RequestBody getRequestBody(String pid, String mode, String bodyAttribute, String bodyAttributePrefix, String appendParam) {
 
         if(directResolution()){
 

@@ -1,8 +1,10 @@
 package org.grnet.pidmr.repository;
 
 import io.quarkus.hibernate.orm.panache.Panache;
+import io.quarkus.panache.common.Parameters;
 import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.entity.database.Regex;
+import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.pagination.Page;
 import org.grnet.pidmr.pagination.Pageable;
 import org.grnet.pidmr.pagination.PageableImpl;
@@ -25,7 +27,7 @@ public class ProviderRepository implements Repository<Provider, Long> {
      */
     public Pageable<Provider> fetchProvidersByPage(int page, int size){
 
-        var panache = findAll().page(page, size);
+        var panache = find("status = : status", Parameters.with("status", ProviderStatus.APPROVED)).page(page, size);
 
         var pageable = new PageableImpl<Provider>();
         pageable.list = panache.list();

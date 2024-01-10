@@ -1,14 +1,16 @@
 package org.grnet.pidmr.entity.database;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.grnet.pidmr.entity.AbstractProvider;
+import org.grnet.pidmr.entity.database.converters.ProviderStatusAttributeConverter;
+import org.grnet.pidmr.enums.ProviderStatus;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -25,14 +27,9 @@ import java.util.Set;
  * This entity represents the Provider table in database.
  */
 @Entity
-public class Provider extends AbstractProvider {
-
-    /**
-     * As id
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Getter
+@Setter
+public class Provider extends ManageableEntity<Long> implements AbstractProvider {
 
     /**
      * The Provider type.
@@ -64,6 +61,10 @@ public class Provider extends AbstractProvider {
     @OneToOne
     @JoinColumn(name = "metaresolver_id", referencedColumnName = "id")
     private Metaresolver metaresolver;
+
+    @Convert(converter = ProviderStatusAttributeConverter.class)
+    @NotNull
+    private ProviderStatus status;
 
     @OneToMany(
             mappedBy = "provider",
@@ -97,14 +98,6 @@ public class Provider extends AbstractProvider {
     @NotNull
     private String example;
 
-    public Set<Action> getActions() {
-        return actions;
-    }
-
-    public void setActions(Set<Action> actions) {
-        this.actions = actions;
-    }
-
     public void addAction(Action action) {
         actions.add(action);
         action.getProviders().add(this);
@@ -115,92 +108,20 @@ public class Provider extends AbstractProvider {
         action.getProviders().remove(this);
     }
 
-    public List<Regex> getRegexes() {
-        return regexes;
-    }
-
-    public void setRegexes(List<Regex> regexes) {
-        this.regexes = regexes;
-    }
-
     public void addRegex(Regex regex) {
+
         regexes.add(regex);
         regex.setProvider(this);
     }
 
     public void removeRegex(Regex regex) {
+
         regexes.remove(regex);
-        regex.setId(null);
-
+        regex.setProvider(null);
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getType() {
-        return type;
-    }
-
     @Override
     public boolean directResolution() {
         return isDirectResolution();
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getCharactersToBeRemoved() {
-        return charactersToBeRemoved;
-    }
-
-    public void setCharactersToBeRemoved(int charactersToBeRemoved) {
-        this.charactersToBeRemoved = charactersToBeRemoved;
-    }
-
-    public Metaresolver getMetaresolver() {
-        return metaresolver;
-    }
-
-    public void setMetaresolver(Metaresolver metaresolver) {
-        this.metaresolver = metaresolver;
-    }
-
-    public String getExample() {
-        return example;
-    }
-
-    public void setExample(String example) {
-        this.example = example;
-    }
-
-    public boolean isDirectResolution() {
-        return directResolution;
-    }
-
-    public void setDirectResolution(boolean directResolution) {
-        this.directResolution = directResolution;
     }
 }
 

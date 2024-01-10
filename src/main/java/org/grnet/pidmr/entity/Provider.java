@@ -2,9 +2,6 @@ package org.grnet.pidmr.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,7 +10,7 @@ import java.util.Set;
  * Those objects are represented by the Provider class.
  */
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-public class Provider extends AbstractProvider{
+public class Provider implements AbstractProvider{
 
     @EqualsAndHashCode.Include
     @JsonProperty(value = "type", required = true)
