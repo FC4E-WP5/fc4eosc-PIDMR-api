@@ -342,6 +342,14 @@
           "attributes": {}
         },
         {
+          "id": "df147a31-5da2-5bbc-866c-f30cf99b2637",
+          "name": "provider_admin",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
+        },
+        {
           "id": "df947a91-4da7-2bbc-255c-f80cf99b2667",
           "name": "admin",
           "composite": false,
@@ -888,18 +896,29 @@
         "policyEnforcementMode": "ENFORCING",
         "resources": [
           {
-            "name": "Admin Resource",
+            "name": "Admin Provider Resource",
             "ownerManagedAccess": false,
             "displayName": "Read Assessment Objects by Actor",
             "attributes": {},
             "_id": "9db7df46-e3db-4eb3-bfbf-486404496be0",
             "uris": [
-              "/v1/admin/*"
+              "/v1/admin/providers/*"
             ],
             "icon_uri": ""
           }
         ],
         "policies": [
+          {
+            "id": "f253a36e-ec62-432e-855e-4a86f8f6f613",
+            "name": "Only Provider Administrators",
+            "description": "Only Provider Administrators can access",
+            "type": "role",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "roles": "[{\"id\":\"backend-service/provider_admin\",\"required\":false}]"
+            }
+          },
           {
             "id": "fcef30b2-68b2-4b78-9f3d-9162c6cdf5cb",
             "name": "Only Administrators",
@@ -913,14 +932,14 @@
           },
           {
             "id": "022b0f30-8686-4f09-931e-ef3643f527b0",
-            "name": "Admin Permissions",
+            "name": "Admin Provider Permissions",
             "description": "",
             "type": "resource",
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Admin Resource\"]",
-              "applyPolicies": "[\"Only Administrators\"]"
+              "resources": "[\"Admin Provider Resource\"]",
+              "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
             }
           }
         ],
@@ -2586,6 +2605,11 @@
           "config": {}
         }
       ],
+      "clientRoles": {
+        "backend-service": [
+          "provider_admin"
+        ]
+      },
       "disableableCredentialTypes": [
         "password"
       ],

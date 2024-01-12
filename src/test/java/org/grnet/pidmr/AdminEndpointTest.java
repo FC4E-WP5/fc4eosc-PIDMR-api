@@ -79,7 +79,7 @@ public class AdminEndpointTest extends KeycloakTest{
 
         assertEquals("test-create-provider", provider.type);
 
-        providerService.deleteProviderById(provider.id);
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
 
     @Test
@@ -105,7 +105,6 @@ public class AdminEndpointTest extends KeycloakTest{
                 .extract()
                 .as(ProviderDto.class);
 
-
         var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
@@ -120,7 +119,7 @@ public class AdminEndpointTest extends KeycloakTest{
 
         assertEquals("This Provider type {test-exist-provider} exists.", informativeResponse.message);
 
-        providerService.deleteProviderById(provider.id);
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
 
     @Test
@@ -160,7 +159,7 @@ public class AdminEndpointTest extends KeycloakTest{
 
         assertTrue(validity.valid);
 
-        providerService.deleteProviderById(provider.id);
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
 
     @Test
@@ -252,7 +251,7 @@ public class AdminEndpointTest extends KeycloakTest{
         assertEquals(request.name, response.name);
         assertEquals(request.type, response.type);
 
-        providerService.deleteProviderById(provider.id);
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
 
     @Test
@@ -357,7 +356,7 @@ public class AdminEndpointTest extends KeycloakTest{
         assertEquals(request.regexes.stream().findFirst().get(), updatedProvider.regexes.stream().findFirst().get());
         assertEquals(request.actions.stream().findFirst().get(), updatedProvider.actions.stream().findFirst().get().mode);
 
-        providerService.deleteProviderById(provider.id);
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
 
     @Test
@@ -406,7 +405,7 @@ public class AdminEndpointTest extends KeycloakTest{
         assertEquals(updateRequest.regexes.stream().findFirst().get(), updatedProvider.regexes.stream().findFirst().get());
         assertEquals(updateRequest.actions.stream().findFirst().get(), updatedProvider.actions.stream().findFirst().get().mode);
 
-        providerService.deleteProviderById(provider.id);
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
 
     @Test
@@ -465,5 +464,46 @@ public class AdminEndpointTest extends KeycloakTest{
                 .as(InformativeResponse.class);
 
         assertEquals("You do not have permission to access this resource.", readForbidden.message);
+    }
+
+    @Test
+    public void providerForbiddenPermissionsOnEntity(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-change-regex-action-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource");
+        request.example = "example";
+
+        var provider = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        //alice is a provider_admin and can only manage the providers she creates.
+        var updateForbidden = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(new UpdateProviderDto())
+                .contentType(ContentType.JSON)
+                .patch("/providers/{id}", provider.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", updateForbidden.message);
+
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
 }
