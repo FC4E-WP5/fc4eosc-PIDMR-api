@@ -9,6 +9,7 @@ import org.grnet.pidmr.enums.ProviderStatus;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -27,9 +28,10 @@ import java.util.Set;
  * This entity represents the Provider table in database.
  */
 @Entity
+@DiscriminatorValue("Provider")
 @Getter
 @Setter
-public class Provider extends ManageableEntity<Long> implements AbstractProvider {
+public class Provider extends ManageableEntity implements AbstractProvider {
 
     /**
      * The Provider type.

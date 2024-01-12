@@ -14,7 +14,7 @@ public abstract class Service {
         return optional.orElseThrow(()-> new EntityNotFoundException(String.format("{%s} with ID {%s} doesn't exist", message, id)));
     }
 
-    public <ID> void canManageEntity(Repository<? extends ManageableEntity<ID>, ID> repository, ID id){
+    public <ID> void canManageEntity(Repository<? extends ManageableEntity, ID> repository, ID id){
 
 
     }

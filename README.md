@@ -13,13 +13,6 @@ OpenAPI Specifications are accessible at `/open-api` endpoint.
 
 Swagger UI is accessible at `/swagger-ui` endpoint.
 
-
-### Access the Dev Service Database
-
-To access the dev database, please execute the following command:
-
-`mysql -h localhost -P 3306 -u pidmr -p pidmr --protocol=tcp`
-
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
@@ -28,6 +21,51 @@ You can run your application in dev mode that enables live coding using:
 ```
 
 > **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+
+### Access the Dev Service Database
+
+To access the dev database, please execute the following command:
+
+`mysql -h localhost -P 3306 -u pidmr -p pidmr --protocol=tcp`
+
+### Obtain an access token from Dev Service Keycloak
+
+To obtain an access token from Dev Service Keycloak, please follow the instructions above.
+
+#### Instructions
+
+1. Navigate to the http://localhost:8080
+
+   Open your preferred web browser and navigate to the http://localhost:8080 where the access token can be obtained.
+
+2. Locate the Access Token Button
+
+   Once the web page loads, locate the button that triggers the access token retrieval process. The button should be visible on the web page.
+
+3. Click the Obtain an Access Token button
+
+   Click the access token button to initiate the process of retrieving an access token. This will trigger the necessary steps to obtain the token from the Dev Service Keycloak.
+
+4. Log into Dev Service Keycloak
+
+   Use the following credentials to log into Dev Service Keycloak:
+
+    1) admin user
+        - username : `admin`
+        - password : `admin`
+    2) provider_admin user
+        - username : `alice`
+        - password : `alice`
+    3) plain user
+        - username : `evald`
+        - password : `evald`
+5. Retrieve the Access Token
+
+   After providing the necessary information, the web page will communicate with the authentication server to retrieve the access token. This process may take a few moments. Once the retrieval is successful, the access token will be displayed on the web page.
+
+6. Use the Access Token
+
+   Once you have obtained the access token, you can use it for authenticating API requests. Follow the documentation or guidelines provided by the API to understand how to include the access token in the appropriate HTTP requests using the Bearer Authentication scheme.
 
 ## Packaging and running the application
 

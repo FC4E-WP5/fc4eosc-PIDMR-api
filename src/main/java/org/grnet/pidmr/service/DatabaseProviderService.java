@@ -11,6 +11,7 @@ import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
+import org.grnet.pidmr.interceptors.ManageEntity;
 import org.grnet.pidmr.mapper.ProviderMapper;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ActionRepository;
@@ -196,8 +197,15 @@ public class DatabaseProviderService implements ProviderServiceI{
      * @param id The Provider to be deleted.
      * @return Whether the Provider is successfully deleted or not.
      */
+    @ManageEntity(entityType = "Provider")
     @Transactional
     public boolean deleteProviderById(Long id){
+
+        return providerRepository.deleteById(id);
+    }
+
+    @Transactional
+    public boolean deleteProviderByIdWithoutCheckingPermissions(Long id){
 
         return providerRepository.deleteById(id);
     }
@@ -208,6 +216,7 @@ public class DatabaseProviderService implements ProviderServiceI{
      * @param providerId The ID of the Provider to retrieve.
      * @return The Provider stored in the database.
      */
+    @ManageEntity(entityType = "Provider")
     public ProviderDto getProviderById(Long providerId) {
 
         var provider = providerRepository.findById(providerId);
@@ -221,8 +230,9 @@ public class DatabaseProviderService implements ProviderServiceI{
      * @param id The Provider to be updated.
      * @return The updated Provider.
      */
+    @ManageEntity(entityType = "Provider")
     @Transactional
-    public ProviderDto update(UpdateProviderDto request, Long id){
+    public ProviderDto update(Long id, UpdateProviderDto request){
 
         var provider = providerRepository.findById(id);
 

@@ -22,9 +22,9 @@ import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.grnet.pidmr.util.ServiceUriInfo;
 import org.grnet.pidmr.validator.constraints.NotFoundEntity;
+import org.hibernate.exception.ConstraintViolationException;
 
 import javax.inject.Inject;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.DELETE;
@@ -287,7 +287,7 @@ public class AdminEndpoint {
 
         ProviderDto response = null;
         try {
-            response = providerService.update(request, id);
+            response = providerService.update(id, request);
 
         } catch (ArcUndeclaredThrowableException e) {
 
