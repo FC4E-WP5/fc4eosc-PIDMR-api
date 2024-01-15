@@ -1,6 +1,7 @@
 package org.grnet.pidmr.service;
 
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
@@ -103,6 +104,13 @@ public class DatabaseProviderService implements ProviderServiceI{
         var providers = providerRepository.fetchProvidersByPage(page, size);
 
         return new PageResource<>(providers, ProviderMapper.INSTANCE.databaseProvidersToDto(providers.list()), uriInfo);
+    }
+
+    public PageResource<AdminProviderDto> adminPagination(int page, int size, UriInfo uriInfo) {
+
+        var providers = providerRepository.fetchAdminProvidersByPage(page, size);
+
+        return new PageResource<>(providers, ProviderMapper.INSTANCE.databaseAdminProvidersToDto(providers.list()), uriInfo);
     }
 
     @Override

@@ -896,6 +896,16 @@
         "policyEnforcementMode": "ENFORCING",
         "resources": [
           {
+            "name": "User Resource Permission",
+            "ownerManagedAccess": false,
+            "attributes": {},
+            "_id": "74667d37-7e34-4ec7-a299-edaf068dbc2c",
+            "uris": [
+              "/v1/users/*"
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Admin Provider Resource",
             "ownerManagedAccess": false,
             "displayName": "Read Assessment Objects by Actor",
@@ -939,6 +949,18 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Admin Provider Resource\"]",
+              "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
+            }
+          },
+          {
+            "id": "2e23cb45-3d12-48a7-bf84-3a7ddda254b5",
+            "name": "User Permissions",
+            "description": "",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"User Resource Permission\"]",
               "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
             }
           }

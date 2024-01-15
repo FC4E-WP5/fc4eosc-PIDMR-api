@@ -6,9 +6,8 @@ import lombok.Getter;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.json.JsonString;
-import javax.json.JsonValue;
 import javax.ws.rs.BadRequestException;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,7 +33,7 @@ public class RequestUserContext {
         }
     }
 
-    public List<String> getRoles(String clientID){
+    public Set<String> getRoles(String clientID){
 
         var jsonArray =  tokenIntrospection
                 .getObject("resource_access")
@@ -45,6 +44,6 @@ public class RequestUserContext {
                 .range(0,jsonArray.size())
                 .mapToObj(jsonArray::getJsonString)
                 .map(JsonString::getString)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 }
