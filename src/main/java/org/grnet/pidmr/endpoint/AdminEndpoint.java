@@ -13,11 +13,13 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
 import org.grnet.pidmr.dto.UpdateProviderDto;
 import org.grnet.pidmr.exception.ConflictException;
+import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.grnet.pidmr.util.ServiceUriInfo;
@@ -26,20 +28,27 @@ import org.hibernate.exception.ConstraintViolationException;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 import java.util.Objects;
+
+import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("v1/admin")
 @Authenticated
@@ -300,5 +309,67 @@ public class AdminEndpoint {
         }
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "List of the Providers the user can manage.",
+            description = "Endpoint for retrieving the Providers the user can manage.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of the Providers the user can manage.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableAdminProvider.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/providers")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getProviders(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be between 1 and 100.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                 @Parameter(name = "size", in = QUERY,
+                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                     @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
+
+        return Response.ok().entity(providerService.adminPagination(page - 1, size, uriInfo)).build();
+    }
+
+    public static class PageableAdminProvider extends PageResource<AdminProviderDto> {
+
+        private List<AdminProviderDto> content;
+
+        @Override
+        public List<AdminProviderDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<AdminProviderDto> content) {
+            this.content = content;
+        }
     }
 }

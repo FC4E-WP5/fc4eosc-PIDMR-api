@@ -1,5 +1,6 @@
 package org.grnet.pidmr.mapper;
 
+import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.ResolutionModeDto;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.entity.Provider;
@@ -40,6 +41,14 @@ public interface ProviderMapper {
 
     @IterableMapping(qualifiedByName = "databaseProviderToDto")
     List<ProviderDto> databaseProvidersToDto(List<org.grnet.pidmr.entity.database.Provider> providers);
+
+    @IterableMapping(qualifiedByName = "databaseAdminProviderToDto")
+    List<AdminProviderDto> databaseAdminProvidersToDto(List<org.grnet.pidmr.entity.database.Provider> providers);
+
+    @Named("databaseAdminProviderToDto")
+    @Mapping(source = "regexes", target = "regexes", qualifiedByName = "database-regexes")
+    @Mapping(source = "createdBy", target = "userId")
+    AdminProviderDto databaseAdminProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
 
     @Named("database-regexes")
     default Set<String> databaseRegexes(List<Regex> regexes) {
