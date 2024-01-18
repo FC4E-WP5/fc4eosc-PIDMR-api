@@ -28,6 +28,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -333,5 +335,20 @@ public class DatabaseProviderService implements ProviderServiceI{
         actions
                 .forEach(action -> actionRepository.findByIdOptional(action).orElseThrow(() -> new NotFoundException("There is an action that is not supported.")));
 
+    }
+
+    /**
+     * Updates the status of a Provider with the provided status.
+     * @param id The ID of the Provider to update.
+     * @param status The new status to set for the Provider.
+     * @return The updated Provider.
+     */
+    @Transactional
+    public AdminProviderDto updateProviderStatus(Long id, ProviderStatus status) {
+
+        var provider = providerRepository.findById(id);
+        provider.setStatus(status);
+
+        return ProviderMapper.INSTANCE.databaseAdminProviderToDto(provider);
     }
 }
