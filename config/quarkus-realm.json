@@ -915,6 +915,21 @@
               "/v1/admin/providers/*"
             ],
             "icon_uri": ""
+          },
+          {
+            "name": "Update Provider Status",
+            "ownerManagedAccess": false,
+            "attributes": {},
+            "_id": "7146514e-c9ef-4dfb-8622-8e9514c6c1e1",
+            "uris": [
+              "/v1/admin/providers/{id}/update-status"
+            ],
+            "scopes": [
+              {
+                "name": "update"
+              }
+            ],
+            "icon_uri": ""
           }
         ],
         "policies": [
@@ -938,6 +953,19 @@
             "decisionStrategy": "UNANIMOUS",
             "config": {
               "roles": "[{\"id\":\"backend-service/admin\",\"required\":false}]"
+            }
+          },
+          {
+            "id": "c3eb91b2-f95c-45c8-bcaf-239b19fea1b6",
+            "name": "Update Provider Status",
+            "description": "Update Provider Status",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Update Provider Status\"]",
+              "scopes": "[\"update\"]",
+              "applyPolicies": "[\"Only Administrators\"]"
             }
           },
           {

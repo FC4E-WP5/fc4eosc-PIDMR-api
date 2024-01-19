@@ -18,6 +18,8 @@ import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
 import org.grnet.pidmr.dto.UpdateProviderDto;
+import org.grnet.pidmr.dto.UpdateProviderStatus;
+import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ProviderRepository;
@@ -36,6 +38,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -356,6 +359,63 @@ public class AdminEndpoint {
                                      @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
         return Response.ok().entity(providerService.adminPagination(page - 1, size, uriInfo)).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Update the status of a Provider.",
+            description = "Updates the status of a Provider with the provided status. Only the admin users can access this endpoint.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The status of a Provider was successfully updated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AdminProviderDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Validation request not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/providers/{id}/update-status")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateTheStatusOfProvider(@Parameter(
+            description = "The Provider to be updated.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                                @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id :") Long id,
+                                                @Valid @NotNull(message = "The request body is empty.") UpdateProviderStatus updateProviderStatus) {
+
+        var response  = providerService.updateProviderStatus(id, ProviderStatus.valueOf(updateProviderStatus.status));
+
+        return Response.ok().entity(response).build();
     }
 
     public static class PageableAdminProvider extends PageResource<AdminProviderDto> {

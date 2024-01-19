@@ -16,6 +16,8 @@ import org.grnet.pidmr.util.RequestUserContext;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -92,5 +94,10 @@ public class ProviderRepository implements Repository<Provider, Long> {
                 .setParameter("providerId", provider.getId());
 
         return regex.getResultList().stream().findFirst();
+    }
+
+    public void updateValidationStatus(Long id, ProviderStatus status){
+
+        update("status = ?1  where id = ?2", status,  id);
     }
 }
