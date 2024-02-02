@@ -2,6 +2,12 @@ package org.grnet.pidmr.service;
 
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotAcceptableException;
+import jakarta.ws.rs.NotSupportedException;
+import jakarta.ws.rs.core.UriInfo;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.Action;
@@ -15,12 +21,6 @@ import org.grnet.pidmr.util.Utility;
 import io.quarkus.cache.CacheResult;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;

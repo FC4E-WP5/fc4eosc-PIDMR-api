@@ -1,5 +1,13 @@
 package org.grnet.pidmr.service;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotAcceptableException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.Identification;
@@ -20,16 +28,6 @@ import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.repository.RegexRepository;
 import org.grnet.pidmr.util.RequestUserContext;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.transaction.Transactional;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.UriInfo;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.regex.Matcher;

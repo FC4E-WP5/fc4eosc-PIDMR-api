@@ -1,9 +1,9 @@
 package org.grnet.pidmr.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.grnet.pidmr.entity.database.ManageableEntity;
 import org.grnet.pidmr.repository.Repository;
 
-import javax.persistence.EntityNotFoundException;
 
 public abstract class Service {
 

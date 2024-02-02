@@ -1,9 +1,8 @@
 package org.grnet.pidmr.repository;
 
-import io.quarkus.panache.common.Sort;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.pidmr.entity.database.ManageableEntity;
 
-import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class ManageableEntityRepository implements Repository<ManageableEntity, Long> {

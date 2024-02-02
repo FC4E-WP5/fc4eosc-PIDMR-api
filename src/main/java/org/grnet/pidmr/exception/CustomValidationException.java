@@ -1,7 +1,7 @@
 package org.grnet.pidmr.exception;
 
 
-import javax.validation.ValidationException;
+import jakarta.validation.ValidationException;
 
 public class CustomValidationException extends ValidationException {
 
