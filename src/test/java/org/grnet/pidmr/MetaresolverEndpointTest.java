@@ -1,5 +1,7 @@
 package org.grnet.pidmr;
 
+import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.LocationDto;
 import org.grnet.pidmr.endpoint.MetaResolverEndpoint;
@@ -10,8 +12,6 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;

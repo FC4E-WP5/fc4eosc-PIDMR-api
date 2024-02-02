@@ -1,5 +1,6 @@
 package org.grnet.pidmr.mapper;
 
+import jakarta.enterprise.inject.spi.CDI;
 import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.ResolutionModeDto;
 import org.grnet.pidmr.dto.ProviderDto;
@@ -12,7 +13,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
-import javax.enterprise.inject.spi.CDI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;

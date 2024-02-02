@@ -1,12 +1,12 @@
 package org.grnet.pidmr.util;
 
 import io.quarkus.oidc.TokenIntrospection;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.json.JsonString;
+import jakarta.ws.rs.BadRequestException;
 import lombok.Getter;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.json.JsonString;
-import javax.ws.rs.BadRequestException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -18,7 +18,7 @@ public class RequestUserContext {
     private final String vopersonID;
 
     @Inject
-    private final TokenIntrospection tokenIntrospection;
+    private TokenIntrospection tokenIntrospection;
 
     public RequestUserContext(TokenIntrospection tokenIntrospection) {
 

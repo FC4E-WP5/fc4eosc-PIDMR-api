@@ -2,14 +2,14 @@ package org.grnet.pidmr.validator.validators;
 
 
 import io.vavr.control.Try;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.pidmr.exception.CustomValidationException;
 import org.grnet.pidmr.repository.Repository;
 import org.grnet.pidmr.validator.constraints.NotFoundEntity;
 
-import javax.enterprise.inject.spi.CDI;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.Objects;
 
 /**

@@ -1,12 +1,12 @@
 package org.grnet.pidmr.service;
 
+import jakarta.ws.rs.core.UriInfo;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.AbstractProvider;
 import org.grnet.pidmr.pagination.PageResource;
 
-import javax.ws.rs.core.UriInfo;
 import java.util.stream.IntStream;
 
 public interface ProviderServiceI {

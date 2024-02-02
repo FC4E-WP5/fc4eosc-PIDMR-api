@@ -1,11 +1,11 @@
 package org.grnet.pidmr.validator.constraints;
 
 
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 import org.grnet.pidmr.repository.Repository;
 import org.grnet.pidmr.validator.validators.NotFoundEntityValidator;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,11 +1,11 @@
 package org.grnet.pidmr.entity.database.converters;
 
 
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+import jakarta.ws.rs.ServerErrorException;
 import org.grnet.pidmr.enums.ProviderStatus;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
-import javax.ws.rs.ServerErrorException;
 
 @Converter
 public class ProviderStatusAttributeConverter implements AttributeConverter<ProviderStatus, Integer> {
