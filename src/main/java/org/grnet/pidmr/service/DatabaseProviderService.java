@@ -67,7 +67,7 @@ public class DatabaseProviderService implements ProviderServiceI{
     @Override
     public Validity valid(String pid, String type) {
 
-        var optionalProvider = providerRepository.find("from Provider p where p.type= ?1", type).firstResultOptional();
+        var optionalProvider = providerRepository.find("from Provider p where p.type = ?1 and p.status = ?2", type, ProviderStatus.APPROVED).firstResultOptional();
 
         if(optionalProvider.isEmpty()){
             throw new NotAcceptableException(String.format("This type {%s} is not supported.", type));
@@ -116,9 +116,7 @@ public class DatabaseProviderService implements ProviderServiceI{
     @Override
     public Identification identify(String text) {
 
-        var regexes = regexRepository
-                .findAll()
-                .list();
+        var regexes = regexRepository.findAllRegexesBelongsToApprovedProviders();
 
         var identification = new Identification();
         identification.status = Identification.Status.INVALID;

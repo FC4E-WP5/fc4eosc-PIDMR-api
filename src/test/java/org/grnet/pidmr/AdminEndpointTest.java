@@ -4,12 +4,15 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
+import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
 import org.grnet.pidmr.dto.UpdateProviderDto;
+import org.grnet.pidmr.dto.UpdateProviderStatus;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.endpoint.AdminEndpoint;
+import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -123,11 +126,11 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderWithRegex(){
+    public void createProviderWithRegexWithoutApproving(){
 
         var request = new ProviderRequest();
         request.name = "Test Provider.";
-        request.type = "test-regex-provider";
+        request.type = "test-regex-provider-without-approving";
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource", "metadata");
@@ -144,6 +147,61 @@ public class AdminEndpointTest extends KeycloakTest{
                 .statusCode(201)
                 .extract()
                 .as(ProviderDto.class);
+
+        var response = given()
+                .basePath("/v1/providers")
+                .contentType(ContentType.JSON)
+                .queryParam("type", provider.type)
+                .queryParam("pid", "regexps")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(406)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("This type {test-regex-provider-without-approving} is not supported.", response.message);
+
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
+    }
+
+    @Test
+    public void createProviderWithRegexAfterApproving(){
+
+        var request = new ProviderRequest();
+        request.name = "Test Provider.";
+        request.type = "test-regex-provider-with-approving";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource", "metadata");
+        request.example = "example";
+
+        var provider = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var updateStatus = new UpdateProviderStatus();
+        updateStatus.status = ProviderStatus.APPROVED.name();
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(updateStatus)
+                .contentType(ContentType.JSON)
+                .put("/providers/{id}/update-status", provider.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(AdminProviderDto.class);
 
         var validity = given()
                 .basePath("/v1/providers")
