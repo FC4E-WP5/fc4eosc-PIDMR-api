@@ -47,7 +47,6 @@ public class MetaresolverService implements MetaresolverServiceI {
 
 
     @SneakyThrows
-    @CacheResult(cacheName = "pidMode")
     public String resolve(AbstractProvider provider, String pid, String mode) {
 
         if(provider.directResolution() && mode.equals("metadata")){
@@ -80,6 +79,7 @@ public class MetaresolverService implements MetaresolverServiceI {
      * @param mode The display mode.
      * @return The Metaresolver URL, which resolves the PID.
      */
+    @CacheResult(cacheName = "pid-resolution")
     public String resolve(String pid, String mode) {
 
         var provider = providerService.getProviderByPid(pid, mode);

@@ -1,16 +1,24 @@
 package org.grnet.pidmr.endpoint;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.LocationDto;
+import org.grnet.pidmr.dto.PidResolutionBatchRequest;
+import org.grnet.pidmr.dto.PidResolutionBatchResponse;
+import org.grnet.pidmr.dto.PidResolutionResponse;
 import org.grnet.pidmr.service.MetaresolverService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -31,6 +39,9 @@ public class MetaResolverEndpoint {
 
     @Inject
     MetaresolverService metaresolverService;
+
+    @ConfigProperty(name = "max.pid.list.size")
+    int maxPidListSize;
 
     public MetaResolverEndpoint(MetaresolverService metaresolverService) {
         this.metaresolverService = metaresolverService;
@@ -93,4 +104,69 @@ public class MetaResolverEndpoint {
             return Response.status(Response.Status.OK).entity(location).build();
         }
     }
+
+    @Tag(name = "Metaresolver")
+    @Operation(
+            summary = "Resolve multiple PIDs.",
+            description = "Resolve multiple PIDs with specified modes. The mode property is only included for PIDs that require modes other than the default landing page mode.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A batch response containing multiple PID resolution results.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PidResolutionBatchResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "406",
+            description = "The pid is not supported.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/resolve/batch")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response resolveBatchPid(@Valid @NotNull(message = "The request body is empty.") PidResolutionBatchRequest pidResolutionBatchRequest){
+
+        if(pidResolutionBatchRequest.data.size() > maxPidListSize){
+
+            throw new NotAcceptableException(String.format("It looks like you've exceeded the limit on the number of process identifiers (PIDs) you can request for resolution in a single query. Our system currently allows a maximum of %s PIDs per request", maxPidListSize));
+        }
+
+        var response = new PidResolutionBatchResponse();
+
+        pidResolutionBatchRequest.data.forEach(entry->{
+
+            var result = new PidResolutionResponse();
+
+            try {
+
+                result.mode = StringUtils.isEmpty(entry.mode) ? "landingpage" : entry.mode;
+                result.pid = entry.pid;
+
+                result.url = metaresolverService.resolve(result.pid, result.mode);
+                result.success = Boolean.TRUE;
+                result.message = StringUtils.EMPTY;
+            } catch (Exception e){
+
+                result.message = e.getMessage();
+                result.success = Boolean.FALSE;
+                result.url = StringUtils.EMPTY;
+            }
+
+            response.data.add(result);
+        });
+
+        return Response.status(Response.Status.OK).entity(response).build();
+        }
 }
