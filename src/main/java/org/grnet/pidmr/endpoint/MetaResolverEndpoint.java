@@ -40,7 +40,7 @@ public class MetaResolverEndpoint {
     @Inject
     MetaresolverService metaresolverService;
 
-    @ConfigProperty(name = "max.pid.list.size")
+    @ConfigProperty(name = "max.resolution.pid.list.size")
     int maxPidListSize;
 
     public MetaResolverEndpoint(MetaresolverService metaresolverService) {
@@ -168,5 +168,5 @@ public class MetaResolverEndpoint {
         });
 
         return Response.status(Response.Status.OK).entity(response).build();
-        }
+    }
 }
