@@ -1,11 +1,14 @@
 package org.grnet.pidmr.endpoint;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -13,8 +16,11 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
+import org.grnet.pidmr.dto.PidIdentificationBatchRequest;
+import org.grnet.pidmr.dto.PidIdentificationBatchResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.pagination.PageResource;
@@ -37,6 +43,9 @@ public class ProviderEndpoint {
 
     @Inject
     DatabaseProviderService providerService;
+
+    @ConfigProperty(name = "max.resolution.pid.list.size")
+    int maxPidListSize;
 
     @Tag(name = "Provider")
     @Operation(
@@ -126,6 +135,57 @@ public class ProviderEndpoint {
         var identification = providerService.identify(text);
 
         return Response.ok().entity(identification).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Identify multiple PIDs.",
+            description = "Identify multiple PIDs.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A batch response containing multiple PID identification results.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PidIdentificationBatchResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "406",
+            description = "The pid is not supported.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/identify/batch")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response resolveBatchPid(@Valid @NotNull(message = "The request body is empty.") PidIdentificationBatchRequest pidIdentificationBatchRequest){
+
+        if(pidIdentificationBatchRequest.data.size() > maxPidListSize){
+
+            throw new NotAcceptableException(String.format("It looks like you've exceeded the limit on the number of process identifiers (PIDs) you can request for identification in a single query. Our system currently allows a maximum of %s PIDs per request", maxPidListSize));
+        }
+
+        var response = new PidIdentificationBatchResponse();
+
+        pidIdentificationBatchRequest.data.forEach(entry->{
+
+            var identification = providerService.identify(entry);
+
+            response.data.put(entry, identification);
+
+        });
+
+        return Response.status(Response.Status.OK).entity(response).build();
     }
 
     @Tag(name = "Provider")
