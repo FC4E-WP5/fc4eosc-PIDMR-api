@@ -91,7 +91,7 @@ public class MetaResolverEndpoint {
             description = "The display mode of PID.", examples = {@ExampleObject(name = "Landing Page", value = "landingpage"), @ExampleObject(name = "Metadata", value = "metadata"), @ExampleObject(name = "Resource", value = "resource")}, schema = @Schema(type = SchemaType.STRING, defaultValue = "landingpage")) @DefaultValue("landingpage") @QueryParam("pidMode") String pidMode, @Parameter(name = "redirect", in = QUERY, example = "false",
                                     description = "Redirects the request to the URL resolving the PID.", schema = @Schema(type = SchemaType.BOOLEAN, defaultValue = "false")) @DefaultValue("false") @QueryParam("redirect") boolean redirect) {
 
-        var resolvable = metaresolverService.resolve(pid, pidMode);
+        var resolvable = metaresolverService.resolve(pid.trim(), pidMode);
 
         if(redirect){
 
@@ -154,7 +154,7 @@ public class MetaResolverEndpoint {
                 result.mode = StringUtils.isEmpty(entry.mode) ? "landingpage" : entry.mode;
                 result.pid = entry.pid;
 
-                result.url = metaresolverService.resolve(result.pid, result.mode);
+                result.url = metaresolverService.resolve(result.pid.trim(), result.mode);
                 result.success = Boolean.TRUE;
                 result.message = StringUtils.EMPTY;
             } catch (Exception e){
