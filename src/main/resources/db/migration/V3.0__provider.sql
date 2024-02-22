@@ -5,20 +5,23 @@
 -- -------------------------------------------------
 
 CREATE TABLE Provider (
-   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+   id BIGINT,
    type varchar(255) NOT NULL,
    name varchar(255) NOT NULL,
    description varchar(900) NOT NULL,
    metaresolver_id varchar(255) DEFAULT NULL,
    characters_to_be_removed INT DEFAULT 0,
+   status smallint DEFAULT 1,
+   PRIMARY KEY(id),
    UNIQUE (type),
    FOREIGN KEY (metaresolver_id) REFERENCES Metaresolver(id)
 );
 
 CREATE TABLE Regex (
-   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+   id SERIAL,
    regex varchar(255) NOT NULL,
    provider_id BIGINT NOT NULL,
+   PRIMARY KEY(id),
    FOREIGN KEY (provider_id) REFERENCES Provider(id)
 );
 

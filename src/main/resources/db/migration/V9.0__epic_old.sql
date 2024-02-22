@@ -3,15 +3,32 @@
 --
 -- Description: Migration that introduces the epic old provider
 -- -------------------------------------------------
+DO $$
+
+DECLARE provider_id bigint;
+
+BEGIN
 
 INSERT INTO
-      Provider(type, name, description, metaresolver_id)
+      ManageableEntity(entity_type)
 VALUES
-      ('epic old','epic old (5 digit ex 11500).','ePIC was founded in 2009 by a consortium of European partners in order to provide PID services for the European Research Community, based on the handle system (TM, https://www.handle.net/ ), for the allocation and resolution of persistent identifiers.','HANDLER');
+      ('Provider') returning id into provider_id;
 
-SET @last_provider_id = LAST_INSERT_ID();
+INSERT INTO
+      Provider(id, type, name, description, metaresolver_id)
+VALUES
+      (provider_id, 'epic old','epic old (5 digit ex 11500).','ePIC was founded in 2009 by a consortium of European partners in order to provide PID services for the European Research Community, based on the handle system (TM, https://www.handle.net/ ), for the allocation and resolution of persistent identifiers.','HANDLER');
 
 INSERT INTO
       Regex(regex, provider_id)
-VALUES
-      ('^\\d{5,5}\\/.+$', @last_provider_id);
+SELECT E'^\\d{5,5}\\/.+$', id FROM Provider WHERE type = 'epic old';
+
+INSERT INTO
+      Provider_Action_Junction(provider_id, action_id)
+SELECT id, 'landingpage' FROM Provider WHERE type = 'epic old';
+
+INSERT INTO
+      Provider_Action_Junction(provider_id, action_id)
+SELECT id, 'metadata' FROM Provider WHERE type = 'epic old';
+
+END $$;
