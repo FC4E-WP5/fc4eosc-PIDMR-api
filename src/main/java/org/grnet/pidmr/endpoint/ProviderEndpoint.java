@@ -105,7 +105,7 @@ public class ProviderEndpoint {
             description = "The PID to be validated.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("pid") @NotEmpty(message = "pid may not be empty.") String pid, @Parameter(name = "type", in = QUERY,
             description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) {
 
-        var validity = providerService.validation(pid, type);
+        var validity = providerService.validation(pid.trim(), type);
 
         return Response.ok().entity(validity).build();
     }
@@ -132,7 +132,7 @@ public class ProviderEndpoint {
     public Response identify(@Parameter(name = "text", in = QUERY, required = true, example = "ark:/", allowReserved = true,
             description = "Text to be checked for PID.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("text") @NotEmpty(message = "text may not be empty.") String text) {
 
-        var identification = providerService.identify(text);
+        var identification = providerService.identify(text.trim());
 
         return Response.ok().entity(identification).build();
     }
@@ -168,7 +168,7 @@ public class ProviderEndpoint {
     @GET
     @Path("/identify/batch")
     @Produces(value = MediaType.APPLICATION_JSON)
-    public Response resolveBatchPid(@Valid @NotNull(message = "The request body is empty.") PidIdentificationBatchRequest pidIdentificationBatchRequest){
+    public Response identifyBatchPid(@Valid @NotNull(message = "The request body is empty.") PidIdentificationBatchRequest pidIdentificationBatchRequest){
 
         if(pidIdentificationBatchRequest.data.size() > maxPidListSize){
 
@@ -179,7 +179,7 @@ public class ProviderEndpoint {
 
         pidIdentificationBatchRequest.data.forEach(entry->{
 
-            var identification = providerService.identify(entry);
+            var identification = providerService.identify(entry.trim());
 
             response.data.put(entry, identification);
 
