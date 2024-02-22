@@ -3,20 +3,28 @@
 --
 -- Description: Migration that introduces the urn:nbn:fi provider
 -- -------------------------------------------------
+DO $$
+
+DECLARE provider_id bigint;
+
+BEGIN
 
 INSERT INTO
-      Provider(type, name, description, metaresolver_id)
+      ManageableEntity(entity_type)
 VALUES
-      ('urn:nbn:fi','URN-NBN-FI.','The Finish URI in the urn:nbn: namespace.','HANDLER_MR');
+      ('Provider') returning id into provider_id;
 
-SET @last_provider_id = LAST_INSERT_ID();
+INSERT INTO
+      Provider(id, type, name, description, metaresolver_id)
+VALUES
+      (provider_id, 'urn:nbn:fi','URN-NBN-FI.','The Finish URI in the urn:nbn: namespace.','HANDLER_MR');
 
 INSERT INTO
       Regex(regex, provider_id)
-VALUES
-      ('^[U,u][R,r][N,n]:[N,n][B,b][N,n]:[F,f][I,i][a-z0-9()+,\\-.:=@;$_!*\'%\\/?#]+$', @last_provider_id);
+SELECT E'^[U,u][R,r][N,n]:[N,n][B,b][N,n]:[F,f][I,i][a-z0-9()+,\\-.:=@;$_!*\'%\\/?#]+$', id FROM Provider WHERE type = 'urn:nbn:fi';
 
 INSERT INTO
       Provider_Action_Junction(provider_id, action_id)
-VALUES
-      (@last_provider_id, 'landingpage');
+SELECT id, 'landingpage' FROM Provider WHERE type = 'urn:nbn:fi';
+
+END $$;

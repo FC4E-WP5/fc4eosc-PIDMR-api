@@ -27,7 +27,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Added
 
 -   [#45](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/45) - PIDMR-117 Batch request for resolution.
--   [#46](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/46) - PIDMR-118 Batch request for identify
+-   [#46](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/46) - PIDMR-118 Batch request for identify.
+-   [#47](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/47) - PIDMR-118 Connect pidmr with GRNET postgresql.
 
 ### Changed
 

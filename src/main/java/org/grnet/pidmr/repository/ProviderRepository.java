@@ -78,8 +78,7 @@ public class ProviderRepository implements Repository<Provider, Long> {
     public Optional<Regex> valid(String pid) {
 
         var em = Panache.getEntityManager();
-        var regex = em.createNativeQuery("SELECT r.* FROM Regex  r INNER JOIN Provider p on r.provider_id=p.id WHERE \""+pid+"\" RLIKE `regex` AND p.status = 1", Regex.class);
-
+        var regex = em.createNativeQuery("SELECT r.* FROM Regex r INNER JOIN Provider p on r.provider_id=p.id WHERE '" +pid+ "' ~ regex AND p.status = 1", Regex.class);
         return regex.getResultList().stream().findFirst();
     }
 
@@ -88,14 +87,9 @@ public class ProviderRepository implements Repository<Provider, Long> {
         var em = Panache.getEntityManager();
 
         var regex = em
-                .createNativeQuery("SELECT r.* FROM Regex r INNER JOIN Provider p on r.provider_id=p.id WHERE \""+pid+"\" RLIKE `regex` AND r.provider_id = :providerId AND p.status = 1", Regex.class)
+                .createNativeQuery("SELECT r.* FROM Regex r INNER JOIN Provider p on r.provider_id=p.id WHERE '" +pid+ "' ~ regex AND provider_id = :providerId AND p.status = 1", Regex.class)
                 .setParameter("providerId", provider.getId());
 
         return regex.getResultList().stream().findFirst();
-    }
-
-    public void updateValidationStatus(Long id, ProviderStatus status){
-
-        update("status = ?1  where id = ?2", status,  id);
     }
 }
