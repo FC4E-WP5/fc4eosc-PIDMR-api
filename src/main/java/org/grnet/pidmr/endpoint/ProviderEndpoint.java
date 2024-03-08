@@ -1,7 +1,26 @@
 package org.grnet.pidmr.endpoint;
 
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotAcceptableException;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
+import org.grnet.pidmr.dto.PidIdentificationBatchRequest;
+import org.grnet.pidmr.dto.PidIdentificationBatchResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.pagination.PageResource;
@@ -14,19 +33,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.pidmr.service.DatabaseProviderService;
 
-import javax.inject.Inject;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import java.util.List;
 
@@ -37,6 +43,9 @@ public class ProviderEndpoint {
 
     @Inject
     DatabaseProviderService providerService;
+
+    @ConfigProperty(name = "max.resolution.pid.list.size")
+    int maxPidListSize;
 
     @Tag(name = "Provider")
     @Operation(
@@ -61,7 +70,7 @@ public class ProviderEndpoint {
             description = "Indicates the page number. Page number must be between 1 and 100.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                           @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,  @Context UriInfo uriInfo) {
+                           @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
         return Response.ok().entity(providerService.pagination(page - 1, size, uriInfo)).build();
     }
@@ -96,7 +105,7 @@ public class ProviderEndpoint {
             description = "The PID to be validated.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("pid") @NotEmpty(message = "pid may not be empty.") String pid, @Parameter(name = "type", in = QUERY,
             description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) {
 
-        var validity = providerService.validation(pid, type);
+        var validity = providerService.validation(pid.trim(), type);
 
         return Response.ok().entity(validity).build();
     }
@@ -123,9 +132,60 @@ public class ProviderEndpoint {
     public Response identify(@Parameter(name = "text", in = QUERY, required = true, example = "ark:/", allowReserved = true,
             description = "Text to be checked for PID.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("text") @NotEmpty(message = "text may not be empty.") String text) {
 
-        var identification = providerService.identify(text);
+        var identification = providerService.identify(text.trim());
 
         return Response.ok().entity(identification).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Identify multiple PIDs.",
+            description = "Identify multiple PIDs.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A batch response containing multiple PID identification results.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PidIdentificationBatchResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "406",
+            description = "The pid is not supported.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/identify/batch")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response identifyBatchPid(@Valid @NotNull(message = "The request body is empty.") PidIdentificationBatchRequest pidIdentificationBatchRequest){
+
+        if(pidIdentificationBatchRequest.data.size() > maxPidListSize){
+
+            throw new NotAcceptableException(String.format("It looks like you've exceeded the limit on the number of process identifiers (PIDs) you can request for identification in a single query. Our system currently allows a maximum of %s PIDs per request", maxPidListSize));
+        }
+
+        var response = new PidIdentificationBatchResponse();
+
+        pidIdentificationBatchRequest.data.forEach(entry->{
+
+            var identification = providerService.identify(entry.trim());
+
+            response.data.put(entry, identification);
+
+        });
+
+        return Response.status(Response.Status.OK).entity(response).build();
     }
 
     @Tag(name = "Provider")

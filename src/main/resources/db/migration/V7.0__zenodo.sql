@@ -1,7 +1,7 @@
 -- ------------------------------------------------
--- Version: v10.0
+-- Version: v12.0
 --
--- Description: Migration that introduces the urn:nbn:de provider
+-- Description: Migration that introduces the zenodo provider
 -- -------------------------------------------------
 DO $$
 
@@ -17,22 +17,22 @@ VALUES
 INSERT INTO
       Provider(id, type, name, description, metaresolver_id)
 VALUES
-      (provider_id, 'urn:nbn:de','URN-NBN-DE.','The German URI in the urn:nbn: namespace.','HANDLER_MR');
+      (provider_id, '10.5281/zenodo','Zenodo.','Zenodo is a general-purpose open repository developed under the European OpenAIRE program and operated by CERN.','HANDLER_MR');
 
 INSERT INTO
       Regex(regex, provider_id)
-SELECT E'^[U,u][R,r][N,n]:[N,n][B,b][N,n]:[D,d][E,e][a-z0-9()+,\\-.:=@;$_!*\'%\\/?#]+$', id FROM Provider WHERE type = 'urn:nbn:de';
+SELECT E'^10.5281\\/zenodo\.([0-9]{7})$', id FROM Provider WHERE type = '10.5281/zenodo';
 
 INSERT INTO
       Provider_Action_Junction(provider_id, action_id)
-SELECT id, 'landingpage' FROM Provider WHERE type = 'urn:nbn:de';
+SELECT id, 'landingpage' FROM Provider WHERE type = '10.5281/zenodo';
 
 INSERT INTO
       Provider_Action_Junction(provider_id, action_id)
-SELECT id, 'metadata' FROM Provider WHERE type = 'urn:nbn:de';
+SELECT id, 'metadata' FROM Provider WHERE type = '10.5281/zenodo';
 
 INSERT INTO
       Provider_Action_Junction(provider_id, action_id)
-SELECT id, 'resource' FROM Provider WHERE type = 'urn:nbn:de';
+SELECT id, 'resource' FROM Provider WHERE type = '10.5281/zenodo';
 
 END $$;

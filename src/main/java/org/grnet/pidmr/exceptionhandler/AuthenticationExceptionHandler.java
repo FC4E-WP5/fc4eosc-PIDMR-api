@@ -1,12 +1,12 @@
 package org.grnet.pidmr.exceptionhandler;
 
 import io.quarkus.security.AuthenticationFailedException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.jboss.logging.Logger;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 
 @Provider
 public class AuthenticationExceptionHandler implements ExceptionMapper<AuthenticationFailedException> {

@@ -3,21 +3,32 @@
 --
 -- Description: Migration that introduces the ark provider
 -- -------------------------------------------------
+DO $$
+
+DECLARE provider_id bigint;
+
+BEGIN
 
 INSERT INTO
-      Provider(type, name, description, metaresolver_id)
+      ManageableEntity(entity_type)
 VALUES
-      ('ark','ARK alliance.','Archival Resource Keys (ARKs) serve as persistent identifiers, or stable, trusted references for information objects.','HANDLER_MR');
+      ('Provider') returning id into provider_id;
 
-SET @last_provider_id = LAST_INSERT_ID();
+INSERT INTO
+      Provider(id, type, name, description, metaresolver_id)
+VALUES
+      (provider_id, 'ark','ARK alliance.','Archival Resource Keys (ARKs) serve as persistent identifiers, or stable, trusted references for information objects.','HANDLER_MR');
 
 INSERT INTO
       Regex(regex, provider_id)
-VALUES
-      ('^(a|A)(r|R)(k|K):(?:\\/\\d{5,9})+\\/[a-zA-Z\\d]+(-[a-zA-Z\\d]+)*$', @last_provider_id);
+SELECT E'^(a|A)(r|R)(k|K):(?:\\/\\d{5,9})+\\/[a-zA-Z\\d]+(-[a-zA-Z\\d]+)*$', id FROM Provider WHERE type = 'ark';
 
 INSERT INTO
       Provider_Action_Junction(provider_id, action_id)
-VALUES
-      (@last_provider_id, 'landingpage'),
-      (@last_provider_id, 'metadata');
+SELECT id, 'landingpage' FROM Provider WHERE type = 'ark';
+
+INSERT INTO
+      Provider_Action_Junction(provider_id, action_id)
+SELECT id, 'metadata' FROM Provider WHERE type = 'ark';
+
+END $$;

@@ -1,5 +1,9 @@
 package org.grnet.pidmr.service;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.ws.rs.ServerErrorException;
 import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -7,10 +11,6 @@ import org.grnet.pidmr.entity.AbstractProvider;
 import io.quarkus.cache.CacheResult;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.ws.rs.ServerErrorException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,7 +47,6 @@ public class MetaresolverService implements MetaresolverServiceI {
 
 
     @SneakyThrows
-    @CacheResult(cacheName = "pidMode")
     public String resolve(AbstractProvider provider, String pid, String mode) {
 
         if(provider.directResolution() && mode.equals("metadata")){
@@ -80,6 +79,7 @@ public class MetaresolverService implements MetaresolverServiceI {
      * @param mode The display mode.
      * @return The Metaresolver URL, which resolves the PID.
      */
+    @CacheResult(cacheName = "pid-resolution")
     public String resolve(String pid, String mode) {
 
         var provider = providerService.getProviderByPid(pid, mode);

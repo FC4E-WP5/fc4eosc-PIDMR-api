@@ -3,6 +3,8 @@ package org.grnet.pidmr.repository;
 import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -14,10 +16,6 @@ import org.grnet.pidmr.pagination.Pageable;
 import org.grnet.pidmr.pagination.PageableImpl;
 import org.grnet.pidmr.util.RequestUserContext;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -80,8 +78,7 @@ public class ProviderRepository implements Repository<Provider, Long> {
     public Optional<Regex> valid(String pid) {
 
         var em = Panache.getEntityManager();
-        var regex = em.createNativeQuery("SELECT * FROM Regex WHERE \""+pid+"\" RLIKE `regex`", Regex.class);
-
+        var regex = em.createNativeQuery("SELECT r.* FROM Regex r INNER JOIN Provider p on r.provider_id=p.id WHERE '" +pid+ "' ~ regex AND p.status = 1", Regex.class);
         return regex.getResultList().stream().findFirst();
     }
 
@@ -90,14 +87,9 @@ public class ProviderRepository implements Repository<Provider, Long> {
         var em = Panache.getEntityManager();
 
         var regex = em
-                .createNativeQuery("SELECT * FROM Regex WHERE \""+pid+"\" RLIKE `regex` AND provider_id = :providerId", Regex.class)
+                .createNativeQuery("SELECT r.* FROM Regex r INNER JOIN Provider p on r.provider_id=p.id WHERE '" +pid+ "' ~ regex AND provider_id = :providerId AND p.status = 1", Regex.class)
                 .setParameter("providerId", provider.getId());
 
         return regex.getResultList().stream().findFirst();
-    }
-
-    public void updateValidationStatus(Long id, ProviderStatus status){
-
-        update("status = ?1  where id = ?2", status,  id);
     }
 }
