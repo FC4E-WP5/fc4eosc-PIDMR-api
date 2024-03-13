@@ -919,6 +919,7 @@
           {
             "name": "Update Provider Status",
             "ownerManagedAccess": false,
+            "displayName": "",
             "attributes": {},
             "_id": "7146514e-c9ef-4dfb-8622-8e9514c6c1e1",
             "uris": [
@@ -926,7 +927,7 @@
             ],
             "scopes": [
               {
-                "name": "update"
+                "name": "pidmr.provider.status.update"
               }
             ],
             "icon_uri": ""
@@ -964,7 +965,7 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Update Provider Status\"]",
-              "scopes": "[\"update\"]",
+              "scopes": "[\"pidmr.provider.status.update\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -996,25 +997,31 @@
         "scopes": [
           {
             "id": "4afca033-df0f-4deb-8d29-eeefcdb96bd4",
-            "name": "read",
+            "name": "pidmr.read",
             "iconUri": "",
             "displayName": "read"
           },
           {
             "id": "eff83577-2a19-4ab6-81d0-38dc30ff9084",
-            "name": "update",
+            "name": "pidmr.update",
             "iconUri": "",
             "displayName": "update"
           },
           {
+            "id": "efef8093-9c16-4764-9fc5-e67eab0bbbc6",
+            "name": "pidmr.provider.status.update",
+            "iconUri": "",
+            "displayName": "Update Provider Status"
+          },
+          {
             "id": "7b44be40-8316-4054-beb1-d80e02f879fe",
-            "name": "create",
+            "name": "pidmr.create",
             "iconUri": "",
             "displayName": "create"
           },
           {
             "id": "40613513-b0c3-4173-aa7c-a92a34e2fc89",
-            "name": "delete",
+            "name": "pidmr.delete",
             "iconUri": "",
             "displayName": "delete"
           }
