@@ -40,7 +40,7 @@ public class MetaResolverEndpoint {
     @Inject
     MetaresolverService metaresolverService;
 
-    @ConfigProperty(name = "max.resolution.pid.list.size")
+    @ConfigProperty(name = "api.pidmr.max.resolution.pid.list.size")
     int maxPidListSize;
 
     public MetaResolverEndpoint(MetaresolverService metaresolverService) {

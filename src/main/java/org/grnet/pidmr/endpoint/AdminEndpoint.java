@@ -62,7 +62,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         bearerFormat = "JWT")
 public class AdminEndpoint {
 
-    @ConfigProperty(name = "server.url")
+    @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
     @Inject
