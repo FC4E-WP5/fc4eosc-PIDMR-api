@@ -22,16 +22,16 @@ public class MetaresolverService implements MetaresolverServiceI {
     @ConfigProperty(name = "list.metaresolvers.file")
     String path;
 
-    @ConfigProperty(name = "proxy.resolve.mode.url")
+    @ConfigProperty(name = "api.pidmr.proxy.resolve.mode.url")
     String proxy;
 
-    @ConfigProperty(name = "proxy.resolve.mode.body.attribute")
+    @ConfigProperty(name = "api.pidmr.proxy.resolve.mode.body.attribute")
     String bodyAttribute;
 
-    @ConfigProperty(name = "proxy.resolve.mode.body.attribute.prefix")
+    @ConfigProperty(name = "api.pidmr.proxy.resolve.mode.body.attribute.prefix")
     String bodyAttributePrefix;
 
-    @ConfigProperty(name = "proxy.resolve.mode.url.append.param")
+    @ConfigProperty(name = "api.pidmr.proxy.resolve.mode.url.append.param")
     String appendParam;
 
     @Inject

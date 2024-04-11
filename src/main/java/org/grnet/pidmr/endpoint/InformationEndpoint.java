@@ -19,7 +19,7 @@ import org.grnet.pidmr.dto.VersionDto;
 @Path("v1")
 public class InformationEndpoint {
 
-    @ConfigProperty(name = "version")
+    @ConfigProperty(name = "api.pidmr.version")
     String version;
 
     @Tag(name = "Information")

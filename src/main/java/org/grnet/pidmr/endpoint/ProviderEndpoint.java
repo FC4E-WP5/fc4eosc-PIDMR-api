@@ -44,7 +44,7 @@ public class ProviderEndpoint {
     @Inject
     DatabaseProviderService providerService;
 
-    @ConfigProperty(name = "max.resolution.pid.list.size")
+    @ConfigProperty(name = "api.pidmr.max.identification.pid.list.size")
     int maxPidListSize;
 
     @Tag(name = "Provider")
