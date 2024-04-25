@@ -18,6 +18,7 @@ import lombok.Setter;
 import org.grnet.pidmr.entity.AbstractProvider;
 import org.grnet.pidmr.entity.database.converters.ProviderStatusAttributeConverter;
 import org.grnet.pidmr.enums.ProviderStatus;
+import org.grnet.pidmr.exception.ModeIsNotSupported;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -124,6 +125,16 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     @Override
     public boolean directResolution() {
         return isDirectResolution();
+    }
+
+    @Override
+    public void isModeSupported(String mode) {
+
+        getActions()
+                .stream()
+                .filter(action -> action.getMode().equals(mode))
+                .findAny()
+                .orElseThrow(() -> new ModeIsNotSupported(String.format("This mode {%s} is not supported.", mode)));
     }
 }
 

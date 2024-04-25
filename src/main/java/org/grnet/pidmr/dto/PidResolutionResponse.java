@@ -10,14 +10,6 @@ public class PidResolutionResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The PID that was resolved.",
-            example = "ark:/13030/tf5p30086k"
-    )
-    public String pid;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "The mode of the resolved PID, if applicable.",
             example = "metadata"
     )

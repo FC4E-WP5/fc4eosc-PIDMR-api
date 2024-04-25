@@ -28,7 +28,7 @@ public interface ProviderServiceI {
      */
     Validity valid(String pid, String type);
 
-    AbstractProvider getProviderByPid(String pid, String mode);
+    AbstractProvider getProviderByPid(String pid);
 
     /**
      * This method is responsible for paginating the available Providers.
