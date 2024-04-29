@@ -1,5 +1,6 @@
 package org.grnet.pidmr.dto;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -15,6 +16,7 @@ public class PidResolutionRequest {
             example = "ark:/13030/tf5p30086k"
     )
     @EqualsAndHashCode.Include
+    @NotEmpty(message = "pid may not be empty.")
     public String pid;
 
     @Schema(
@@ -24,5 +26,5 @@ public class PidResolutionRequest {
             example = "metadata"
     )
     @EqualsAndHashCode.Include
-    public String mode;
+    public String mode = "landingpage";
 }

@@ -1,10 +1,10 @@
 package org.grnet.pidmr;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.LocationDto;
 import org.grnet.pidmr.endpoint.MetaResolverEndpoint;
+import org.grnet.pidmr.exception.ModeIsNotSupported;
 import org.grnet.pidmr.service.MetaresolverService;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -93,7 +93,7 @@ public class MetaresolverEndpointTest {
     public void resolvePIDWithNotSupportedMode(){
 
         Exception exception = assertThrows(
-                BadRequestException.class,
+                ModeIsNotSupported.class,
                 () -> metaresolverService.resolve("ark:/67531/metapth346793", "resource"));
 
 
@@ -104,7 +104,7 @@ public class MetaresolverEndpointTest {
     public void resolvePIDWithNoModes(){
 
         Exception exception = assertThrows(
-                BadRequestException.class,
+                ModeIsNotSupported.class,
                 () -> metaresolverService.resolve("doi:10.1186/2041-1480-3-9", "resource"));
 
 

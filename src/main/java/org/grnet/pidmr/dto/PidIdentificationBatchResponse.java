@@ -10,8 +10,8 @@ import java.util.Map;
 public class PidIdentificationBatchResponse {
 
     @Schema(
-            type = SchemaType.ARRAY,
-            implementation = PidResolutionResponse.class,
+            type = SchemaType.OBJECT,
+            additionalProperties = Identification.class,
             description = "Each item in the list corresponds to the result of a single PID identification request in the batch."
     )
     public Map<String, Identification> data = new HashMap<>();

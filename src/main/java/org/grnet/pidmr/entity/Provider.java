@@ -2,6 +2,9 @@ package org.grnet.pidmr.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
+import org.grnet.pidmr.exception.ModeIsNotSupported;
+import org.grnet.pidmr.mapper.ProviderMapper;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,7 +13,7 @@ import java.util.Set;
  * Those objects are represented by the Provider class.
  */
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-public class Provider implements AbstractProvider{
+public class Provider implements AbstractProvider {
 
     @EqualsAndHashCode.Include
     @JsonProperty(value = "type", required = true)
@@ -40,6 +43,15 @@ public class Provider implements AbstractProvider{
         return false;
     }
 
+    @Override
+    public void isModeSupported(String mode) {
+
+        ProviderMapper.INSTANCE.actions(getActions())
+                .stream()
+                .filter(action -> action.mode.equals(mode))
+                .findAny()
+                .orElseThrow(() -> new ModeIsNotSupported(String.format("This mode {%s} is not supported.", mode)));
+    }
     public void setType(String type) {
         this.type = type;
     }

@@ -56,4 +56,5 @@ public interface AbstractProvider {
                     .build();
         }
     }
+    void isModeSupported(String mode);
 }
