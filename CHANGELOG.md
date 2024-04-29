@@ -24,6 +24,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 2.1.0 - 2024-04-29
+
+---
+
 ### Changed
 
 -   [#56](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/56) - PIDMR-152 Refactor Batch Resolution Process.
