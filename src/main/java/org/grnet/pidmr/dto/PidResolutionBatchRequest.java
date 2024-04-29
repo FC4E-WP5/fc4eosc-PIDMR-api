@@ -1,5 +1,6 @@
 package org.grnet.pidmr.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -18,5 +19,5 @@ public class PidResolutionBatchRequest {
             minItems = 1
     )
     @NotEmpty(message = "data should have at least one entry.")
-    public Set<PidResolutionRequest> data = new HashSet<>();
+    public Set<@Valid PidResolutionRequest> data = new HashSet<>();
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotSupportedException;
 import jakarta.ws.rs.core.UriInfo;
@@ -172,21 +171,14 @@ public class ProviderService implements ProviderServiceI {
         return validity;
     }
 
-    public Provider getProviderByPid(String pid, String mode){
+    @Override
+    public Provider getProviderByPid(String pid){
 
         var type = getPidType(pid);
 
         var candidateType = type.orElseThrow(()->new NotAcceptableException(String.format("%s doesn't belong to any of the available types.", pid)));
 
-        var provider = getProviderByType(candidateType);
-
-        ProviderMapper.INSTANCE.actions(provider.getActions())
-                .stream()
-                .filter(action->action.mode.equals(mode))
-                .findAny()
-                .orElseThrow(()->new BadRequestException(String.format("This mode {%s} is not supported.", mode)));
-
-        return provider;
+        return getProviderByType(candidateType);
     }
 
     public Map<String, Action> actionsToMap(){

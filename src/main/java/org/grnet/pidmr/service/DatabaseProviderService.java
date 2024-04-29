@@ -4,7 +4,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
@@ -81,19 +80,11 @@ public class DatabaseProviderService implements ProviderServiceI{
     }
 
     @Override
-    public Provider getProviderByPid(String pid, String mode) {
+    public Provider getProviderByPid(String pid) {
 
         var optional = providerRepository.valid(pid);
 
         var regex = optional.orElseThrow(()->new NotAcceptableException(String.format("%s doesn't belong to any of the available types.", pid)));
-
-        regex
-                .getProvider()
-                .getActions()
-                .stream()
-                .filter(action->action.getMode().equals(mode))
-                .findAny()
-                .orElseThrow(()->new BadRequestException(String.format("This mode {%s} is not supported.", mode)));
 
         return regex.getProvider();
     }
