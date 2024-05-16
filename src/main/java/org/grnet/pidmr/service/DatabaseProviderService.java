@@ -1,8 +1,12 @@
 package org.grnet.pidmr.service;
 
+import io.quarkus.hibernate.orm.panache.Panache;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.persistence.FlushModeType;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotFoundException;
@@ -12,10 +16,13 @@ import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
-import org.grnet.pidmr.dto.UpdateProviderDto;
+import org.grnet.pidmr.dto.ProviderV2Request;
+import org.grnet.pidmr.dto.UpdateProvider;
+import org.grnet.pidmr.dto.UpdateProviderV2;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.database.Action;
 import org.grnet.pidmr.entity.database.Provider;
+import org.grnet.pidmr.entity.database.ProviderActionJunction;
 import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
@@ -28,6 +35,7 @@ import org.grnet.pidmr.repository.RegexRepository;
 import org.grnet.pidmr.util.RequestUserContext;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -174,7 +182,7 @@ public class DatabaseProviderService implements ProviderServiceI{
         newProvider.setStatus(ProviderStatus.PENDING);
         request
                 .actions
-                .forEach(action->newProvider.addAction(actionRepository.findById(action)));
+                .forEach(action->newProvider.addAction(actionRepository.findById(action), null));
 
         request.
                 regexes
@@ -188,6 +196,43 @@ public class DatabaseProviderService implements ProviderServiceI{
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
     }
+
+    /**
+     * This method stores a new Provider in the database.
+     * @param request The Provider to be created.
+     * @return The created Provider.
+     * @throws
+     */
+    @Transactional
+    public ProviderDto createV2(ProviderV2Request request){
+
+        checkIfTypeExists(request.type);
+        checkIfActionsSupported(request.actions.stream().map(action->action.mode).collect(Collectors.toSet()));
+
+        var newProvider = new Provider();
+        newProvider.setName(request.name);
+        newProvider.setType(request.type);
+        newProvider.setDescription(request.description);
+        newProvider.setExample(request.example);
+        newProvider.setCreatedBy(requestUserContext.getVopersonID());
+        newProvider.setStatus(ProviderStatus.PENDING);
+        request
+                .actions
+                .forEach(action->newProvider.addAction(actionRepository.findById(action.mode), action.endpoint));
+
+        request.
+                regexes
+                .forEach(regex->{
+                    var regexp = new Regex();
+                    regexp.setRegex(regex);
+                    newProvider.addRegex(regexp);
+                });
+
+        providerRepository.persist(newProvider);
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
+    }
+
 
     /**
      * This method deletes from database a Provider by its ID.
@@ -229,7 +274,7 @@ public class DatabaseProviderService implements ProviderServiceI{
      */
     @ManageEntity(entityType = "Provider")
     @Transactional
-    public ProviderDto update(Long id, UpdateProviderDto request){
+    public ProviderDto update(Long id, UpdateProvider request){
 
         var provider = providerRepository.findById(id);
 
@@ -242,8 +287,74 @@ public class DatabaseProviderService implements ProviderServiceI{
             checkIfActionsSupported(request.actions);
 
             var actions = provider.getActions();
-            new ArrayList<>(actions).forEach(provider::removeAction);
-            request.actions.forEach(newAction-> provider.addAction(actionRepository.findById(newAction)));
+            var tuples = actions.stream().map(act-> Tuple.of(act.getAction(), act.getEndpoint())).collect(Collectors.toList());
+            new ArrayList<>(actions).forEach(action-> provider.removeAction(action.getAction()));
+            Panache.getEntityManager().flush();
+            request.actions.forEach(newAction-> {
+
+                var dbAction = actionRepository.findById(newAction);
+                var optional = tuples.stream().filter(tuple->tuple._1.equals(dbAction)).findFirst();
+                optional.ifPresentOrElse(tpl -> provider.addAction(dbAction, tpl._2), ()->provider.addAction(dbAction, null));
+            });
+        }
+
+        if(!request.regexes.isEmpty()){
+
+            var regexes = provider.getRegexes();
+            new ArrayList<>(regexes).forEach(provider::removeRegex);
+            request.
+                    regexes
+                    .forEach(regex->{
+                        var regexp = new Regex();
+                        regexp.setRegex(regex);
+                        provider.addRegex(regexp);
+                    });
+
+        }
+
+        if(StringUtils.isNotEmpty(request.name)){
+
+            provider.setName(request.name);
+        }
+
+        if(StringUtils.isNotEmpty(request.description)){
+
+            provider.setDescription(request.description);
+        }
+
+        if(StringUtils.isNotEmpty(request.example)){
+            provider.setExample(request.example);
+        }
+
+        provider.setStatus(ProviderStatus.PENDING);
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+    }
+
+    /**
+     * This method updates one or more attributes of a Provider.
+     * @param request The Provider attributes to be updated.
+     * @param id The Provider to be updated.
+     * @return The updated Provider.
+     */
+    @ManageEntity(entityType = "Provider")
+    @Transactional
+    public ProviderDto updateV2(Long id, UpdateProviderV2 request){
+
+        var provider = providerRepository.findById(id);
+
+        if(StringUtils.isNotEmpty(request.type)){
+
+            provider.setType(request.type);
+        }
+
+        if(!request.actions.isEmpty()){
+
+            checkIfActionsSupported(request.actions.stream().map(action->action.mode).collect(Collectors.toSet()));
+            var actions = provider.getActions();
+            new ArrayList<>(actions).forEach(action-> provider.removeAction(action.getAction()));
+            Panache.getEntityManager().flush();
+            request.actions.forEach(newAction-> provider.addAction(actionRepository.findById(newAction.mode), newAction.endpoint));
         }
 
         if(!request.regexes.isEmpty()){

@@ -22,6 +22,7 @@ import org.grnet.pidmr.exception.ModeIsNotSupported;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -78,17 +79,13 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     @NotEmpty
     private List<Regex> regexes = new ArrayList<>();
 
-    @ManyToMany(fetch= FetchType.EAGER,
-            cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE
-    })
-    @JoinTable(name = "Provider_Action_Junction",
-            joinColumns = @JoinColumn(name = "provider_id"),
-            inverseJoinColumns = @JoinColumn(name = "action_id")
+    @OneToMany(
+            mappedBy = "provider",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
     )
-    @NotEmpty
-    private Set<Action> actions = new HashSet<>();
+    private Set<ProviderActionJunction> actions = new HashSet<>();
 
     @Column(name = "direct_resolution")
     @NotNull
@@ -101,14 +98,25 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     @NotNull
     private String example;
 
-    public void addAction(Action action) {
-        actions.add(action);
-        action.getProviders().add(this);
+    public void addAction(Action action, String endpoint) {
+        var providerAction = new ProviderActionJunction(this, action, endpoint);
+        actions.add(providerAction);
+        action.getProviders().add(providerAction);
     }
 
     public void removeAction(Action action) {
-        actions.remove(action);
-        action.getProviders().remove(this);
+        for (Iterator<ProviderActionJunction> iterator = actions.iterator();
+             iterator.hasNext(); ) {
+            var providerAction = iterator.next();
+
+            if (providerAction.getProvider().equals(this) &&
+                    providerAction.getAction().equals(action)) {
+                iterator.remove();
+                providerAction.getAction().getProviders().remove(providerAction);
+                providerAction.setProvider(null);
+                providerAction.setAction(null);
+            }
+        }
     }
 
     public void addRegex(Regex regex) {
@@ -132,7 +140,7 @@ public class Provider extends ManageableEntity implements AbstractProvider {
 
         getActions()
                 .stream()
-                .filter(action -> action.getMode().equals(mode))
+                .filter(action -> action.getAction().getMode().equals(mode))
                 .findAny()
                 .orElseThrow(() -> new ModeIsNotSupported(String.format("This mode {%s} is not supported.", mode)));
     }

@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Schema(name="UpdateProvider", description="An object represents a request for updating a Provider.")
-public class UpdateProviderDto {
+public class UpdateProvider {
 
     @Schema(
             type = SchemaType.STRING,

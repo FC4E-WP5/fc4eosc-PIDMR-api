@@ -1,11 +1,15 @@
 package org.grnet.pidmr.entity.database;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,6 +20,8 @@ import java.util.Set;
  */
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Getter
+@Setter
 public class Action {
 
     /**
@@ -39,38 +45,10 @@ public class Action {
     @NotNull
     private String name;
 
-    @ManyToMany(mappedBy = "actions")
-    private Set<Provider> providers = new HashSet<>();
-
-    public Set<Provider> getProviders() {
-        return providers;
-    }
-
-    public void setProviders(Set<Provider> providers) {
-        this.providers = providers;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getMode() {
-        return mode;
-    }
-
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    @OneToMany(
+            mappedBy = "action",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<ProviderActionJunction> providers = new HashSet<>();
 }

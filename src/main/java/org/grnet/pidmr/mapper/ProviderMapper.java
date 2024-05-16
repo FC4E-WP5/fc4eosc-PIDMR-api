@@ -5,6 +5,7 @@ import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.ResolutionModeDto;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.entity.Provider;
+import org.grnet.pidmr.entity.database.ProviderActionJunction;
 import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.service.ProviderService;
 import org.mapstruct.IterableMapping;
@@ -37,6 +38,7 @@ public interface ProviderMapper {
 
     @Named("databaseProviderToDto")
     @Mapping(source = "regexes", target = "regexes", qualifiedByName = "database-regexes")
+    @Mapping(source = "actions", target = "actions", qualifiedByName = "database-actions")
     ProviderDto databaseProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
 
     @IterableMapping(qualifiedByName = "databaseProviderToDto")
@@ -47,8 +49,26 @@ public interface ProviderMapper {
 
     @Named("databaseAdminProviderToDto")
     @Mapping(source = "regexes", target = "regexes", qualifiedByName = "database-regexes")
+    @Mapping(source = "actions", target = "actions", qualifiedByName = "database-actions")
     @Mapping(source = "createdBy", target = "userId")
     AdminProviderDto databaseAdminProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
+
+    @Named("database-actions")
+    default Set<ResolutionModeDto> databaseActions(Set<ProviderActionJunction> actions) {
+
+        return actions
+                .stream()
+                .map(action->{
+
+                    var mode = new ResolutionModeDto();
+                    mode.mode = action.getAction().getMode();
+                    mode.name = action.getAction().getName();
+                    mode.endpoint = action.getEndpoint();
+
+                    return mode;
+                })
+                .collect(Collectors.toSet());
+    }
 
     @Named("database-regexes")
     default Set<String> databaseRegexes(List<Regex> regexes) {

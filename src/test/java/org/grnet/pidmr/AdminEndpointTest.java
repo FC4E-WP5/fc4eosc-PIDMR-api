@@ -8,7 +8,7 @@ import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
-import org.grnet.pidmr.dto.UpdateProviderDto;
+import org.grnet.pidmr.dto.UpdateProvider;
 import org.grnet.pidmr.dto.UpdateProviderStatus;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.endpoint.AdminEndpoint;
@@ -389,7 +389,7 @@ public class AdminEndpointTest extends KeycloakTest{
                 .extract()
                 .as(ProviderDto.class);
 
-        var updateRequest = new UpdateProviderDto();
+        var updateRequest = new UpdateProvider();
         updateRequest.name = "Update Test Provider.";
         updateRequest.type = "test-update-provider";
         updateRequest.description = "Update Test Provider.";
@@ -440,7 +440,7 @@ public class AdminEndpointTest extends KeycloakTest{
                 .extract()
                 .as(ProviderDto.class);
 
-        var updateRequest = new UpdateProviderDto();
+        var updateRequest = new UpdateProvider();
         updateRequest.regexes = Set.of("this is text");
         updateRequest.actions = Set.of("metadata");
 
@@ -486,7 +486,7 @@ public class AdminEndpointTest extends KeycloakTest{
         var updateForbidden = given()
                 .auth()
                 .oauth2(getAccessToken("bob"))
-                .body(new UpdateProviderDto())
+                .body(new UpdateProvider())
                 .contentType(ContentType.JSON)
                 .patch("/providers/{id}", 3)
                 .then()
@@ -551,7 +551,7 @@ public class AdminEndpointTest extends KeycloakTest{
         var updateForbidden = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .body(new UpdateProviderDto())
+                .body(new UpdateProvider())
                 .contentType(ContentType.JSON)
                 .patch("/providers/{id}", provider.id)
                 .then()

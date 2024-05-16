@@ -906,9 +906,20 @@
             "icon_uri": ""
           },
           {
+            "name": "Admin Provider Resource v2",
+            "ownerManagedAccess": false,
+            "displayName": "Admin Provider Resource v2",
+            "attributes": {},
+            "_id": "6d185d85-2f57-4bce-b5d9-40c32718b2e0",
+            "uris": [
+              "/v2/admin/providers/*"
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Admin Provider Resource",
             "ownerManagedAccess": false,
-            "displayName": "Read Assessment Objects by Actor",
+            "displayName": "Admin Provider Resource",
             "attributes": {},
             "_id": "9db7df46-e3db-4eb3-bfbf-486404496be0",
             "uris": [
@@ -967,6 +978,18 @@
               "resources": "[\"Update Provider Status\"]",
               "scopes": "[\"pidmr.provider.status.update\"]",
               "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "fa7c2c75-04f4-4ae6-a965-c40cb4bfe75e",
+            "name": "Admin Provider v2 Permissions",
+            "description": "Admin Provider v2 Permissions",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Admin Provider Resource v2\"]",
+              "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
             }
           },
           {
