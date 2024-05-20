@@ -7,8 +7,6 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotEmpty;
@@ -97,6 +95,9 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     @Column
     @NotNull
     private String example;
+
+    @Column(name = "relies_on_dois")
+    private boolean reliesOnDois;
 
     public void addAction(Action action, String endpoint) {
         var providerAction = new ProviderActionJunction(this, action, endpoint);

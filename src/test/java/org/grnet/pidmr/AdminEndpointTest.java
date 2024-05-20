@@ -7,8 +7,8 @@ import jakarta.inject.Inject;
 import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
-import org.grnet.pidmr.dto.ProviderRequest;
-import org.grnet.pidmr.dto.UpdateProvider;
+import org.grnet.pidmr.dto.ProviderRequestV1;
+import org.grnet.pidmr.dto.UpdateProviderV1;
 import org.grnet.pidmr.dto.UpdateProviderStatus;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.endpoint.AdminEndpoint;
@@ -34,7 +34,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void createProviderNotValidAction(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-not-valid";
         request.description = "Test Provider.";
@@ -60,7 +60,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void createProvider(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-create-provider";
         request.description = "Test Provider.";
@@ -88,7 +88,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void createProviderExists(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-exist-provider";
         request.description = "Test Provider.";
@@ -128,7 +128,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void createProviderWithRegexWithoutApproving(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-regex-provider-without-approving";
         request.description = "Test Provider.";
@@ -168,7 +168,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void createProviderWithRegexAfterApproving(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-regex-provider-with-approving";
         request.description = "Test Provider.";
@@ -223,7 +223,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void createProviderWithoutActions(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-regex-provider";
         request.description = "Test Provider.";
@@ -249,7 +249,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void createProviderWithoutRegexes(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-regex-provider";
         request.description = "Test Provider.";
@@ -275,7 +275,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void getProvider(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-get-provider";
         request.description = "Test Provider.";
@@ -332,7 +332,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void deleteProvider(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-delete-provider";
         request.description = "Test Provider.";
@@ -369,7 +369,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void updateBasicProviderInformation(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-change-basic-provider";
         request.description = "Test Provider.";
@@ -389,7 +389,7 @@ public class AdminEndpointTest extends KeycloakTest{
                 .extract()
                 .as(ProviderDto.class);
 
-        var updateRequest = new UpdateProvider();
+        var updateRequest = new UpdateProviderV1();
         updateRequest.name = "Update Test Provider.";
         updateRequest.type = "test-update-provider";
         updateRequest.description = "Update Test Provider.";
@@ -420,7 +420,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void updateProviderRegexesAndActions(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-change-regex-action-provider";
         request.description = "Test Provider.";
@@ -440,7 +440,7 @@ public class AdminEndpointTest extends KeycloakTest{
                 .extract()
                 .as(ProviderDto.class);
 
-        var updateRequest = new UpdateProvider();
+        var updateRequest = new UpdateProviderV1();
         updateRequest.regexes = Set.of("this is text");
         updateRequest.actions = Set.of("metadata");
 
@@ -472,7 +472,7 @@ public class AdminEndpointTest extends KeycloakTest{
         var createForbidden = given()
                 .auth()
                 .oauth2(getAccessToken("bob"))
-                .body(new ProviderRequest())
+                .body(new ProviderRequestV1())
                 .contentType(ContentType.JSON)
                 .post("/providers")
                 .then()
@@ -486,7 +486,7 @@ public class AdminEndpointTest extends KeycloakTest{
         var updateForbidden = given()
                 .auth()
                 .oauth2(getAccessToken("bob"))
-                .body(new UpdateProvider())
+                .body(new UpdateProviderV1())
                 .contentType(ContentType.JSON)
                 .patch("/providers/{id}", 3)
                 .then()
@@ -527,7 +527,7 @@ public class AdminEndpointTest extends KeycloakTest{
     @Test
     public void providerForbiddenPermissionsOnEntity(){
 
-        var request = new ProviderRequest();
+        var request = new ProviderRequestV1();
         request.name = "Test Provider.";
         request.type = "test-change-regex-action-provider";
         request.description = "Test Provider.";
@@ -551,7 +551,7 @@ public class AdminEndpointTest extends KeycloakTest{
         var updateForbidden = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .body(new UpdateProvider())
+                .body(new UpdateProviderV1())
                 .contentType(ContentType.JSON)
                 .patch("/providers/{id}", provider.id)
                 .then()

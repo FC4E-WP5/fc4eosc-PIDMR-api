@@ -7,7 +7,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import java.util.HashSet;
 import java.util.Set;
 
-@Schema(name="UpdateProvider", description="An object represents a request for updating a Provider.")
 public class UpdateProvider {
 
     @Schema(
@@ -40,15 +39,6 @@ public class UpdateProvider {
     @Schema(
             type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "The resolution modes supported by Provider.",
-            example = "[\"resource\", \"metadata\"]"
-    )
-    @JsonProperty("resolution_modes")
-    public Set<String> actions = new HashSet<>();
-
-    @Schema(
-            type = SchemaType.ARRAY,
-            implementation = String.class,
             description = "The regexes supported by Provider.",
             example = "[\"^(a|A)(r|R)(k|K):(?:/d{5,9})+/[a-zA-Zd]+(-[a-zA-Zd]+)*$.\"]"
     )
@@ -63,4 +53,14 @@ public class UpdateProvider {
     )
     @JsonProperty("example")
     public String example;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicate whether a provider relies on DOIs.",
+            example = "true",
+            defaultValue = "false"
+    )
+    @JsonProperty("relies_on_dois")
+    public boolean reliesOnDois;
 }

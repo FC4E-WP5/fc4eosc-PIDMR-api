@@ -7,7 +7,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.Set;
 
-@Schema(name="ProviderRequest", description="Request to create/modify a Provider.")
 public class ProviderRequest {
 
     @Schema(
@@ -51,16 +50,6 @@ public class ProviderRequest {
     public Set<String> regexes;
 
     @Schema(
-            type = SchemaType.ARRAY,
-            implementation = String.class,
-            description = "The resolution modes supported by Provider. The available resolution modes are : landingpage, metadata, resource.",
-            example = "[\"resource\", \"metadata\"]"
-    )
-    @JsonProperty("resolution_modes")
-    @NotEmpty(message = "resolution_modes should have at least one entry.")
-    public Set<String> actions;
-
-    @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
             description = "A PID example.",
@@ -70,4 +59,13 @@ public class ProviderRequest {
     @NotEmpty(message = "example may not be empty.")
     public String example;
 
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicate whether a provider relies on DOIs.",
+            example = "true",
+            defaultValue = "false"
+    )
+    @JsonProperty("relies_on_dois")
+    public boolean reliesOnDois;
 }

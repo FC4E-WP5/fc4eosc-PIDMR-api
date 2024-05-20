@@ -36,8 +36,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
-import org.grnet.pidmr.dto.ProviderRequest;
-import org.grnet.pidmr.dto.UpdateProvider;
+import org.grnet.pidmr.dto.ProviderRequestV1;
+import org.grnet.pidmr.dto.UpdateProviderV1;
 import org.grnet.pidmr.dto.UpdateProviderStatus;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
@@ -118,7 +118,7 @@ public class AdminEndpoint {
     @POST
     @Path("/providers")
     @Produces(value = MediaType.APPLICATION_JSON)
-    public Response create(@Valid @NotNull(message = "The request body is empty.") ProviderRequest request, @Context UriInfo uriInfo) {
+    public Response create(@Valid @NotNull(message = "The request body is empty.") ProviderRequestV1 request, @Context UriInfo uriInfo) {
 
         var response = providerService.create(request);
 
@@ -295,7 +295,7 @@ public class AdminEndpoint {
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
                            @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id:") Long id,
-                           @Valid @NotNull(message = "The request body is empty.") UpdateProvider request) {
+                           @Valid @NotNull(message = "The request body is empty.") UpdateProviderV1 request) {
 
         ProviderDto response = null;
         try {
