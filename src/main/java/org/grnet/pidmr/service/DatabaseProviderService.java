@@ -2,11 +2,9 @@ package org.grnet.pidmr.service;
 
 import io.quarkus.hibernate.orm.panache.Panache;
 import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.persistence.FlushModeType;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotFoundException;
@@ -16,13 +14,14 @@ import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
-import org.grnet.pidmr.dto.ProviderV2Request;
+import org.grnet.pidmr.dto.ProviderRequestV1;
+import org.grnet.pidmr.dto.ProviderRequestV2;
 import org.grnet.pidmr.dto.UpdateProvider;
+import org.grnet.pidmr.dto.UpdateProviderV1;
 import org.grnet.pidmr.dto.UpdateProviderV2;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.database.Action;
 import org.grnet.pidmr.entity.database.Provider;
-import org.grnet.pidmr.entity.database.ProviderActionJunction;
 import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
@@ -35,7 +34,6 @@ import org.grnet.pidmr.repository.RegexRepository;
 import org.grnet.pidmr.util.RequestUserContext;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -161,17 +159,9 @@ public class DatabaseProviderService implements ProviderServiceI{
         return identification;
     }
 
-    /**
-     * This method stores a new Provider in the database.
-     * @param request The Provider to be created.
-     * @return The created Provider.
-     * @throws
-     */
-    @Transactional
-    public ProviderDto create(ProviderRequest request){
+    private Provider setProviderForCreation(ProviderRequest request){
 
         checkIfTypeExists(request.type);
-        checkIfActionsSupported(request.actions);
 
         var newProvider = new Provider();
         newProvider.setName(request.name);
@@ -180,6 +170,23 @@ public class DatabaseProviderService implements ProviderServiceI{
         newProvider.setExample(request.example);
         newProvider.setCreatedBy(requestUserContext.getVopersonID());
         newProvider.setStatus(ProviderStatus.PENDING);
+        newProvider.setReliesOnDois(request.reliesOnDois);
+        return newProvider;
+    }
+
+    /**
+     * This method stores a new Provider in the database.
+     * @param request The Provider to be created.
+     * @return The created Provider.
+     * @throws
+     */
+    @Transactional
+    public ProviderDto create(ProviderRequestV1 request){
+
+        checkIfActionsSupported(request.actions);
+
+        var newProvider = setProviderForCreation(request);
+
         request
                 .actions
                 .forEach(action->newProvider.addAction(actionRepository.findById(action), null));
@@ -204,18 +211,12 @@ public class DatabaseProviderService implements ProviderServiceI{
      * @throws
      */
     @Transactional
-    public ProviderDto createV2(ProviderV2Request request){
+    public ProviderDto createV2(ProviderRequestV2 request){
 
-        checkIfTypeExists(request.type);
         checkIfActionsSupported(request.actions.stream().map(action->action.mode).collect(Collectors.toSet()));
 
-        var newProvider = new Provider();
-        newProvider.setName(request.name);
-        newProvider.setType(request.type);
-        newProvider.setDescription(request.description);
-        newProvider.setExample(request.example);
-        newProvider.setCreatedBy(requestUserContext.getVopersonID());
-        newProvider.setStatus(ProviderStatus.PENDING);
+        var newProvider = setProviderForCreation(request);
+
         request
                 .actions
                 .forEach(action->newProvider.addAction(actionRepository.findById(action.mode), action.endpoint));
@@ -266,6 +267,50 @@ public class DatabaseProviderService implements ProviderServiceI{
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }
 
+    private Provider setProviderForUpdating(Long id, UpdateProvider request){
+
+        var provider = providerRepository.findById(id);
+
+        if(StringUtils.isNotEmpty(request.type)){
+
+            provider.setType(request.type);
+        }
+
+        if(!request.regexes.isEmpty()){
+
+            var regexes = provider.getRegexes();
+            new ArrayList<>(regexes).forEach(provider::removeRegex);
+            request.
+                    regexes
+                    .forEach(regex->{
+                        var regexp = new Regex();
+                        regexp.setRegex(regex);
+                        provider.addRegex(regexp);
+                    });
+
+        }
+
+        if(StringUtils.isNotEmpty(request.name)){
+
+            provider.setName(request.name);
+        }
+
+        if(StringUtils.isNotEmpty(request.description)){
+
+            provider.setDescription(request.description);
+        }
+
+        if(StringUtils.isNotEmpty(request.example)){
+            provider.setExample(request.example);
+        }
+
+        provider.setReliesOnDois(request.reliesOnDois);
+
+        provider.setStatus(ProviderStatus.PENDING);
+
+        return provider;
+    }
+
     /**
      * This method updates one or more attributes of a Provider.
      * @param request The Provider attributes to be updated.
@@ -274,14 +319,9 @@ public class DatabaseProviderService implements ProviderServiceI{
      */
     @ManageEntity(entityType = "Provider")
     @Transactional
-    public ProviderDto update(Long id, UpdateProvider request){
+    public ProviderDto update(Long id, UpdateProviderV1 request){
 
-        var provider = providerRepository.findById(id);
-
-        if(StringUtils.isNotEmpty(request.type)){
-
-            provider.setType(request.type);
-        }
+        var provider = setProviderForUpdating(id, request);
 
         if(!request.actions.isEmpty()){
             checkIfActionsSupported(request.actions);
@@ -298,36 +338,6 @@ public class DatabaseProviderService implements ProviderServiceI{
             });
         }
 
-        if(!request.regexes.isEmpty()){
-
-            var regexes = provider.getRegexes();
-            new ArrayList<>(regexes).forEach(provider::removeRegex);
-            request.
-                    regexes
-                    .forEach(regex->{
-                        var regexp = new Regex();
-                        regexp.setRegex(regex);
-                        provider.addRegex(regexp);
-                    });
-
-        }
-
-        if(StringUtils.isNotEmpty(request.name)){
-
-            provider.setName(request.name);
-        }
-
-        if(StringUtils.isNotEmpty(request.description)){
-
-            provider.setDescription(request.description);
-        }
-
-        if(StringUtils.isNotEmpty(request.example)){
-            provider.setExample(request.example);
-        }
-
-        provider.setStatus(ProviderStatus.PENDING);
-
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }
 
@@ -341,12 +351,7 @@ public class DatabaseProviderService implements ProviderServiceI{
     @Transactional
     public ProviderDto updateV2(Long id, UpdateProviderV2 request){
 
-        var provider = providerRepository.findById(id);
-
-        if(StringUtils.isNotEmpty(request.type)){
-
-            provider.setType(request.type);
-        }
+        var provider = setProviderForUpdating(id, request);
 
         if(!request.actions.isEmpty()){
 
@@ -357,35 +362,6 @@ public class DatabaseProviderService implements ProviderServiceI{
             request.actions.forEach(newAction-> provider.addAction(actionRepository.findById(newAction.mode), newAction.endpoint));
         }
 
-        if(!request.regexes.isEmpty()){
-
-            var regexes = provider.getRegexes();
-            new ArrayList<>(regexes).forEach(provider::removeRegex);
-            request.
-                    regexes
-                    .forEach(regex->{
-                        var regexp = new Regex();
-                        regexp.setRegex(regex);
-                        provider.addRegex(regexp);
-                    });
-
-        }
-
-        if(StringUtils.isNotEmpty(request.name)){
-
-            provider.setName(request.name);
-        }
-
-        if(StringUtils.isNotEmpty(request.description)){
-
-            provider.setDescription(request.description);
-        }
-
-        if(StringUtils.isNotEmpty(request.example)){
-            provider.setExample(request.example);
-        }
-
-        provider.setStatus(ProviderStatus.PENDING);
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }

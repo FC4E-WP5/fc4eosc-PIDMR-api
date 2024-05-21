@@ -28,7 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.ProviderDto;
-import org.grnet.pidmr.dto.ProviderV2Request;
+import org.grnet.pidmr.dto.ProviderRequestV2;
 import org.grnet.pidmr.dto.UpdateProviderV2;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.repository.ProviderRepository;
@@ -104,7 +104,7 @@ public class AdminV2Endpoint {
     @POST
     @Path("/providers")
     @Produces(value = MediaType.APPLICATION_JSON)
-    public Response create(@Valid @NotNull(message = "The request body is empty.") ProviderV2Request request, @Context UriInfo uriInfo) {
+    public Response create(@Valid @NotNull(message = "The request body is empty.") ProviderRequestV2 request, @Context UriInfo uriInfo) {
 
         var response = providerService.createV2(request);
 
