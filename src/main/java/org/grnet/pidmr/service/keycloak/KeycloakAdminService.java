@@ -1,5 +1,6 @@
 package org.grnet.pidmr.service.keycloak;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 /**
  * The KeycloakAdminService class provides methods to connect and interact with the Keycloak admin API.
  */
+@ApplicationScoped
 public class KeycloakAdminService {
 
     private static final Logger LOG = Logger.getLogger(KeycloakAdminService.class);
