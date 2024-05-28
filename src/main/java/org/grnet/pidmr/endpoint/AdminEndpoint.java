@@ -43,7 +43,9 @@ import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ProviderRepository;
+import org.grnet.pidmr.repository.RoleChangeRequestsRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
+import org.grnet.pidmr.service.UserService;
 import org.grnet.pidmr.util.ServiceUriInfo;
 import org.grnet.pidmr.validator.constraints.NotFoundEntity;
 import org.hibernate.exception.ConstraintViolationException;
@@ -67,6 +69,9 @@ public class AdminEndpoint {
 
     @Inject
     DatabaseProviderService providerService;
+
+    @Inject
+    UserService userService;
 
     @Tag(name = "Admin")
     @Operation(
@@ -414,6 +419,66 @@ public class AdminEndpoint {
                                                 @Valid @NotNull(message = "The request body is empty.") UpdateProviderStatus updateProviderStatus) {
 
         var response  = providerService.updateProviderStatus(id, ProviderStatus.valueOf(updateProviderStatus.status));
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Approve a promotion request.",
+            description = "Change the status of a promotion request to \"APPROVE\" and assign the corresponding role to the user in Keycloak.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Promotion request approved and role assigned to user.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Promotion request not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/promotions/{id}/approve")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updatePromotionRequestStatus(@Parameter(
+            description = "The ID of the promotion request.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                              @PathParam("id") @Valid @NotFoundEntity(repository = RoleChangeRequestsRepository.class, message = "There is no Promotion Request with the following id :") Long id) {
+
+        userService.approvePromotionRequest(id);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Promotion request approved and role assigned to user.";
 
         return Response.ok().entity(response).build();
     }
