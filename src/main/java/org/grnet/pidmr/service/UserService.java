@@ -62,4 +62,15 @@ public class UserService {
 
         roleChangeRequestsRepository.persist(roleChangeRequest);
     }
+
+    @Transactional
+    public void approvePromotionRequest(Long id){
+
+        var request = roleChangeRequestsRepository.findById(id);
+
+        request.setStatus(PromotionRequestStatus.APPROVED);
+        request.setUpdatedOn(Timestamp.from(Instant.now()));
+        request.setUpdatedBy(requestUserContext.getVopersonID());
+        keycloakAdminService.assignRoles(request.getUserId(), List.of(request.getRole()));
+    }
 }

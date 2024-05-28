@@ -891,7 +891,7 @@
         "offline_access",
         "microprofile-jwt"
       ],
-      "authorizationSettings":{
+      "authorizationSettings": {
         "allowRemoteResourceManagement": true,
         "policyEnforcementMode": "ENFORCING",
         "resources": [
@@ -913,6 +913,17 @@
             "_id": "6d185d85-2f57-4bce-b5d9-40c32718b2e0",
             "uris": [
               "/v2/admin/providers/*"
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Admin User Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Admin User Resource",
+            "attributes": {},
+            "_id": "e415a1e6-78a1-4118-bbb4-ee756ac44c39",
+            "uris": [
+              "/v1/admin/users/*"
             ],
             "icon_uri": ""
           },
@@ -993,6 +1004,18 @@
             }
           },
           {
+            "id": "29ff4a5f-e773-4c51-87ae-719cc12acf2c",
+            "name": "Admin User Permissions",
+            "description": "",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Admin User Resource\"]",
+              "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
             "id": "022b0f30-8686-4f09-931e-ef3643f527b0",
             "name": "Admin Provider Permissions",
             "description": "",
@@ -1001,18 +1024,6 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Admin Provider Resource\"]",
-              "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
-            }
-          },
-          {
-            "id": "2e23cb45-3d12-48a7-bf84-3a7ddda254b5",
-            "name": "User Permissions",
-            "description": "",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"User Resource Permission\"]",
               "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
             }
           }
