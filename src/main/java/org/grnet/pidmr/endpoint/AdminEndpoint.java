@@ -34,7 +34,9 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.pidmr.dto.AdminProviderDto;
+import org.grnet.pidmr.dto.DenyAccess;
 import org.grnet.pidmr.dto.InformativeResponse;
+import org.grnet.pidmr.dto.PermitAccess;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequestV1;
 import org.grnet.pidmr.dto.UpdateProviderV1;
@@ -481,6 +483,106 @@ public class AdminEndpoint {
         response.message = "Promotion request approved and role assigned to user.";
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Restrict a user's access.",
+            description = "Calling this endpoint results in the specified user being denied access to the PIDMR API.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/deny-access")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response denyAccess(@Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
+
+        userService.hasUserExecutedPromotionRequest(denyAccess.userId);
+        userService.addDenyAccessRole(denyAccess.userId, denyAccess.reason);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "deny_access role added successfully to the user. The user is now denied access to the API.";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Allow Access to previously banned user.",
+            description = "Executing this endpoint allows a user who has been previously banned to access the PIDMR Service again.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/permit-access")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response permitAccess(@Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
+
+        userService.hasUserExecutedPromotionRequest(permitAccess.userId);
+        userService.removeDenyAccessRole(permitAccess.userId, permitAccess.reason);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "deny_access role removed successfully from the user. The user is now allowed access to the API.";
+
+        return Response.ok().entity(informativeResponse).build();
     }
 
     public static class PageableAdminProvider extends PageResource<AdminProviderDto> {

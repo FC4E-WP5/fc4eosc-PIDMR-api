@@ -31,8 +31,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   [#61](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/61) - PIDMR-160 Implement Communication with Keycloak Admin for User Role Assignment.
 -   [#62](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/62) - PIDMR-159 Create an Endpoint to Promote User to Any Role.
 -   [#63](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/63) - PIDMR-161 Implement Admin Endpoint for Promotion Request Approval.
-
-
+-   [#64](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/64) - PIDMR-157 Create New Authentication Flow in Keycloak.
 
 ## 2.1.0 - 2024-04-29
 
