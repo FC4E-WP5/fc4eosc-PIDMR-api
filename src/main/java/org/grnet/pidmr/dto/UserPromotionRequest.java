@@ -2,14 +2,12 @@ package org.grnet.pidmr.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 
 
-@Schema(name = "RoleChangeRequest", description = "This object represents the user's Role Change request.")
+@Schema(name = "UserPromotionRequest", description = "This object represents the user's Role Change request.")
 public class UserPromotionRequest {
 
     @Schema(
