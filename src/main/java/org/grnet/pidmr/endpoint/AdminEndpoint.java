@@ -7,17 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.ServerErrorException;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -33,19 +23,13 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.grnet.pidmr.dto.AdminProviderDto;
-import org.grnet.pidmr.dto.DenyAccess;
-import org.grnet.pidmr.dto.InformativeResponse;
-import org.grnet.pidmr.dto.PermitAccess;
-import org.grnet.pidmr.dto.ProviderDto;
-import org.grnet.pidmr.dto.ProviderRequestV1;
-import org.grnet.pidmr.dto.UpdateProviderV1;
-import org.grnet.pidmr.dto.UpdateProviderStatus;
+import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.repository.RoleChangeRequestsRepository;
+import org.grnet.pidmr.service.AdminService;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.grnet.pidmr.service.UserService;
 import org.grnet.pidmr.util.ServiceUriInfo;
@@ -74,6 +58,13 @@ public class AdminEndpoint {
 
     @Inject
     UserService userService;
+
+    @Inject
+    RoleChangeRequestsRepository roleChangeRequestsRepository;
+
+    @Inject
+    AdminService adminService;
+
 
     @Tag(name = "Admin")
     @Operation(
@@ -424,6 +415,65 @@ public class AdminEndpoint {
 
         return Response.ok().entity(response).build();
     }
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "List promotion request",
+            description = "Gets a list of users that made a promotion request. Only the admin users can access this endpoint.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Users promotion requests list was successfully uploaded.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableRoleChangeRequest.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Validation request not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/users/promotions")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getRoleChangeRequestsByPage(
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be between 1 and 100.")
+            @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
+            @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+            @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @QueryParam("size") int size, @Context UriInfo uriInfo) {
+
+        var roleChangeRequests = adminService.getRoleChangeRequestsByPage(page-1, size, uriInfo);
+
+        return Response.ok(roleChangeRequests).build();
+    }
 
     @Tag(name = "Admin")
     @Operation(
@@ -596,6 +646,21 @@ public class AdminEndpoint {
 
         @Override
         public void setContent(List<AdminProviderDto> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableRoleChangeRequest extends PageResource<RoleChangeRequestDto> {
+
+        private List<RoleChangeRequestDto> content;
+
+        @Override
+        public List<RoleChangeRequestDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<RoleChangeRequestDto> content) {
             this.content = content;
         }
     }
