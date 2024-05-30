@@ -156,4 +156,30 @@ public class KeycloakAdminService {
 
         return new ArrayList<>(clientResource.roles().get(role).getRoleUserMembers());
     }
+
+    /**
+     * This operation returns the user's roles for specified client in Keycloak.
+     *
+     * @param vopersonId The unique identifier of user.
+     * @return The user's roles.
+     */
+    public List<KeycloakRole> fetchUserRoles(String vopersonId) {
+
+        var realmResource = keycloak.realm(realm);
+
+        var usersResource = realmResource.users();
+
+        var clientRepresentation = realmResource.clients().findByClientId(clientId).stream().findFirst().get();
+
+        var userRepresentation = realmResource.users().searchByAttributes(String.format("%s:%s", attribute, vopersonId)).stream().findFirst().get();
+
+        var userResource = usersResource.get(userRepresentation.getId());
+
+        var roleRepresentations = userResource.roles().clientLevel(clientRepresentation.getId()).listEffective(true);
+
+        return roleRepresentations
+                .stream()
+                .map(roleRepresentation -> new KeycloakRole(roleRepresentation.getId(), roleRepresentation.getName(), roleRepresentation.getDescription()))
+                .collect(Collectors.toList());
+    }
 }

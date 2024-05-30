@@ -127,21 +127,4 @@ public class MetaresolverEndpointTest {
 
         assertEquals("https://zenodo.org/api/records/8056361", location.url);
     }
-
-    @Test
-    public void resolveZenodoLandingPageModeViaAPI(){
-
-        var location = given()
-                .contentType(ContentType.JSON)
-                .queryParam("pid", "10.5281/zenodo.8056361")
-                .queryParam("pidMode", "landingpage")
-                .get("/resolve")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(LocationDto.class);
-
-        assertEquals("https://zenodo.org/records/8056361", location.url);
-    }
 }

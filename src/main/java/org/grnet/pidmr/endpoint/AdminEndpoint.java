@@ -23,7 +23,17 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.grnet.pidmr.dto.*;
+import org.grnet.pidmr.dto.AdminProviderDto;
+import org.grnet.pidmr.dto.DenyAccess;
+import org.grnet.pidmr.dto.InformativeResponse;
+import org.grnet.pidmr.dto.PermitAccess;
+import org.grnet.pidmr.dto.ProviderDto;
+import org.grnet.pidmr.dto.ProviderRequestV1;
+import org.grnet.pidmr.dto.RoleAssignmentRequest;
+import org.grnet.pidmr.dto.RoleChangeRequestDto;
+import org.grnet.pidmr.dto.UpdateProviderV1;
+import org.grnet.pidmr.dto.UpdateProviderStatus;
+import org.grnet.pidmr.dto.UserProfileDto;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.pagination.PageResource;
@@ -575,7 +585,7 @@ public class AdminEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     public Response denyAccess(@Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
 
-        userService.hasUserExecutedPromotionRequest(denyAccess.userId);
+        userService.doesUserExist(denyAccess.userId);
         userService.addDenyAccessRole(denyAccess.userId, denyAccess.reason);
 
         var informativeResponse = new InformativeResponse();
@@ -625,7 +635,7 @@ public class AdminEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     public Response permitAccess(@Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
 
-        userService.hasUserExecutedPromotionRequest(permitAccess.userId);
+        userService.doesUserExist(permitAccess.userId);
         userService.removeDenyAccessRole(permitAccess.userId, permitAccess.reason);
 
         var informativeResponse = new InformativeResponse();
@@ -633,6 +643,107 @@ public class AdminEndpoint {
         informativeResponse.message = "deny_access role removed successfully from the user. The user is now allowed access to the API.";
 
         return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Assign new roles to a user.",
+            description = "Assigns new roles to a specific user in the PIDMR service.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/assign-roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response assignRolesToUser(@Valid @NotNull(message = "The request body is empty.") RoleAssignmentRequest request) {
+
+        userService.doesUserExist(request.userId);
+        userService.assignRolesToUser(request.userId, request.roles);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Roles have been successfully assigned to user.";
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Retrieve a list of available users.",
+            description = "This endpoint returns a list of PIDMR users.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Users.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableUserProfile.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/users")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response usersByPage(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                @Parameter(name = "size", in = QUERY,
+                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Context UriInfo uriInfo) {
+
+
+        var userProfile = userService.getUsersByPage(page - 1, size, uriInfo);
+
+        return Response.ok().entity(userProfile).build();
     }
 
     public static class PageableAdminProvider extends PageResource<AdminProviderDto> {
@@ -661,6 +772,21 @@ public class AdminEndpoint {
 
         @Override
         public void setContent(List<RoleChangeRequestDto> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableUserProfile extends PageResource<UserProfileDto> {
+
+        private List<UserProfileDto> content;
+
+        @Override
+        public List<UserProfileDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<UserProfileDto> content) {
             this.content = content;
         }
     }

@@ -4,22 +4,33 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.UriInfo;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.UserPromotionRequest;
 import org.grnet.pidmr.dto.UserProfileDto;
 import org.grnet.pidmr.entity.database.History;
 import org.grnet.pidmr.entity.database.RoleChangeRequest;
 import org.grnet.pidmr.enums.PromotionRequestStatus;
+import org.grnet.pidmr.pagination.Page;
+import org.grnet.pidmr.pagination.PageResource;
+import org.grnet.pidmr.pagination.PageableImpl;
 import org.grnet.pidmr.repository.HistoryRepository;
 import org.grnet.pidmr.repository.RoleChangeRequestsRepository;
 import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
+import org.grnet.pidmr.service.keycloak.KeycloakRole;
 import org.grnet.pidmr.util.RequestUserContext;
+import org.grnet.pidmr.util.Utility;
+
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @ApplicationScoped
@@ -38,6 +49,9 @@ public class UserService {
 
     @Inject
     KeycloakAdminService keycloakAdminService;
+
+    @ConfigProperty(name = "api.keycloak.user.id")
+    String attribute;
 
     /**
      * Injection point for the history repository
@@ -121,12 +135,80 @@ public class UserService {
     }
 
     /**
-     * Checks if the specified user has executed a promotion request.
+     * Checks if the specified user exists.
      * @param userId the ID of the user to check.
      * @return
      */
-    public void hasUserExecutedPromotionRequest(String userId){
+    public void doesUserExist(String userId){
 
-       roleChangeRequestsRepository.hasUserExecutedPromotionRequest(userId).orElseThrow(()-> new NotFoundException(String.format("Not Found User %s", userId)));
+        var optional = getUsers()
+                .stream()
+                .filter(userProfileDto -> userProfileDto.id.equals(userId))
+                        .findAny();
+
+        optional.orElseThrow(()-> new NotFoundException(String.format("Not Found User %s", userId)));
+    }
+
+    /**
+     * Assigns new roles to a specific user.
+     *
+     * @param userId The unique identifier of the user.
+     * @param roles  List of role names to be assigned to the user.
+     */
+    public void assignRolesToUser(String userId, List<String> roles) {
+
+        keycloakAdminService.doRolesExist(roles);
+        keycloakAdminService.assignRoles(userId, roles);
+    }
+
+    /**
+     * Retrieves a page of users.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of users to include in a page.
+     * @param uriInfo The Uri Info.
+     * @return A list of UserProfileDto objects representing the users in the requested page.
+     */
+    public PageResource<UserProfileDto> getUsersByPage(int page, int size, UriInfo uriInfo) {
+
+        var users = getUsers();
+
+        var partition = Utility.partition(new ArrayList<>(users), size);
+
+        var partitionedUsers = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
+
+        var pageable = new PageableImpl<UserProfileDto>();
+
+        pageable.list = partitionedUsers;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = users.size();
+        pageable.page = Page.of(page, size);
+
+        return new PageResource<>(pageable, uriInfo);
+    }
+
+    public Set<UserProfileDto> getUsers(){
+
+        var roles = keycloakAdminService.fetchRoles();
+
+        var keycloakUsers = roles.stream()
+                .map(role->keycloakAdminService.fetchRolesMembers(role.getName()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        return keycloakUsers
+                .stream()
+                .map(keycloakUser->{
+
+                    var user = new UserProfileDto();
+                    user.email = keycloakUser.getEmail();
+                    user.surname = keycloakUser.getLastName();
+                    user.name = keycloakUser.getFirstName();
+                    user.id = keycloakUser.getAttributes().get(attribute).get(0);
+                    user.roles = keycloakAdminService.fetchUserRoles(user.id).stream().map(KeycloakRole::getName).collect(Collectors.toList());
+
+                    return user;
+                }).collect(Collectors.toSet());
     }
 }
