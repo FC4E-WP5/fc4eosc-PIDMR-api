@@ -26,7 +26,6 @@ public class Utility {
      * @param pageSize The page size.
      * @return A map containing the pages of objects.
      */
-    @CacheResult(cacheName = "partition")
     public static <T> Map<Integer, List<T>> partition(List<T> list, int pageSize) {
 
         return IntStream.iterate(0, i -> i + pageSize)

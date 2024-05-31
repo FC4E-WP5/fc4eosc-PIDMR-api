@@ -8,6 +8,7 @@ import jakarta.ws.rs.BadRequestException;
 import lombok.Getter;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,11 +36,11 @@ public class RequestUserContext {
         }
     }
 
-    public Set<String> getRoles(String clientID){
+    public List<String> getRoles(String clientID){
 
         if(Objects.isNull(tokenIntrospection.getObject("resource_access"))){
 
-            return Collections.EMPTY_SET;
+            return Collections.EMPTY_LIST;
         } else {
 
             var jsonArray =  tokenIntrospection
@@ -51,7 +52,7 @@ public class RequestUserContext {
                     .range(0,jsonArray.size())
                     .mapToObj(jsonArray::getJsonString)
                     .map(JsonString::getString)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toList());
         }
     }
 }
