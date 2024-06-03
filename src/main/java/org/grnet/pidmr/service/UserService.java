@@ -8,11 +8,11 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.pidmr.dto.UserPromotionRequest;
+import org.grnet.pidmr.dto.UserRoleChangeRequest;
 import org.grnet.pidmr.dto.UserProfileDto;
 import org.grnet.pidmr.entity.database.History;
 import org.grnet.pidmr.entity.database.RoleChangeRequest;
-import org.grnet.pidmr.enums.PromotionRequestStatus;
+import org.grnet.pidmr.enums.RoleChangeRequestStatus;
 import org.grnet.pidmr.pagination.Page;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.pagination.PageableImpl;
@@ -69,30 +69,30 @@ public class UserService {
     }
 
     @Transactional
-    public void persistRoleChangeRequest(UserPromotionRequest userPromotionRequest){
+    public void persistRoleChangeRequest(UserRoleChangeRequest userRoleChangeRequest){
 
-        keycloakAdminService.doRolesExist(List.of(userPromotionRequest.role));
+        keycloakAdminService.doRolesExist(List.of(userRoleChangeRequest.role));
 
         var roleChangeRequest = new RoleChangeRequest();
 
         roleChangeRequest.setUserId(requestUserContext.getVopersonID());
-        roleChangeRequest.setName(userPromotionRequest.name);
-        roleChangeRequest.setSurname(userPromotionRequest.surname);
-        roleChangeRequest.setRole(userPromotionRequest.role);
-        roleChangeRequest.setDescription(userPromotionRequest.description);
-        roleChangeRequest.setEmail(userPromotionRequest.email);
+        roleChangeRequest.setName(userRoleChangeRequest.name);
+        roleChangeRequest.setSurname(userRoleChangeRequest.surname);
+        roleChangeRequest.setRole(userRoleChangeRequest.role);
+        roleChangeRequest.setDescription(userRoleChangeRequest.description);
+        roleChangeRequest.setEmail(userRoleChangeRequest.email);
         roleChangeRequest.setRequestedOn(Timestamp.from(Instant.now()));
-        roleChangeRequest.setStatus(PromotionRequestStatus.PENDING);
+        roleChangeRequest.setStatus(RoleChangeRequestStatus.PENDING);
 
         roleChangeRequestsRepository.persist(roleChangeRequest);
     }
 
     @Transactional
-    public void approvePromotionRequest(Long id){
+    public void approveRoleChangeRequest(Long id){
 
         var request = roleChangeRequestsRepository.findById(id);
 
-        request.setStatus(PromotionRequestStatus.APPROVED);
+        request.setStatus(RoleChangeRequestStatus.APPROVED);
         request.setUpdatedOn(Timestamp.from(Instant.now()));
         request.setUpdatedBy(requestUserContext.getVopersonID());
         keycloakAdminService.assignRoles(request.getUserId(), List.of(request.getRole()));

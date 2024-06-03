@@ -4,7 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.pidmr.dto.RoleChangeRequestDto;
-import org.grnet.pidmr.mapper.UsersPromotionMapper;
+import org.grnet.pidmr.mapper.UsersRoleChangeRequestMapper;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.RoleChangeRequestsRepository;
 
@@ -25,6 +25,6 @@ public class AdminService {
 
         // Retrieve pageable data from the repository
         var pageable = roleChangeRequestsRepository.fetchRoleChangeRequestByPage(page, size);
-        return new PageResource<>(pageable, UsersPromotionMapper.INSTANCE.roleChangeRequestsToDto(pageable.list()), uriInfo);
+        return new PageResource<>(pageable, UsersRoleChangeRequestMapper.INSTANCE.roleChangeRequestsToDto(pageable.list()), uriInfo);
     }
 }

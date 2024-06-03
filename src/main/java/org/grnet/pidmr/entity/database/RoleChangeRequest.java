@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.grnet.pidmr.entity.database.converters.PromotionStatusConverter;
-import org.grnet.pidmr.enums.PromotionRequestStatus;
+import org.grnet.pidmr.entity.database.converters.RoleChangeStatusConverter;
+import org.grnet.pidmr.enums.RoleChangeRequestStatus;
 
 import java.sql.Timestamp;
 
@@ -53,8 +53,8 @@ public class RoleChangeRequest {
 
     @Column
     @NotNull
-    @Convert(converter = PromotionStatusConverter.class)
-    private PromotionRequestStatus status;
+    @Convert(converter = RoleChangeStatusConverter.class)
+    private RoleChangeRequestStatus status;
 
 
 }
