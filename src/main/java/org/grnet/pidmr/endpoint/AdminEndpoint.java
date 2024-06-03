@@ -427,11 +427,11 @@ public class AdminEndpoint {
     }
     @Tag(name = "Admin")
     @Operation(
-            summary = "List promotion request",
-            description = "Gets a list of users that made a promotion request. Only the admin users can access this endpoint.")
+            summary = "List role change request",
+            description = "Gets a list of users that made a role change request. Only the admin users can access this endpoint.")
     @APIResponse(
             responseCode = "200",
-            description = "Users promotion requests list was successfully uploaded.",
+            description = "Users role change requests list was successfully uploaded.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = PageableRoleChangeRequest.class)))
@@ -467,7 +467,7 @@ public class AdminEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/users/promotions")
+    @Path("/users/role-change-requests")
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getRoleChangeRequestsByPage(
             @Parameter(name = "page", in = QUERY,
@@ -487,11 +487,11 @@ public class AdminEndpoint {
 
     @Tag(name = "Admin")
     @Operation(
-            summary = "Approve a promotion request.",
-            description = "Change the status of a promotion request to \"APPROVE\" and assign the corresponding role to the user in Keycloak.")
+            summary = "Approve a role change request.",
+            description = "Change the status of a role change request to \"APPROVE\" and assign the corresponding role to the user in Keycloak.")
     @APIResponse(
             responseCode = "200",
-            description = "Promotion request approved and role assigned to user.",
+            description = "Role change request approved and role assigned to user.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -515,7 +515,7 @@ public class AdminEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "404",
-            description = "Promotion request not found.",
+            description = "Role change request not found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -527,20 +527,20 @@ public class AdminEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @PUT
-    @Path("/users/promotions/{id}/approve")
+    @Path("/users/role-change-requests/{id}/approve")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updatePromotionRequestStatus(@Parameter(
-            description = "The ID of the promotion request.",
+    public Response updateRoleChangeRequestStatus(@Parameter(
+            description = "The ID of the role change request.",
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                              @PathParam("id") @Valid @NotFoundEntity(repository = RoleChangeRequestsRepository.class, message = "There is no Promotion Request with the following id :") Long id) {
+                                              @PathParam("id") @Valid @NotFoundEntity(repository = RoleChangeRequestsRepository.class, message = "There is no Role Change Request with the following id :") Long id) {
 
-        userService.approvePromotionRequest(id);
+        userService.approveRoleChangeRequest(id);
 
         var response = new InformativeResponse();
         response.code = 200;
-        response.message = "Promotion request approved and role assigned to user.";
+        response.message = "Role change request approved and role assigned to user.";
 
         return Response.ok().entity(response).build();
     }

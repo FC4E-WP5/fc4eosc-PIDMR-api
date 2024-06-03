@@ -117,12 +117,12 @@ public class UserEndpoint {
                             implementation = InformativeResponse.class)))
 
     @SecurityRequirement(name = "Authentication")
-    @Path("/promote-user-role")
+    @Path("/role-change-request")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response promotion(@Valid @NotNull(message = "The request body is empty.") UserPromotionRequest userPromotionRequest) {
+    public Response roleChangeRequest(@Valid @NotNull(message = "The request body is empty.") UserRoleChangeRequest userRoleChangeRequest) {
 
-        userService.persistRoleChangeRequest(userPromotionRequest);
+        userService.persistRoleChangeRequest(userRoleChangeRequest);
 
         var response = new InformativeResponse();
 

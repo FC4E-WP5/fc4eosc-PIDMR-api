@@ -7,8 +7,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 
 
-@Schema(name = "UserPromotionRequest", description = "This object represents the user's Role Change request.")
-public class UserPromotionRequest {
+@Schema(name = "UserRoleChangeRequest", description = "This object represents the user's Role Change request.")
+public class UserRoleChangeRequest {
 
     @Schema(
             type            = SchemaType.STRING,
@@ -33,7 +33,7 @@ public class UserPromotionRequest {
     @Schema(
             type            = SchemaType.STRING,
             implementation  = String.class,
-            description     = "The user's email",
+            description     = "User's email",
             example         = "username@domain.com"
     )
     @JsonProperty("email")
@@ -44,7 +44,7 @@ public class UserPromotionRequest {
     @Schema(
             type            = SchemaType.STRING,
             implementation  = String.class,
-            description     = "The user's role.",
+            description     = "The role that user is requesting.",
             example         = "provider_admin"
     )
     @JsonProperty("role")

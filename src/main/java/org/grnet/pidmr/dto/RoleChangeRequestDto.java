@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.pidmr.enums.PromotionRequestStatus;
+import org.grnet.pidmr.enums.RoleChangeRequestStatus;
 
 
 @Schema(name = "RoleChangeRequestDto", description = "This object represents the user's Role Change request.")
@@ -98,7 +98,7 @@ public class RoleChangeRequestDto {
 
     @Schema(
             type            = SchemaType.STRING,
-            implementation  = PromotionRequestStatus.class,
+            implementation  = RoleChangeRequestStatus.class,
             description     = "Status of the request",
             example         = "[PENDING, APPROVED]"
     )
