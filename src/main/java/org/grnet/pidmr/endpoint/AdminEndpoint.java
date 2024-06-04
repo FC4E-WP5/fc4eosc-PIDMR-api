@@ -33,6 +33,7 @@ import org.grnet.pidmr.dto.RoleAssignmentRequest;
 import org.grnet.pidmr.dto.RoleChangeRequestDto;
 import org.grnet.pidmr.dto.UpdateProviderV1;
 import org.grnet.pidmr.dto.UpdateProviderStatus;
+import org.grnet.pidmr.dto.UpdateRoleChangeRequestStatus;
 import org.grnet.pidmr.dto.UserProfileDto;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
@@ -487,11 +488,11 @@ public class AdminEndpoint {
 
     @Tag(name = "Admin")
     @Operation(
-            summary = "Approve a role change request.",
-            description = "Change the status of a role change request to \"APPROVE\" and assign the corresponding role to the user in Keycloak.")
+            summary = "Update a role change request.",
+            description = "Update the status of a role change request.")
     @APIResponse(
             responseCode = "200",
-            description = "Role change request approved and role assigned to user.",
+            description = "Role change request updated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -527,20 +528,21 @@ public class AdminEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @PUT
-    @Path("/users/role-change-requests/{id}/approve")
+    @Path("/users/role-change-requests/{id}/update-status")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateRoleChangeRequestStatus(@Parameter(
             description = "The ID of the role change request.",
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                              @PathParam("id") @Valid @NotFoundEntity(repository = RoleChangeRequestsRepository.class, message = "There is no Role Change Request with the following id :") Long id) {
+                                              @PathParam("id") @Valid @NotFoundEntity(repository = RoleChangeRequestsRepository.class, message = "There is no Role Change Request with the following id :") Long id,
+                                                  @Valid @NotNull(message = "The request body is empty.") UpdateRoleChangeRequestStatus updateRoleChangeRequestStatus) {
 
-        userService.approveRoleChangeRequest(id);
+        userService.updateRoleChangeRequest(id, updateRoleChangeRequestStatus);
 
         var response = new InformativeResponse();
         response.code = 200;
-        response.message = "Role change request approved and role assigned to user.";
+        response.message = "Role change request updated.";
 
         return Response.ok().entity(response).build();
     }
