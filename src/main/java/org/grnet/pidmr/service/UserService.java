@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.grnet.pidmr.dto.UpdateRoleChangeRequestStatus;
 import org.grnet.pidmr.dto.UserRoleChangeRequest;
 import org.grnet.pidmr.dto.UserProfileDto;
 import org.grnet.pidmr.entity.database.History;
@@ -88,14 +89,17 @@ public class UserService {
     }
 
     @Transactional
-    public void approveRoleChangeRequest(Long id){
+    public void updateRoleChangeRequest(Long id, UpdateRoleChangeRequestStatus updateRoleChangeRequestStatus){
 
         var request = roleChangeRequestsRepository.findById(id);
-
-        request.setStatus(RoleChangeRequestStatus.APPROVED);
         request.setUpdatedOn(Timestamp.from(Instant.now()));
         request.setUpdatedBy(requestUserContext.getVopersonID());
-        keycloakAdminService.assignRoles(request.getUserId(), List.of(request.getRole()));
+        request.setStatus(RoleChangeRequestStatus.valueOf(updateRoleChangeRequestStatus.status));
+
+        if(RoleChangeRequestStatus.valueOf(updateRoleChangeRequestStatus.status).equals(RoleChangeRequestStatus.APPROVED)){
+
+            keycloakAdminService.assignRoles(request.getUserId(), List.of(request.getRole()));
+        }
     }
 
     /**
