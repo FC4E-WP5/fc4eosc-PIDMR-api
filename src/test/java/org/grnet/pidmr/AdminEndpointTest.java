@@ -4,19 +4,14 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import org.grnet.pidmr.dto.AdminProviderDto;
-import org.grnet.pidmr.dto.InformativeResponse;
-import org.grnet.pidmr.dto.ProviderDto;
-import org.grnet.pidmr.dto.ProviderRequestV1;
-import org.grnet.pidmr.dto.UpdateProviderV1;
-import org.grnet.pidmr.dto.UpdateProviderStatus;
-import org.grnet.pidmr.dto.Validity;
+import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.endpoint.AdminEndpoint;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.util.List;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
@@ -26,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @QuarkusTest
 @TestHTTPEndpoint(AdminEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class AdminEndpointTest extends KeycloakTest{
+public class AdminEndpointTest extends KeycloakTest {
 
     @Inject
     DatabaseProviderService providerService;
 
     @Test
-    public void createProviderNotValidAction(){
+    public void createProviderNotValidAction() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -58,7 +53,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProvider(){
+    public void createProvider() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -86,7 +81,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderExists(){
+    public void createProviderExists() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -126,7 +121,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderWithRegexWithoutApproving(){
+    public void createProviderWithRegexWithoutApproving() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -166,7 +161,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderWithRegexAfterApproving(){
+    public void createProviderWithRegexAfterApproving() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -221,7 +216,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderWithoutActions(){
+    public void createProviderWithoutActions() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -247,7 +242,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderWithoutRegexes(){
+    public void createProviderWithoutRegexes() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -273,7 +268,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void getProvider(){
+    public void getProvider() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -313,7 +308,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void getProviderNotFound(){
+    public void getProviderNotFound() {
 
         var response = given()
                 .auth()
@@ -326,11 +321,11 @@ public class AdminEndpointTest extends KeycloakTest{
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is no Provider with the following id: "+1000L, response.message);
+        assertEquals("There is no Provider with the following id: " + 1000L, response.message);
     }
 
     @Test
-    public void deleteProvider(){
+    public void deleteProvider() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -367,7 +362,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void updateBasicProviderInformation(){
+    public void updateBasicProviderInformation() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -418,7 +413,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void updateProviderRegexesAndActions(){
+    public void updateProviderRegexesAndActions() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -467,7 +462,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void providerForbidden(){
+    public void providerForbidden() {
 
         var createForbidden = given()
                 .auth()
@@ -525,7 +520,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void providerForbiddenPermissionsOnEntity(){
+    public void providerForbiddenPermissionsOnEntity() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -563,5 +558,61 @@ public class AdminEndpointTest extends KeycloakTest{
         assertEquals("You do not have permission to access this resource.", updateForbidden.message);
 
         providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
+    }
+
+    @Test
+    public void testGetChangeRoleById() {
+
+
+        var request = new UserRoleChangeRequest();
+        request.name = "Jame";
+        request.surname = "Smith";
+        request.email = "jamesmith@foo.gr";
+        request.role = "provider_admin";
+        request.description = "Change my user role";
+
+        // Send a POST request to /promote-user-role with invalid role
+        given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .basePath("/v1/users")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/role-change-request")
+                .then()
+                .statusCode(200); // Bad Request status code
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .get("/users/role-change-requests/{id}", 1L)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(RoleChangeRequestDto.class);
+
+        assertEquals(request.name, response.name);
+        assertEquals(request.email, response.email);
+        assertEquals(request.role, response.role);
+        assertEquals(request.description, response.description);
+        assertEquals(request.surname, response.surname);
+
+    }
+
+
+    @Test
+    public void testGetChangeRoleByIdNotFound() {
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .get("/users/role-change-requests/{id}", -1L)
+                .then()
+                .assertThat()
+                .statusCode(404);
     }
 }

@@ -121,6 +121,13 @@ public class UserService {
         MailerService.CustomCompletableFuture.runAsync(() -> mailerService.sendMails(request, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS, Arrays.asList(request.getEmail())));
     }
 
+    @Transactional
+    public RoleChangeRequestDto retrieveRoleChangeRequest(Long id){
+
+        var request = roleChangeRequestsRepository.findById(id);
+
+        return UsersRoleChangeRequestMapper.INSTANCE.roleChangeRequestToDto(request);
+    }
     /**
      * Adds the deny_access role to the specified user in Keycloak, denying access to the API.
      *

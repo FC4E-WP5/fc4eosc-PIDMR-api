@@ -235,7 +235,7 @@ public class AdminEndpoint {
 
         var response = new InformativeResponse();
 
-        if(deleted){
+        if (deleted) {
 
             response.code = 200;
             response.message = "The Provider has been successfully deleted.";
@@ -312,7 +312,7 @@ public class AdminEndpoint {
 
         } catch (ArcUndeclaredThrowableException e) {
 
-            if(!Objects.isNull(e.getCause()) && !Objects.isNull(e.getCause().getCause()) && !Objects.isNull(e.getCause().getCause().getCause()) && e.getCause().getCause().getCause() instanceof ConstraintViolationException){
+            if (!Objects.isNull(e.getCause()) && !Objects.isNull(e.getCause().getCause()) && !Objects.isNull(e.getCause().getCause().getCause()) && e.getCause().getCause().getCause() instanceof ConstraintViolationException) {
 
                 throw new ConflictException(String.format("This Provider type {%s} exists.", request.type));
             } else {
@@ -365,7 +365,7 @@ public class AdminEndpoint {
             description = "Indicates the page number. Page number must be between 1 and 100.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                  @Parameter(name = "size", in = QUERY,
                                          description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                     @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
+                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
         return Response.ok().entity(providerService.adminPagination(page - 1, size, uriInfo)).build();
     }
@@ -419,13 +419,14 @@ public class AdminEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                                @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id :") Long id,
-                                                @Valid @NotNull(message = "The request body is empty.") UpdateProviderStatus updateProviderStatus) {
+                                              @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id :") Long id,
+                                              @Valid @NotNull(message = "The request body is empty.") UpdateProviderStatus updateProviderStatus) {
 
-        var response  = providerService.updateProviderStatus(id, ProviderStatus.valueOf(updateProviderStatus.status));
+        var response = providerService.updateProviderStatus(id, ProviderStatus.valueOf(updateProviderStatus.status));
 
         return Response.ok().entity(response).build();
     }
+
     @Tag(name = "Admin")
     @Operation(
             summary = "List role change request",
@@ -481,7 +482,7 @@ public class AdminEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.")
             @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
-        var roleChangeRequests = adminService.getRoleChangeRequestsByPage(page-1, size, uriInfo);
+        var roleChangeRequests = adminService.getRoleChangeRequestsByPage(page - 1, size, uriInfo);
 
         return Response.ok(roleChangeRequests).build();
     }
@@ -535,7 +536,7 @@ public class AdminEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                              @PathParam("id") @Valid @NotFoundEntity(repository = RoleChangeRequestsRepository.class, message = "There is no Role Change Request with the following id :") Long id,
+                                                  @PathParam("id") @Valid @NotFoundEntity(repository = RoleChangeRequestsRepository.class, message = "There is no Role Change Request with the following id :") Long id,
                                                   @Valid @NotNull(message = "The request body is empty.") UpdateRoleChangeRequestStatus updateRoleChangeRequestStatus) {
 
         userService.updateRoleChangeRequest(id, updateRoleChangeRequestStatus);
@@ -746,6 +747,61 @@ public class AdminEndpoint {
         var userProfile = userService.getUsersByPage(page - 1, size, uriInfo);
 
         return Response.ok().entity(userProfile).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get a role change request.",
+            description = "Get a role change request.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Role change request retrieved.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = RoleChangeRequestDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Role change request not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/users/role-change-requests/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRoleChangeRequestById(@Parameter(
+            description = "The ID of the role change request.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                             @PathParam("id") @Valid @NotFoundEntity(repository = RoleChangeRequestsRepository.class, message = "There is no Role Change Request with the following id :") Long id) {
+
+        var response = userService.retrieveRoleChangeRequest(id);
+        return Response.ok().entity(response).build();
     }
 
     public static class PageableAdminProvider extends PageResource<AdminProviderDto> {
