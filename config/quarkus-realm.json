@@ -2765,6 +2765,7 @@
     {
       "id": "af134cab-f41c-4675-b141-205f975db679",
       "username": "admin",
+      "email": "admin@goo.gr",
       "enabled": true,
       "totp": false,
       "emailVerified": false,
@@ -2804,6 +2805,7 @@
     {
       "id": "eb4123a3-b722-4798-9af5-8957f823657a",
       "username": "alice",
+      "email": "alice@foo.gr",
       "enabled": true,
       "totp": false,
       "emailVerified": false,
@@ -2841,6 +2843,7 @@
     },
     {
       "username": "bob",
+      "email": "bob@foo.gr",
       "enabled": true,
       "attributes": {
         "voperson_id": ["bob_voperson_id"]
@@ -2854,6 +2857,8 @@
     },
     {
       "username": "evald",
+
+      "email": "evald@foo.gr",
       "enabled": true,
       "attributes": {
         "voperson_id": ["evald_voperson_id"]
