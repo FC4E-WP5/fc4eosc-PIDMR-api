@@ -107,7 +107,6 @@ public class MailerService {
     }
 
     public Mail buildEmail(Template emailTemplate, HashMap<String, String> templateParams, MailType mailType) {
-
         MailType.MailTemplate mailTemplate = mailType.execute(emailTemplate, templateParams);
         Mail mail = new Mail();
         mail.setHtml(mailTemplate.getBody());
@@ -121,7 +120,6 @@ public class MailerService {
         mail.setBcc(mailAddrs);
 
         try {
-
             mailer.send(mail);
             LOG.info("RECIPIENTS : " + Arrays.toString(mail.getBcc().toArray()));
         } catch (Exception e) {
