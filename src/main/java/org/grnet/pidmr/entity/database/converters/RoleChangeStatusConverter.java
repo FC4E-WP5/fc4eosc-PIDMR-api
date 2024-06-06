@@ -40,9 +40,10 @@ public class RoleChangeStatusConverter implements AttributeConverter<RoleChangeR
         switch (dbData) {
             case 0:
                 return RoleChangeRequestStatus.PENDING;
-
             case 1:
                 return RoleChangeRequestStatus.APPROVED;
+            case 2:
+                return RoleChangeRequestStatus.REJECTED;
 
             default:
                 throw new ServerErrorException(dbData + " not supported.", 501);
