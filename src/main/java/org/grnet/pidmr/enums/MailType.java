@@ -28,7 +28,7 @@ public enum MailType {
 
     USER_ALERT_CHANGE_ROLE_REQUEST_STATUS {
         public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
-            String body = emailTemplate
+             String body = emailTemplate
                     .data("id", templateParams.get("id"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -39,7 +39,7 @@ public enum MailType {
                     .data("userrole", templateParams.get("userrole"))
                     .data("contactMail", templateParams.get("contactMail"))
                     .data("status", templateParams.get("status")).render();
-            return new MailTemplate("["+templateParams.get("title")+"] - Validation Request updated status with id: "+templateParams.get("id"), body);
+            return new MailTemplate("["+templateParams.get("title")+"] - Change Role request updated status with id: "+templateParams.get("id"), body);
         }
 
     },
