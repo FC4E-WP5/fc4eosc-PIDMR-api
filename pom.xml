@@ -168,6 +168,21 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-keycloak-admin-client-reactive</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-mailer</artifactId>
+      <version>3.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.mailpit</groupId>
+      <artifactId>quarkus-mailpit</artifactId>
+      <version>0.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-reactive-qute</artifactId>
+    </dependency>
+
   </dependencies>
   <build>
     <resources>

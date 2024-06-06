@@ -13,6 +13,7 @@ import org.grnet.pidmr.dto.UserRoleChangeRequest;
 import org.grnet.pidmr.dto.UserProfileDto;
 import org.grnet.pidmr.entity.database.History;
 import org.grnet.pidmr.entity.database.RoleChangeRequest;
+import org.grnet.pidmr.enums.MailType;
 import org.grnet.pidmr.enums.RoleChangeRequestStatus;
 import org.grnet.pidmr.pagination.Page;
 import org.grnet.pidmr.pagination.PageResource;
@@ -26,11 +27,8 @@ import org.grnet.pidmr.util.Utility;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 
@@ -50,6 +48,9 @@ public class UserService {
 
     @Inject
     KeycloakAdminService keycloakAdminService;
+
+    @Inject
+    MailerService mailerService;
 
     @ConfigProperty(name = "api.keycloak.user.id")
     String attribute;
@@ -86,6 +87,17 @@ public class UserService {
         roleChangeRequest.setStatus(RoleChangeRequestStatus.PENDING);
 
         roleChangeRequestsRepository.persist(roleChangeRequest);
+
+
+        CompletableFuture.supplyAsync(() ->
+                mailerService.retrieveAdminEmails()
+        ).thenAccept(addrs -> {
+            mailerService.sendMails(roleChangeRequest, MailType.ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST, addrs);
+            if (!addrs.contains(roleChangeRequest)) {
+                mailerService.sendMails(roleChangeRequest, MailType.USER_ROLE_CHANGE_REQUEST_CREATION, Arrays.asList(roleChangeRequest.getEmail()));
+            }
+        });
+
     }
 
     @Transactional
@@ -100,6 +112,9 @@ public class UserService {
 
             keycloakAdminService.assignRoles(request.getUserId(), List.of(request.getRole()));
         }
+        MailerService.CustomCompletableFuture.runAsync(() -> mailerService.sendMails(request, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS, Arrays.asList(request.getEmail())));
+
+
     }
 
     /**
