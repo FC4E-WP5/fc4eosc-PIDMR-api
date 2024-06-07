@@ -26,6 +26,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Added
 
+-   [#81](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/56) - PIDMR-176 Create Endpoint to Retrieve All Role Change Requests by a User.
+
+
+### Added
+
 -   [#59](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/59) - PIDMR-146 Add "endpoint" field to Provider entity with mode-specific endpoints.
 -   [#60](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/60) - PIDMR-154 Add Property to Provider Entity to Track DOI Reliance.
 -   [#61](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/61) - PIDMR-160 Implement Communication with Keycloak Admin for User Role Assignment.
