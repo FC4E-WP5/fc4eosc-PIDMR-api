@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.grnet.pidmr.dto.RoleChangeRequestDto;
 import org.grnet.pidmr.dto.UpdateRoleChangeRequestStatus;
 import org.grnet.pidmr.dto.UserRoleChangeRequest;
 import org.grnet.pidmr.dto.UserProfileDto;
@@ -15,6 +16,7 @@ import org.grnet.pidmr.entity.database.History;
 import org.grnet.pidmr.entity.database.RoleChangeRequest;
 import org.grnet.pidmr.enums.MailType;
 import org.grnet.pidmr.enums.RoleChangeRequestStatus;
+import org.grnet.pidmr.mapper.UsersRoleChangeRequestMapper;
 import org.grnet.pidmr.pagination.Page;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.pagination.PageableImpl;
@@ -229,5 +231,19 @@ public class UserService {
 
                     return user;
                 }).collect(Collectors.toSet());
+    }
+
+    /**
+     * Retrieves all role change requests created by a specific user.
+     *
+     * @param page the page number for pagination
+     * @param size the number of requests per page
+     * @return a paginated list of role change requests
+     */
+    public PageResource<RoleChangeRequestDto> getRoleChangeRequestsByUser(int page, int size, UriInfo uriInfo) {
+
+        // Retrieve pageable data from the repository
+        var pageable = roleChangeRequestsRepository.fetchRoleChangeRequestByUser(page, size, requestUserContext.getVopersonID());
+        return new PageResource<>(pageable, UsersRoleChangeRequestMapper.INSTANCE.roleChangeRequestsToDto(pageable.list()), uriInfo);
     }
 }
