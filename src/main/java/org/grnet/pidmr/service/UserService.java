@@ -113,10 +113,12 @@ public class UserService {
         if(RoleChangeRequestStatus.valueOf(updateRoleChangeRequestStatus.status).equals(RoleChangeRequestStatus.APPROVED)){
 
             keycloakAdminService.assignRoles(request.getUserId(), List.of(request.getRole()));
+        } else if(RoleChangeRequestStatus.valueOf(updateRoleChangeRequestStatus.status).equals(RoleChangeRequestStatus.REJECTED)){
+
+            keycloakAdminService.removeRoles(request.getUserId(), List.of(request.getRole()));
         }
+
         MailerService.CustomCompletableFuture.runAsync(() -> mailerService.sendMails(request, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS, Arrays.asList(request.getEmail())));
-
-
     }
 
     /**
