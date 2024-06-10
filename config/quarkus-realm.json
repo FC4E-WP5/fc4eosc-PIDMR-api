@@ -350,6 +350,14 @@
           "attributes": {}
         },
         {
+          "id": "df147a31-5da2-5bbc-866c-f40cf99b2637",
+          "name": "deny_access",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
+        },
+        {
           "id": "df947a91-4da7-2bbc-255c-f80cf99b2667",
           "name": "admin",
           "composite": false,
@@ -551,7 +559,9 @@
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
       },
-      "authenticationFlowBindingOverrides": {},
+      "authenticationFlowBindingOverrides": {
+        "browser": "287b288a-1cf1-4974-bbed-747b0ee5c1f8"
+      },
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
       "defaultClientScopes": [
@@ -891,7 +901,7 @@
         "offline_access",
         "microprofile-jwt"
       ],
-      "authorizationSettings":{
+      "authorizationSettings": {
         "allowRemoteResourceManagement": true,
         "policyEnforcementMode": "ENFORCING",
         "resources": [
@@ -906,9 +916,31 @@
             "icon_uri": ""
           },
           {
+            "name": "Admin Provider Resource v2",
+            "ownerManagedAccess": false,
+            "displayName": "Admin Provider Resource v2",
+            "attributes": {},
+            "_id": "6d185d85-2f57-4bce-b5d9-40c32718b2e0",
+            "uris": [
+              "/v2/admin/providers/*"
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Admin User Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Admin User Resource",
+            "attributes": {},
+            "_id": "e415a1e6-78a1-4118-bbb4-ee756ac44c39",
+            "uris": [
+              "/v1/admin/users/*"
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Admin Provider Resource",
             "ownerManagedAccess": false,
-            "displayName": "Read Assessment Objects by Actor",
+            "displayName": "Admin Provider Resource",
             "attributes": {},
             "_id": "9db7df46-e3db-4eb3-bfbf-486404496be0",
             "uris": [
@@ -970,6 +1002,30 @@
             }
           },
           {
+            "id": "fa7c2c75-04f4-4ae6-a965-c40cb4bfe75e",
+            "name": "Admin Provider v2 Permissions",
+            "description": "Admin Provider v2 Permissions",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Admin Provider Resource v2\"]",
+              "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
+            }
+          },
+          {
+            "id": "29ff4a5f-e773-4c51-87ae-719cc12acf2c",
+            "name": "Admin User Permissions",
+            "description": "",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Admin User Resource\"]",
+              "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
             "id": "022b0f30-8686-4f09-931e-ef3643f527b0",
             "name": "Admin Provider Permissions",
             "description": "",
@@ -978,18 +1034,6 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Admin Provider Resource\"]",
-              "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
-            }
-          },
-          {
-            "id": "2e23cb45-3d12-48a7-bf84-3a7ddda254b5",
-            "name": "User Permissions",
-            "description": "",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"User Resource Permission\"]",
               "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
             }
           }
@@ -2182,6 +2226,109 @@
       ]
     },
     {
+      "id": "287b288a-1cf1-4974-bbed-747b0ee5c1f8",
+      "alias": "API Service- Browser with deny access",
+      "description": "browser based authentication",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorFlow": true,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": true,
+          "flowAlias": "API Service - Browser with deny access login-flow",
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "CONDITIONAL",
+          "priority": 25,
+          "autheticatorFlow": true,
+          "flowAlias": "API Service - Browser with deny access Checking User Access",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "ced7521e-4732-4959-84f8-cff994343b90",
+      "alias": "API Service - Browser with deny access login-flow",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "identity-provider-redirector",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 25,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "ALTERNATIVE",
+          "priority": 35,
+          "autheticatorFlow": true,
+          "flowAlias": "API Service - Browser With Deny Access Keycloak Form2",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "dfd9261e-6132-4959-84f8-bdd994343b90",
+      "alias": "API Service - Browser with deny access Checking User Access",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorConfig": "API Service - Browser with deny access check-realm-admin",
+          "authenticator": "conditional-user-role",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorConfig": "API Service - Browser with deny access deny-access",
+          "authenticator": "deny-access-authenticator",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 25,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "cal2525e-4732-4959-84f8-cff994343b90",
+      "alias": "API Service - Browser With Deny Access Keycloak Form2",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
       "id": "27505ab1-6d4c-43a0-aede-d21ea45cb785",
       "alias": "clients",
       "description": "Base authentication for clients",
@@ -2490,6 +2637,21 @@
       "config": {
         "update.profile.on.first.login": "missing"
       }
+    },
+    {
+      "id": "a33ba77d-00ff-4912-80e7-84aa35d3bacc",
+      "alias": "API Service - Browser with deny access check-realm-admin",
+      "config": {
+        "negate": "false",
+        "condUserRole": "backend-service.deny_access"
+      }
+    },
+    {
+      "id": "342a7304-bc7f-4502-a05b-8bfe12f1465f",
+      "alias": "API Service - Browser with deny access deny-access",
+      "config": {
+        "denyErrorMessage": "<!DOCTYPE html> <html lang=\"en\"> <head>     <meta charset=\"UTF-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">     <title>Access Denied</title>     <style>         body {             font-family: 'Arial', sans-serif;             text-align: center;             margin: 50px;         }          .error-message {             color: #d9534f;             font-size: 18px;             margin-bottom: 20px;         }          .contact-support {             font-size: 16px;             margin-bottom: 20px;         }          .sophisticated-message {             font-size: 20px;             margin-bottom: 20px;             color: #5bc0de;         }          .redirect-button {             padding: 10px 20px;             font-size: 16px;             text-decoration: none;             background-color: #5bc0de;             color: #fff;             border-radius: 5px;         }     </style> </head> <body>     <div class=\"error-message\">         <p><strong>Access Denied:</strong> You do not have permission to log in to PIDMR service.</p>     </div>      <div class=\"contact-support\">         <p>If you believe this is an error, please <a href=\"mailto:pidmr-support@einfra.grnet.gr\">contact our support team</a>.</p>     </div>      <div class=\"sophisticated-message\">         <p> Explore more about our services and features by visiting our application, PIDMR Service.</p>     </div>      <a class=\"redirect-button\" href=\"http://localhost:8080\">Discover PIDMR Service</a> </body> </html>"
+      }
     }
   ],
   "requiredActions": [
@@ -2603,6 +2765,7 @@
     {
       "id": "af134cab-f41c-4675-b141-205f975db679",
       "username": "admin",
+      "email": "admin@goo.gr",
       "enabled": true,
       "totp": false,
       "emailVerified": false,
@@ -2642,6 +2805,7 @@
     {
       "id": "eb4123a3-b722-4798-9af5-8957f823657a",
       "username": "alice",
+      "email": "alice@foo.gr",
       "enabled": true,
       "totp": false,
       "emailVerified": false,
@@ -2679,6 +2843,7 @@
     },
     {
       "username": "bob",
+      "email": "bob@foo.gr",
       "enabled": true,
       "attributes": {
         "voperson_id": ["bob_voperson_id"]
@@ -2692,6 +2857,8 @@
     },
     {
       "username": "evald",
+
+      "email": "evald@foo.gr",
       "enabled": true,
       "attributes": {
         "voperson_id": ["evald_voperson_id"]

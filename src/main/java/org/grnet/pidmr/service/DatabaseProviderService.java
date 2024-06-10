@@ -1,5 +1,7 @@
 package org.grnet.pidmr.service;
 
+import io.quarkus.hibernate.orm.panache.Panache;
+import io.vavr.Tuple;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -12,7 +14,11 @@ import org.grnet.pidmr.dto.AdminProviderDto;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.ProviderRequest;
-import org.grnet.pidmr.dto.UpdateProviderDto;
+import org.grnet.pidmr.dto.ProviderRequestV1;
+import org.grnet.pidmr.dto.ProviderRequestV2;
+import org.grnet.pidmr.dto.UpdateProvider;
+import org.grnet.pidmr.dto.UpdateProviderV1;
+import org.grnet.pidmr.dto.UpdateProviderV2;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.database.Action;
 import org.grnet.pidmr.entity.database.Provider;
@@ -153,17 +159,9 @@ public class DatabaseProviderService implements ProviderServiceI{
         return identification;
     }
 
-    /**
-     * This method stores a new Provider in the database.
-     * @param request The Provider to be created.
-     * @return The created Provider.
-     * @throws
-     */
-    @Transactional
-    public ProviderDto create(ProviderRequest request){
+    private Provider setProviderForCreation(ProviderRequest request){
 
         checkIfTypeExists(request.type);
-        checkIfActionsSupported(request.actions);
 
         var newProvider = new Provider();
         newProvider.setName(request.name);
@@ -172,9 +170,26 @@ public class DatabaseProviderService implements ProviderServiceI{
         newProvider.setExample(request.example);
         newProvider.setCreatedBy(requestUserContext.getVopersonID());
         newProvider.setStatus(ProviderStatus.PENDING);
+        newProvider.setReliesOnDois(request.reliesOnDois);
+        return newProvider;
+    }
+
+    /**
+     * This method stores a new Provider in the database.
+     * @param request The Provider to be created.
+     * @return The created Provider.
+     * @throws
+     */
+    @Transactional
+    public ProviderDto create(ProviderRequestV1 request){
+
+        checkIfActionsSupported(request.actions);
+
+        var newProvider = setProviderForCreation(request);
+
         request
                 .actions
-                .forEach(action->newProvider.addAction(actionRepository.findById(action)));
+                .forEach(action->newProvider.addAction(actionRepository.findById(action), null));
 
         request.
                 regexes
@@ -188,6 +203,37 @@ public class DatabaseProviderService implements ProviderServiceI{
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
     }
+
+    /**
+     * This method stores a new Provider in the database.
+     * @param request The Provider to be created.
+     * @return The created Provider.
+     * @throws
+     */
+    @Transactional
+    public ProviderDto createV2(ProviderRequestV2 request){
+
+        checkIfActionsSupported(request.actions.stream().map(action->action.mode).collect(Collectors.toSet()));
+
+        var newProvider = setProviderForCreation(request);
+
+        request
+                .actions
+                .forEach(action->newProvider.addAction(actionRepository.findById(action.mode), action.endpoint));
+
+        request.
+                regexes
+                .forEach(regex->{
+                    var regexp = new Regex();
+                    regexp.setRegex(regex);
+                    newProvider.addRegex(regexp);
+                });
+
+        providerRepository.persist(newProvider);
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
+    }
+
 
     /**
      * This method deletes from database a Provider by its ID.
@@ -221,29 +267,13 @@ public class DatabaseProviderService implements ProviderServiceI{
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }
 
-    /**
-     * This method updates one or more attributes of a Provider.
-     * @param request The Provider attributes to be updated.
-     * @param id The Provider to be updated.
-     * @return The updated Provider.
-     */
-    @ManageEntity(entityType = "Provider")
-    @Transactional
-    public ProviderDto update(Long id, UpdateProviderDto request){
+    private Provider setProviderForUpdating(Long id, UpdateProvider request){
 
         var provider = providerRepository.findById(id);
 
         if(StringUtils.isNotEmpty(request.type)){
 
             provider.setType(request.type);
-        }
-
-        if(!request.actions.isEmpty()){
-            checkIfActionsSupported(request.actions);
-
-            var actions = provider.getActions();
-            new ArrayList<>(actions).forEach(provider::removeAction);
-            request.actions.forEach(newAction-> provider.addAction(actionRepository.findById(newAction)));
         }
 
         if(!request.regexes.isEmpty()){
@@ -274,7 +304,64 @@ public class DatabaseProviderService implements ProviderServiceI{
             provider.setExample(request.example);
         }
 
+        provider.setReliesOnDois(request.reliesOnDois);
+
         provider.setStatus(ProviderStatus.PENDING);
+
+        return provider;
+    }
+
+    /**
+     * This method updates one or more attributes of a Provider.
+     * @param request The Provider attributes to be updated.
+     * @param id The Provider to be updated.
+     * @return The updated Provider.
+     */
+    @ManageEntity(entityType = "Provider")
+    @Transactional
+    public ProviderDto update(Long id, UpdateProviderV1 request){
+
+        var provider = setProviderForUpdating(id, request);
+
+        if(!request.actions.isEmpty()){
+            checkIfActionsSupported(request.actions);
+
+            var actions = provider.getActions();
+            var tuples = actions.stream().map(act-> Tuple.of(act.getAction(), act.getEndpoint())).collect(Collectors.toList());
+            new ArrayList<>(actions).forEach(action-> provider.removeAction(action.getAction()));
+            Panache.getEntityManager().flush();
+            request.actions.forEach(newAction-> {
+
+                var dbAction = actionRepository.findById(newAction);
+                var optional = tuples.stream().filter(tuple->tuple._1.equals(dbAction)).findFirst();
+                optional.ifPresentOrElse(tpl -> provider.addAction(dbAction, tpl._2), ()->provider.addAction(dbAction, null));
+            });
+        }
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+    }
+
+    /**
+     * This method updates one or more attributes of a Provider.
+     * @param request The Provider attributes to be updated.
+     * @param id The Provider to be updated.
+     * @return The updated Provider.
+     */
+    @ManageEntity(entityType = "Provider")
+    @Transactional
+    public ProviderDto updateV2(Long id, UpdateProviderV2 request){
+
+        var provider = setProviderForUpdating(id, request);
+
+        if(!request.actions.isEmpty()){
+
+            checkIfActionsSupported(request.actions.stream().map(action->action.mode).collect(Collectors.toSet()));
+            var actions = provider.getActions();
+            new ArrayList<>(actions).forEach(action-> provider.removeAction(action.getAction()));
+            Panache.getEntityManager().flush();
+            request.actions.forEach(newAction-> provider.addAction(actionRepository.findById(newAction.mode), newAction.endpoint));
+        }
+
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }

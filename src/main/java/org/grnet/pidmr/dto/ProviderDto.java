@@ -72,4 +72,13 @@ public class ProviderDto {
     )
     @JsonProperty("example")
     public String example;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicate whether a provider relies on DOIs.",
+            example = "false"
+    )
+    @JsonProperty("relies_on_dois")
+    public boolean reliesOnDois;
 }

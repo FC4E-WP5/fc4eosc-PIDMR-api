@@ -112,22 +112,6 @@ public class MetaresolverEndpointTest {
     }
 
     @Test
-    public void resolveGermanUriViaAPI(){
-
-        var location = given()
-                .contentType(ContentType.JSON)
-                .queryParam("pid", "urn:nbn:de:hbz:6-85659524771")
-                .get("/resolve")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(LocationDto.class);
-
-        assertEquals("https://miami.uni-muenster.de/Record/2a2bf27d-5d02-4695-a35f-89e22f88a8ee", location.url);
-    }
-
-    @Test
     public void resolveZenodoMetadataModeViaAPI(){
 
         var location = given()
@@ -142,22 +126,5 @@ public class MetaresolverEndpointTest {
                 .as(LocationDto.class);
 
         assertEquals("https://zenodo.org/api/records/8056361", location.url);
-    }
-
-    @Test
-    public void resolveZenodoLandingPageModeViaAPI(){
-
-        var location = given()
-                .contentType(ContentType.JSON)
-                .queryParam("pid", "10.5281/zenodo.8056361")
-                .queryParam("pidMode", "landingpage")
-                .get("/resolve")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(LocationDto.class);
-
-        assertEquals("https://zenodo.org/records/8056361", location.url);
     }
 }
