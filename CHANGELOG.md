@@ -24,11 +24,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
-### Added
+## 2.2.0 - 2024-06-10
 
--   [#81](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/56) - PIDMR-176 Create Endpoint to Retrieve All Role Change Requests by a User.
--   [#82](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/82) - PIDMR-177 Remove Assigned Role on Rejected Role Change Request by Admin.
-
+---
 
 ### Added
 
@@ -41,6 +39,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   [#65](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/65) - PIDMR-164 Create a new endpoint to get all the promotion requests submitted through our API.
 -   [#66](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/66) - PIDMR-158 Implement API Endpoint for Assigning User Roles.
 -   [#70](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/70) - PIDMR-169 EMAIL after registration
+-   [#81](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/56) - PIDMR-176 Create Endpoint to Retrieve All Role Change Requests by a User.
+-   [#82](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/82) - PIDMR-177 Remove Assigned Role on Rejected Role Change Request by Admin.
 
 ## 2.1.0 - 2024-04-29
 
