@@ -198,7 +198,6 @@ public class DatabaseProviderService implements ProviderServiceI{
                     regexp.setRegex(regex);
                     newProvider.addRegex(regexp);
                 });
-
         providerRepository.persist(newProvider);
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
@@ -212,7 +211,6 @@ public class DatabaseProviderService implements ProviderServiceI{
      */
     @Transactional
     public ProviderDto createV2(ProviderRequestV2 request){
-
         checkIfActionsSupported(request.actions.stream().map(action->action.mode).collect(Collectors.toSet()));
 
         var newProvider = setProviderForCreation(request);
