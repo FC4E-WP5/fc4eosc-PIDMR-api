@@ -100,7 +100,7 @@ public class RoleChangeRequestDto {
             type            = SchemaType.STRING,
             implementation  = RoleChangeRequestStatus.class,
             description     = "Status of the request",
-            example         = "[PENDING, APPROVED]"
+            example         = "[PENDING, APPROVED, REJECTED]"
     )
     public String status;
 
