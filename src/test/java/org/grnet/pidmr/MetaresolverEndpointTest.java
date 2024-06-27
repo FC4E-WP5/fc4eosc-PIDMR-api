@@ -70,7 +70,7 @@ public class MetaresolverEndpointTest {
                 .extract()
                 .as(LocationDto.class);
 
-        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/?", location.url);
+        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location.url);
     }
 
     @Test
@@ -86,7 +86,7 @@ public class MetaresolverEndpointTest {
 
         var location = metaresolverService.resolve("ark:/67531/metapth346793", "metadata");
 
-        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/?", location);
+        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location);
     }
 
     @Test
