@@ -72,7 +72,7 @@ public class ProviderService implements ProviderServiceI {
     }
 
     @Override
-    public Identification identify(String text) {
+    public Set<Identification> multipleIdentification(String text) {
 
         throw new NotSupportedException("Not implemented yet!");
     }
@@ -239,5 +239,11 @@ public class ProviderService implements ProviderServiceI {
                     .map(Provider::getType)
                     .findAny();
         }
+    }
+
+    @Override
+    public Identification identify(String text) {
+
+        throw new NotSupportedException("Not implemented yet!");
     }
 }
