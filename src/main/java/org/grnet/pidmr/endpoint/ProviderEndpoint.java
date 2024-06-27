@@ -22,6 +22,7 @@ import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.PidIdentificationBatchRequest;
 import org.grnet.pidmr.dto.PidIdentificationBatchResponse;
+import org.grnet.pidmr.dto.PidMultipleIdentificationBatchResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.pagination.PageResource;

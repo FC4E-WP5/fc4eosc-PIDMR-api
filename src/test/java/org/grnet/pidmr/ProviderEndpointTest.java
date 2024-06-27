@@ -1,5 +1,6 @@
 package org.grnet.pidmr;
 
+import io.quarkus.test.junit.TestProfile;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.Validity;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @QuarkusTest
 @TestHTTPEndpoint(ProviderEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestProfile(PIDMRTestProfile.class)
 public class ProviderEndpointTest {
 
     @Test
@@ -509,11 +511,41 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void identifyText(){
+    public void multipleIdentificationText(){
+
+        var identifications = given()
+                .basePath("v2/providers")
+                .contentType(ContentType.JSON)
+                .queryParam("text", "ark:/13030/")
+                .get("/identify")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Identification[].class);
+
+        assertEquals("ark", identifications[0].type);
+
+        var identifications1 = given()
+                .basePath("v2/providers")
+                .contentType(ContentType.JSON)
+                .queryParam("text", "10.5281/")
+                .get("/identify")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Identification[].class);
+
+        assertEquals("10.5281/zenodo", identifications1[0].type);
+    }
+
+    @Test
+    public void identificationText(){
 
         var identification = given()
                 .contentType(ContentType.JSON)
-                .queryParam("text", "ark:")
+                .queryParam("text", "ark:/13030/")
                 .get("/identify")
                 .then()
                 .assertThat()
@@ -525,7 +557,7 @@ public class ProviderEndpointTest {
 
         var identification1 = given()
                 .contentType(ContentType.JSON)
-                .queryParam("text", "10.")
+                .queryParam("text", "10.5281/")
                 .get("/identify")
                 .then()
                 .assertThat()

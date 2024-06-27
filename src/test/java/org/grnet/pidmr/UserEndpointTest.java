@@ -2,6 +2,7 @@ package org.grnet.pidmr;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
 import org.grnet.pidmr.dto.*;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 @TestHTTPEndpoint(UserEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestProfile(PIDMRTestProfile.class)
 public class UserEndpointTest extends KeycloakTest {
     @ParameterizedTest
     @MethodSource("userProfileTestData")

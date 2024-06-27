@@ -1,5 +1,6 @@
 package org.grnet.pidmr;
 
+import io.quarkus.test.junit.TestProfile;
 import jakarta.inject.Inject;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.LocationDto;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @QuarkusTest
 @TestHTTPEndpoint(MetaResolverEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestProfile(PIDMRTestProfile.class)
 public class MetaresolverEndpointTest {
 
     @Inject

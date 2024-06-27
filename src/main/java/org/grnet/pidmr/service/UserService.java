@@ -8,10 +8,7 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.pidmr.dto.RoleChangeRequestDto;
-import org.grnet.pidmr.dto.UpdateRoleChangeRequestStatus;
-import org.grnet.pidmr.dto.UserRoleChangeRequest;
-import org.grnet.pidmr.dto.UserProfileDto;
+import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.entity.database.History;
 import org.grnet.pidmr.entity.database.RoleChangeRequest;
 import org.grnet.pidmr.enums.MailType;
@@ -68,10 +65,9 @@ public class UserService {
         var dto = new UserProfileDto();
         dto.id = requestUserContext.getVopersonID();
         dto.roles = requestUserContext.getRoles(clientID);
-
+        dto.email = requestUserContext.getUserEmail();
         return dto;
     }
-
     @Transactional
     public void persistRoleChangeRequest(UserRoleChangeRequest userRoleChangeRequest){
 
@@ -90,15 +86,10 @@ public class UserService {
 
         roleChangeRequestsRepository.persist(roleChangeRequest);
 
-
-        CompletableFuture.supplyAsync(() ->
-                mailerService.retrieveAdminEmails()
-        ).thenAccept(addrs -> {
-            mailerService.sendMails(roleChangeRequest, MailType.ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST, addrs);
-            if (!addrs.contains(roleChangeRequest)) {
-                mailerService.sendMails(roleChangeRequest, MailType.USER_ROLE_CHANGE_REQUEST_CREATION, Arrays.asList(roleChangeRequest.getEmail()));
-            }
-        });
+//        var userID = requestUserContext.getVopersonID();
+//        EmailContextForStatusUpdate emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), roleChangeRequest.getId(), String.valueOf(roleChangeRequest.getStatus()));
+//
+//        mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST, MailType.USER_ROLE_CHANGE_REQUEST_CREATION);
 
     }
 
@@ -118,7 +109,11 @@ public class UserService {
             keycloakAdminService.removeRoles(request.getUserId(), List.of(request.getRole()));
         }
 
-        MailerService.CustomCompletableFuture.runAsync(() -> mailerService.sendMails(request, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS, Arrays.asList(request.getEmail())));
+//        var userID = request.getUserId();
+//        EmailContextForStatusUpdate emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), request.getId(), String.valueOf(request.getStatus()));
+//
+//        mailerService.sendEmailsWithContext(emailContext, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS);
+
     }
 
     @Transactional
