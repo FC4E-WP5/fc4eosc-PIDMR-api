@@ -1,6 +1,7 @@
 package org.grnet.pidmr.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -8,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Schema(name="Identification", description="An object representing the result of text identification.")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Identification {
 
     @Schema(
@@ -25,6 +27,7 @@ public class Identification {
             description = "Indicates the possible type of PID (e.g., ark, arXiv, etc.).",
             example = "ark"
     )
+    @EqualsAndHashCode.Include
     public String type;
 
     @Schema(
