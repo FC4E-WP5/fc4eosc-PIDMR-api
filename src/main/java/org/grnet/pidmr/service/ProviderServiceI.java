@@ -7,6 +7,7 @@ import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.AbstractProvider;
 import org.grnet.pidmr.pagination.PageResource;
 
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public interface ProviderServiceI {
@@ -62,6 +63,14 @@ public interface ProviderServiceI {
                 .range(0, type.length())
                 .allMatch(index->Character.toLowerCase(type.charAt(index)) == Character.toLowerCase(pid.charAt(index)));
     }
+
+    /**
+     * This method identifies PIDs from the provided text.
+     *
+     * @param text The text to be checked for PID.
+     * @return A list containing identification status, possible type, and an example of PID.
+     */
+    Set<Identification> multipleIdentification(String text);
 
     /**
      * This method identifies PIDs from the provided text.

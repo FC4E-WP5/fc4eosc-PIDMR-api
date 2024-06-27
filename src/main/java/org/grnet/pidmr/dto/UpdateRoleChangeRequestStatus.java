@@ -16,7 +16,7 @@ public class UpdateRoleChangeRequestStatus {
             type = SchemaType.STRING,
             implementation = RoleChangeRequestStatus.class,
             required = true,
-            description = "The Role Change Request status (e.g. APPROVED, PENDING).",
+            description = "The Role Change Request status (e.g. APPROVED, PENDING, REJECTED).",
             example = "APPROVED"
     )
     @JsonProperty("status")
