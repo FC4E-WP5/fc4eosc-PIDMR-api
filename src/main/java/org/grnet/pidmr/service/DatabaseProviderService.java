@@ -34,6 +34,7 @@ import org.grnet.pidmr.repository.RegexRepository;
 import org.grnet.pidmr.util.RequestUserContext;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -111,26 +112,54 @@ public class DatabaseProviderService implements ProviderServiceI{
     }
 
     @Override
-    public Identification identify(String text) {
+    public Set<Identification> multipleIdentification(String text) {
 
         var regexes = regexRepository.findAllRegexesBelongsToApprovedProviders();
 
-        var identification = new Identification();
-        identification.status = Identification.Status.INVALID;
-        identification.type = "";
-        identification.example = "";
+        var identifications = new HashSet<Identification>();
 
         for(Regex regex: regexes){
 
-            var identified = check(text, Pattern.compile(regex.getRegex()), regex.getProvider(), identification);
-
-            if(identified.status.equals(Identification.Status.VALID) || identified.status.equals(Identification.Status.AMBIGUOUS)){
-
-                break;
-            }
+            check(text, Pattern.compile(regex.getRegex()), regex.getProvider(), identifications);
         }
 
-        return identification;
+        if(identifications.isEmpty()){
+
+            var identification = new Identification();
+            identification.status = Identification.Status.INVALID;
+            identification.type = "";
+            identification.example = "";
+            identifications.add(identification);
+        }
+
+        return identifications;
+    }
+
+    private void check(CharSequence cs, Pattern pattern, Provider provider, Set<Identification> identifications) {
+
+        Matcher matcher = pattern.matcher(cs);
+
+        var dto = ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+
+        if(matcher.matches()){
+
+            var identification = new Identification();
+            identification.status = Identification.Status.VALID;
+            identification.type = provider.getType();
+            identification.example = provider.getExample();
+            identification.actions = dto.actions;
+            identifications.add(identification);
+        }
+
+        if (matcher.hitEnd()) {
+
+            var identification = new Identification();
+            identification.status = Identification.Status.AMBIGUOUS;
+            identification.type = provider.getType();
+            identification.example = provider.getExample();
+            identification.actions = dto.actions;
+            identifications.add(identification);
+        }
     }
 
     private Identification check(CharSequence cs, Pattern pattern, Provider provider, Identification identification) {
@@ -422,5 +451,28 @@ public class DatabaseProviderService implements ProviderServiceI{
         provider.setStatus(status);
 
         return ProviderMapper.INSTANCE.databaseAdminProviderToDto(provider);
+    }
+
+    @Override
+    public Identification identify(String text) {
+
+        var regexes = regexRepository.findAllRegexesBelongsToApprovedProviders();
+
+        var identification = new Identification();
+        identification.status = Identification.Status.INVALID;
+        identification.type = "";
+        identification.example = "";
+
+        for(Regex regex: regexes){
+
+            var identified = check(text, Pattern.compile(regex.getRegex()), regex.getProvider(), identification);
+
+            if(identified.status.equals(Identification.Status.VALID) || identified.status.equals(Identification.Status.AMBIGUOUS)){
+
+                break;
+            }
+        }
+
+        return identification;
     }
 }
