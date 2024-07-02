@@ -1,5 +1,6 @@
 package org.grnet.pidmr;
 
+import io.quarkus.test.junit.TestProfile;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.Validity;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @QuarkusTest
 @TestHTTPEndpoint(ProviderEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestProfile(PIDMRTestProfile.class)
 public class ProviderEndpointTest {
 
     @Test
