@@ -145,7 +145,7 @@ public class AdminEndpoint {
             description = "The corresponding Provider.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = ProviderDto.class)))
+                    implementation = AdminProviderDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
