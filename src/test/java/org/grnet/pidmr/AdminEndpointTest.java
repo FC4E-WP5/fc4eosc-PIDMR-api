@@ -1,22 +1,47 @@
 package org.grnet.pidmr;
 
+import io.quarkus.oidc.TokenIntrospection;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.Mock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
+import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.transaction.Transactional;
 import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.endpoint.AdminEndpoint;
+import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.enums.ProviderStatus;
+import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
+import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
+import org.grnet.pidmr.service.keycloak.KeycloakRole;
+import org.grnet.pidmr.util.RequestUserContext;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
+import javax.management.relation.Role;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @TestHTTPEndpoint(AdminEndpoint.class)
@@ -25,254 +50,322 @@ public class AdminEndpointTest extends KeycloakTest {
 
     @Inject
     DatabaseProviderService providerService;
-//
-//    @Test
-//    public void createProviderNotValidAction() {
-//
-//        var request = new ProviderRequestV1();
-//        request.name = "Test Provider.";
-//        request.type = "test-not-valid";
-//        request.description = "Test Provider.";
-//        request.regexes = Set.of("regexp");
-//        request.actions = Set.of("not_valid_action");
-//        request.example = "example";
-//
-//        var informativeResponse = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(404)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("There is an action that is not supported.", informativeResponse.message);
-//    }
+    @InjectMock
+    TokenIntrospection tokenIntrospectionMock;
 
-//    @Test
-//    public void createProvider() {
-//
-//        var request = new ProviderRequestV1();
-//        request.name = "Test Provider.";
-//        request.type = "test-create-provider";
-//        request.description = "Test Provider.";
-//        request.regexes = Set.of("regexp");
-//        request.actions = Set.of("resource");
-//        request.example = "example";
-//
-//        var provider = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(201)
-//                .extract()
-//                .as(ProviderDto.class);
-//
-//        assertEquals("test-create-provider", provider.type);
-//
-//        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
-//    }
+    @InjectMock
+    KeycloakAdminService keycloakAdminServiceMock;
 
-//    @Test
-//    public void createProviderExists() {
-//
-//        var request = new ProviderRequestV1();
-//        request.name = "Test Provider.";
-//        request.type = "test-exist-provider";
-//        request.description = "Test Provider.";
-//        request.regexes = Set.of("regexp");
-//        request.actions = Set.of("resource");
-//        request.example = "example";
-//
-//        var provider = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(201)
-//                .extract()
-//                .as(ProviderDto.class);
-//
-//        var informativeResponse = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(409)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("This Provider type {test-exist-provider} exists.", informativeResponse.message);
-//
-//        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
-//    }
+    @InjectMock
+    RequestUserContext requestUserContext;
+    @Inject
+    ProviderRepository providerRepository;
 
-//    @Test
-//    public void createProviderWithRegexWithoutApproving() {
-//
-//        var request = new ProviderRequestV1();
-//        request.name = "Test Provider.";
-//        request.type = "test-regex-provider-without-approving";
-//        request.description = "Test Provider.";
-//        request.regexes = Set.of("rege(x(es)?|xps?)");
-//        request.actions = Set.of("resource", "metadata");
-//        request.example = "example";
-//
-//        var provider = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(201)
-//                .extract()
-//                .as(ProviderDto.class);
-//
-//        var response = given()
-//                .basePath("/v1/providers")
-//                .contentType(ContentType.JSON)
-//                .queryParam("type", provider.type)
-//                .queryParam("pid", "regexps")
-//                .get("/validate")
-//                .then()
-//                .assertThat()
-//                .statusCode(406)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("This type {test-regex-provider-without-approving} is not supported.", response.message);
-//
-//        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
-//    }
 
-//    @Test
-//    public void createProviderWithRegexAfterApproving() {
-//
-//        var request = new ProviderRequestV1();
-//        request.name = "Test Provider.";
-//        request.type = "test-regex-provider-with-approving";
-//        request.description = "Test Provider.";
-//        request.regexes = Set.of("rege(x(es)?|xps?)");
-//        request.actions = Set.of("resource", "metadata");
-//        request.example = "example";
-//
-//        var provider = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(201)
-//                .extract()
-//                .as(ProviderDto.class);
-//
-//        var updateStatus = new UpdateProviderStatus();
-//        updateStatus.status = ProviderStatus.APPROVED.name();
-//
-//        given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(updateStatus)
-//                .contentType(ContentType.JSON)
-//                .put("/providers/{id}/update-status", provider.id)
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .extract()
-//                .as(AdminProviderDto.class);
-//
-//        var validity = given()
-//                .basePath("/v1/providers")
-//                .contentType(ContentType.JSON)
-//                .queryParam("type", provider.type)
-//                .queryParam("pid", "regexps")
-//                .get("/validate")
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .extract()
-//                .as(Validity.class);
-//
-//        assertTrue(validity.valid);
-//
-//        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
-//    }
+    @BeforeAll
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        var role1 = new KeycloakRole("admin_id", "admin", "The admin role");
+        var role2 = new KeycloakRole("user_id", "user", "The user role");
 
-//    @Test
-//    public void createProviderWithoutActions() {
 //
-//        var request = new ProviderRequestV1();
-//        request.name = "Test Provider.";
-//        request.type = "test-regex-provider";
-//        request.description = "Test Provider.";
-//        request.regexes = Set.of("rege(x(es)?|xps?)");
-//        request.example = "example";
+//        Mockito.when(keycloakAdminServiceMock.fetchUserRoles(any())).thenReturn(List.of(role));
+//        QuarkusMock.installMockForType(keycloakAdminServiceMock, KeycloakAdminService.class);
+
+        //when(tokenIntrospectionMock.getJsonObject()).thenReturn(createMockJsonObject("admin_voperson_id"));
+//        when(keycloakAdminServiceMock.getUserEmail("admin_voperson_id")).thenReturn("fakeuser@example.com");
+//        when(keycloakAdminServiceMock.getUserEmail("alice_voperson_id")).thenReturn("fakeuser@example.com");
+
+        //when(keycloakAdminServiceMock.fetchRoles()).thenReturn(Arrays.asList(role));
+
+   //     requestUserContext = new RequestUserContext(tokenIntrospectionMock, keycloakAdminServiceMock);
+// Mock token introspection to return voperson_id for admin user with required roles
 //
-//        var response = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(400)
-//                .extract()
-//                .as(InformativeResponse.class);
+//        JsonObject adminToken = createMockJsonObject("admin_voperson_id");
+//        adminToken.put("roles", Json.createArrayBuilder().add("admin").build()); // Example roles
+//        when(tokenIntrospectionMock.getJsonObject()).thenReturn(adminToken);
 //
+//// Mock token introspection to return voperson_id for alice user with required roles
+//        JsonObject aliceToken = createMockJsonObject("alice_voperson_id");
+//        aliceToken.put("roles", Json.createArrayBuilder()
+//                .add("user")
+//                .build());
+//        when(tokenIntrospectionMock.getJsonObject()).thenReturn(aliceToken);
 //
-//        assertEquals("resolution_modes should have at least one entry.", response.message);
+//        when(keycloakAdminServiceMock.getUserEmail("admin_voperson_id")).thenReturn("admin@example.com");
+//        when(keycloakAdminServiceMock.getUserEmail("alice_voperson_id")).thenReturn("alice@example.com");
+
+        // Mock request user context for admin user
+        when(requestUserContext.getVopersonID()).thenReturn("admin_voperson_id");
+        when(requestUserContext.getUserEmail()).thenReturn("admin@example.com");
+
+        // Mock request user context for alice user
+        when(requestUserContext.getVopersonID()).thenReturn("alice_voperson_id");
+        when(requestUserContext.getUserEmail()).thenReturn("alice@example.com");
+
+
+    }
+
+    private jakarta.json.JsonObject createMockJsonObject(String vopersonId) {
+
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("voperson_id", vopersonId);
+        return builder.build();
+    }
+
+    //    @BeforeEach
+//    public void each() {
+//
+//        providerRepository.deleteAll();
 //    }
-//
-//    @Test
-//    public void createProviderWithoutRegexes() {
-//
-//        var request = new ProviderRequestV1();
-//        request.name = "Test Provider.";
-//        request.type = "test-regex-provider";
-//        request.description = "Test Provider.";
-//        request.actions = Set.of("resource", "metadata");
-//        request.example = "example";
-//
-//        var response = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(400)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//
-//        assertEquals("regexes should have at least one entry.", response.message);
-//    }
+    @Test
+    public void createProviderNotValidAction() {
+
+        var request = new ProviderRequestV1();
+        request.name = "Test Provider.";
+        request.type = "test-not-valid";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("regexp");
+        request.actions = Set.of("not_valid_action");
+        request.example = "example";
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is an action that is not supported.", informativeResponse.message);
+    }
+
+    @Test
+    public void createProvider() {
+
+        var request = new ProviderRequestV1();
+        request.name = "Test Provider.";
+        request.type = "test-create-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("regexp");
+        request.actions = Set.of("resource");
+        request.example = "example";
+
+        var provider = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        assertEquals("test-create-provider", provider.type);
+
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
+    }
+
+    @Test
+    public void createProviderExists() {
+
+        var request = new ProviderRequestV1();
+        request.name = "Test Provider.";
+        request.type = "test-exist-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("regexp");
+        request.actions = Set.of("resource");
+        request.example = "example";
+
+        var provider = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("This Provider type {test-exist-provider} exists.", informativeResponse.message);
+
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
+    }
+
+    @Test
+    public void createProviderWithRegexWithoutApproving() {
+
+        var request = new ProviderRequestV1();
+        request.name = "Test Provider.";
+        request.type = "test-regex-provider-without-approving";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource", "metadata");
+        request.example = "example";
+
+        var provider = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var response = given()
+                .basePath("/v1/providers")
+                .contentType(ContentType.JSON)
+                .queryParam("type", provider.type)
+                .queryParam("pid", "regexps")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(406)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("This type {test-regex-provider-without-approving} is not supported.", response.message);
+
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
+    }
+
+    @Test
+    public void createProviderWithRegexAfterApproving() {
+
+        var request = new ProviderRequestV1();
+        request.name = "Test Provider.";
+        request.type = "test-regex-provider-with-approving";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource", "metadata");
+        request.example = "example";
+
+        var provider = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        var updateStatus = new UpdateProviderStatus();
+        updateStatus.status = ProviderStatus.APPROVED.name();
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(updateStatus)
+                .contentType(ContentType.JSON)
+                .put("/providers/{id}/update-status", provider.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(AdminProviderDto.class);
+
+        var validity = given()
+                .basePath("/v1/providers")
+                .contentType(ContentType.JSON)
+                .queryParam("type", provider.type)
+                .queryParam("pid", "regexps")
+                .get("/validate")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(Validity.class);
+
+        assertTrue(validity.valid);
+
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
+    }
+
+    @Test
+    public void createProviderWithoutActions() {
+
+        var request = new ProviderRequestV1();
+        request.name = "Test Provider.";
+        request.type = "test-regex-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.example = "example";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+
+        assertEquals("resolution_modes should have at least one entry.", response.message);
+    }
+
+    @Test
+    public void createProviderWithoutRegexes() {
+
+        var request = new ProviderRequestV1();
+        request.name = "Test Provider.";
+        request.type = "test-regex-provider";
+        request.description = "Test Provider.";
+        request.actions = Set.of("resource", "metadata");
+        request.example = "example";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+
+        assertEquals("regexes should have at least one entry.", response.message);
+    }
 
 //    @Test
 //    public void getProvider() {
 //
+//        //      providerService.deleteAll();
 //        var request = new ProviderRequestV1();
 //        request.name = "Test Provider.";
-//        request.type = "test-get-provider";
+//        request.type = "test-get-provider-1";
 //        request.description = "Test Provider.";
 //        request.regexes = Set.of("rege(x(es)?|xps?)");
 //        request.actions = Set.of("resource", "metadata");
@@ -307,26 +400,31 @@ public class AdminEndpointTest extends KeycloakTest {
 //        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
 //    }
 
-//    @Test
-//    public void getProviderNotFound() {
-//
-//        var response = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .contentType(ContentType.JSON)
-//                .get("/providers/{id}", 1000L)
-//                .then()
-//                .assertThat()
-//                .statusCode(404)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("There is no Provider with the following id: " + 1000L, response.message);
-//    }
+    @Test
+    public void getProviderNotFound() {
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .get("/providers/{id}", 1000L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Provider with the following id: " + 1000L, response.message);
+    }
 
 //    @Test
 //    public void deleteProvider() {
 //
+//        List<Provider> allProviders = providerRepository.findAll().list();
+//        for (Provider provider : allProviders) {
+//            System.out.println("provider id " + provider.getId());
+//            providerService.deleteProviderByIdWithoutCheckingPermissions(provider.getId());
+//        }
 //        var request = new ProviderRequestV1();
 //        request.name = "Test Provider.";
 //        request.type = "test-delete-provider";
@@ -414,7 +512,7 @@ public class AdminEndpointTest extends KeycloakTest {
 
 //    @Test
 //    public void updateProviderRegexesAndActions() {
-//
+
 //        var request = new ProviderRequestV1();
 //        request.name = "Test Provider.";
 //        request.type = "test-change-regex-action-provider";
@@ -461,115 +559,115 @@ public class AdminEndpointTest extends KeycloakTest {
 //        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
 //    }
 
-//    @Test
-//    public void providerForbidden() {
-//
-//        var createForbidden = given()
-//                .auth()
-//                .oauth2(getAccessToken("bob"))
-//                .body(new ProviderRequestV1())
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(403)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("You do not have permission to access this resource.", createForbidden.message);
-//
-//        var updateForbidden = given()
-//                .auth()
-//                .oauth2(getAccessToken("bob"))
-//                .body(new UpdateProviderV1())
-//                .contentType(ContentType.JSON)
-//                .patch("/providers/{id}", 3)
-//                .then()
-//                .assertThat()
-//                .statusCode(403)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("You do not have permission to access this resource.", updateForbidden.message);
-//
-//        var deleteForbidden = given()
-//                .auth()
-//                .oauth2(getAccessToken("bob"))
-//                .contentType(ContentType.JSON)
-//                .delete("/providers/{id}", 2)
-//                .then()
-//                .assertThat()
-//                .statusCode(403)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("You do not have permission to access this resource.", deleteForbidden.message);
-//
-//        var readForbidden = given()
-//                .auth()
-//                .oauth2(getAccessToken("bob"))
-//                .contentType(ContentType.JSON)
-//                .get("/providers/{id}", 1)
-//                .then()
-//                .assertThat()
-//                .statusCode(403)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("You do not have permission to access this resource.", readForbidden.message);
-//    }
+    @Test
+    public void providerForbidden() {
 
-//    @Test
-//    public void providerForbiddenPermissionsOnEntity() {
-//
-//        var request = new ProviderRequestV1();
-//        request.name = "Test Provider.";
-//        request.type = "test-change-regex-action-provider";
-//        request.description = "Test Provider.";
-//        request.regexes = Set.of("rege(x(es)?|xps?)");
-//        request.actions = Set.of("resource");
-//        request.example = "example";
-//
-//        var provider = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post("/providers")
-//                .then()
-//                .assertThat()
-//                .statusCode(201)
-//                .extract()
-//                .as(ProviderDto.class);
-//
-//        //alice is a provider_admin and can only manage the providers she creates.
-//        var updateForbidden = given()
-//                .auth()
-//                .oauth2(getAccessToken("alice"))
-//                .body(new UpdateProviderV1())
-//                .contentType(ContentType.JSON)
-//                .patch("/providers/{id}", provider.id)
-//                .then()
-//                .assertThat()
-//                .statusCode(403)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//        assertEquals("You do not have permission to access this resource.", updateForbidden.message);
-//
-//        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
-//    }
+        var createForbidden = given()
+                .auth()
+                .oauth2(getAccessToken("bob"))
+                .body(new ProviderRequestV1())
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
 
-//    @Test
-//    public void testGetChangeRoleByIdNotFound() {
-//
-//        given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .contentType(ContentType.JSON)
-//                .get("/users/role-change-requests/{id}", -1L)
-//                .then()
-//                .assertThat()
-//                .statusCode(404);
-//    }
+        assertEquals("You do not have permission to access this resource.", createForbidden.message);
+
+        var updateForbidden = given()
+                .auth()
+                .oauth2(getAccessToken("bob"))
+                .body(new UpdateProviderV1())
+                .contentType(ContentType.JSON)
+                .patch("/providers/{id}", 3)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", updateForbidden.message);
+
+        var deleteForbidden = given()
+                .auth()
+                .oauth2(getAccessToken("bob"))
+                .contentType(ContentType.JSON)
+                .delete("/providers/{id}", 2)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", deleteForbidden.message);
+
+        var readForbidden = given()
+                .auth()
+                .oauth2(getAccessToken("bob"))
+                .contentType(ContentType.JSON)
+                .get("/providers/{id}", 1)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", readForbidden.message);
+    }
+
+    @Test
+    public void providerForbiddenPermissionsOnEntity() {
+
+        var request = new ProviderRequestV1();
+        request.name = "Test Provider.";
+        request.type = "test-change-regex-action-provider";
+        request.description = "Test Provider.";
+        request.regexes = Set.of("rege(x(es)?|xps?)");
+        request.actions = Set.of("resource");
+        request.example = "example";
+
+        var provider = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/providers")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ProviderDto.class);
+
+        //alice is a provider_admin and can only manage the providers she creates.
+        var updateForbidden = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(new UpdateProviderV1())
+                .contentType(ContentType.JSON)
+                .patch("/providers/{id}", provider.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", updateForbidden.message);
+
+        providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
+    }
+
+    @Test
+    public void testGetChangeRoleByIdNotFound() {
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .get("/users/role-change-requests/{id}", -1L)
+                .then()
+                .assertThat()
+                .statusCode(404);
+    }
 }
