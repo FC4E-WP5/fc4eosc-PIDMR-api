@@ -51,6 +51,7 @@ public interface ProviderMapper {
     @Mapping(source = "regexes", target = "regexes", qualifiedByName = "database-regexes")
     @Mapping(source = "actions", target = "actions", qualifiedByName = "database-actions")
     @Mapping(source = "createdBy", target = "userId")
+    @Mapping(source = "statusUpdatedBy", target = "statusUpdatedBy")
     AdminProviderDto databaseAdminProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
 
     @Named("database-actions")
