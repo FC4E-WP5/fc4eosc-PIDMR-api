@@ -234,10 +234,10 @@ public class DatabaseProviderService implements ProviderServiceI{
                 });
         providerRepository.persist(newProvider);
 
-        //var userID = newProvider.getCreatedBy();
-        //var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(newProvider.getStatus()));
+        var userID = newProvider.getCreatedBy();
+        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(newProvider.getStatus()));
 
-        //mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION, MailType.PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION);
+        mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION, MailType.PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION);
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
     }
@@ -268,10 +268,10 @@ public class DatabaseProviderService implements ProviderServiceI{
 
         providerRepository.persist(newProvider);
 
-        //var userID = newProvider.getCreatedBy();
-        //var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(newProvider.getStatus()));
+        var userID = newProvider.getCreatedBy();
+        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(newProvider.getStatus()));
 
-        //mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION, MailType.PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION);
+        mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION, MailType.PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION);
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
     }
@@ -453,16 +453,13 @@ public class DatabaseProviderService implements ProviderServiceI{
         var newProvider = providerRepository.findById(id);
         newProvider.setStatus(status);
 
-        //var userID = newProvider.getCreatedBy();
-        //var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(status));
+        var userID = newProvider.getCreatedBy();
+        EmailContextForStatusUpdate emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(status));
 
-        //mailerService.sendEmailsWithContext(emailContext, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS,MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS);
-
-        newProvider.setStatusUpdatedBy(requestUserContext.getVopersonID());
+        mailerService.sendEmailsWithContext(emailContext, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS,MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS);
 
         return ProviderMapper.INSTANCE.databaseAdminProviderToDto(newProvider);
     }
-
     @Override
     public Identification identify(String text) {
 

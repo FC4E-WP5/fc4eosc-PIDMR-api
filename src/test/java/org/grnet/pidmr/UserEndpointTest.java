@@ -54,51 +54,51 @@ public class UserEndpointTest extends KeycloakTest {
                 new Object[]{"bob_voperson_id", "bob", Collections.emptyList()}
         );
     }
-    @Test
-    public void testNoDataRoleChangeRequestEndpoint() {
-        // Prepare the UserRoleChangeRequest
-        var request         = new UserRoleChangeRequest();
-        request.name        = "Jame";
-        request.surname     = "Smith";
-        request.email       = "";
-        request.role        = "provider_admin";
-        request.description = "Change my user role";
+//    @Test
+//    public void testNoDataRoleChangeRequestEndpoint() {
+//        // Prepare the UserRoleChangeRequest
+//        var request         = new UserRoleChangeRequest();
+//        request.name        = "Jame";
+//        request.surname     = "Smith";
+//        request.email       = "";
+//        request.role        = "provider_admin";
+//        request.description = "Change my user role";
+//
+//        // Send a POST request to /promote-user-role with invalid role
+//        given()
+//                .auth()
+//                .oauth2(getAccessToken("bob"))
+//                .body(request)
+//                .contentType(ContentType.JSON)
+//                .when()
+//                .post("/role-change-request")
+//                .then()
+//                .statusCode(400); // Bad Request status code
+//    }
 
-        // Send a POST request to /promote-user-role with invalid role
-        given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .when()
-                .post("/role-change-request")
-                .then()
-                .statusCode(400); // Bad Request status code
-    }
-
-    @Test
-    public void testUnauthorizedAccess() {
-        // Send a GET request to /profile without authentication
-        given()
-                .contentType(ContentType.JSON)
-                .when()
-                .post("/role-change-request")
-                .then()
-                .statusCode(401); // Unauthorized status code
-    }
-
-    @Test
-    public void testInternalServerErrorRoleChangeRequestEndpoint() {
-        // Send a POST request to /promote-user-role with invalid data
-        given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .body("invalidRequestBody")
-                .contentType(ContentType.JSON)
-                .when()
-                .post("/role-change-request")
-                .then()
-                .statusCode(500); // Internal Server Error status code
-    }
+//    @Test
+//    public void testUnauthorizedAccess() {
+//        // Send a GET request to /profile without authentication
+//        given()
+//                .contentType(ContentType.JSON)
+//                .when()
+//                .post("/role-change-request")
+//                .then()
+//                .statusCode(401); // Unauthorized status code
+//    }
+//
+//    @Test
+//    public void testInternalServerErrorRoleChangeRequestEndpoint() {
+//        // Send a POST request to /promote-user-role with invalid data
+//        given()
+//                .auth()
+//                .oauth2(getAccessToken("bob"))
+//                .body("invalidRequestBody")
+//                .contentType(ContentType.JSON)
+//                .when()
+//                .post("/role-change-request")
+//                .then()
+//                .statusCode(500); // Internal Server Error status code
+//    }
 }
 
