@@ -25,4 +25,13 @@ public class AdminProviderDto extends ProviderDto {
     )
     @JsonProperty("user_id")
     public String userId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The ID of the admin who changed the user's status.",
+            example = "7827fbb605a23b0cbd5cb4db292fe6dd6c7734a27057eb163d616a6ecd02d2ec@einfra.grnet.gr"
+    )
+    @JsonProperty("status_updated_by")
+    public String statusUpdatedBy;
 }

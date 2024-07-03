@@ -21,8 +21,8 @@ public class RequestUserContext {
     @Getter
     private final String vopersonID;
 
-    @Getter
-    private final String userEmail;
+    //@Getter
+    //private final String userEmail;
 
     @Inject
     private TokenIntrospection tokenIntrospection;
@@ -35,7 +35,7 @@ public class RequestUserContext {
         try {
 
             this.vopersonID = tokenIntrospection.getJsonObject().getString("voperson_id");
-            this.userEmail = keycloakAdminService.getUserEmail(vopersonID);
+            //this.userEmail = keycloakAdminService.getUserEmail(vopersonID);
             this.tokenIntrospection = tokenIntrospection;
         } catch (Exception e) {
 
