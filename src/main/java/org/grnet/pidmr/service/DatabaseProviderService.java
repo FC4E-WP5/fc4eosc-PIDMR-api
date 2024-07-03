@@ -302,11 +302,11 @@ public class DatabaseProviderService implements ProviderServiceI{
      * @return The Provider stored in the database.
      */
     @ManageEntity(entityType = "Provider")
-    public ProviderDto getProviderById(Long providerId) {
+    public AdminProviderDto getProviderById(Long providerId) {
 
         var provider = providerRepository.findById(providerId);
 
-        return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+        return ProviderMapper.INSTANCE.databaseAdminProviderToDto(provider);
     }
 
     private Provider setProviderForUpdating(Long id, UpdateProvider request){

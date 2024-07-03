@@ -288,7 +288,7 @@ public class AdminEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(ProviderDto.class);
+                .as(AdminProviderDto.class);
 
         var response = given()
                 .auth()
@@ -299,7 +299,7 @@ public class AdminEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(ProviderDto.class);
+                .as(AdminProviderDto.class);
 
         assertEquals(request.name, response.name);
         assertEquals(request.type, response.type);
