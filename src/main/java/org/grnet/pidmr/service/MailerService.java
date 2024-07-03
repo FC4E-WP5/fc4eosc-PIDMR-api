@@ -61,6 +61,7 @@ public class MailerService {
 
     @ConfigProperty(name = "api.name")
     String apiName;
+    //just to test
 
     public List<String> retrieveAdminEmails() {
 
