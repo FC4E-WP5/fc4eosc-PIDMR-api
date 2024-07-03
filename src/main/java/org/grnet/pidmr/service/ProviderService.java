@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotSupportedException;
 import jakarta.ws.rs.core.UriInfo;

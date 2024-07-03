@@ -71,9 +71,6 @@ public class AdminEndpoint {
     UserService userService;
 
     @Inject
-    RoleChangeRequestsRepository roleChangeRequestsRepository;
-
-    @Inject
     AdminService adminService;
 
 
