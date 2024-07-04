@@ -62,9 +62,10 @@ public interface ProviderMapper {
                 .map(action->{
 
                     var mode = new ResolutionModeDto();
-                    mode.mode = action.getAction().getMode();
-                    mode.name = action.getAction().getName();
-                    mode.endpoint = action.getEndpoint();
+                    mode.mode           = action.getAction().getMode();
+                    mode.name           = action.getAction().getName();
+                    //mode.endpoint       = action.getEndpoint();
+                    mode.endpoints = action.getEndpoints();
 
                     return mode;
                 })
