@@ -256,7 +256,10 @@ public class DatabaseProviderService implements ProviderServiceI{
 
         request
                 .actions
-                .forEach(action->newProvider.addAction(actionRepository.findById(action.mode), action.endpoint));
+                .forEach
+                        (action-> {
+                            newProvider.addAction(actionRepository.findById(action.mode), action.endpoints);
+                                });
 
         request.
                 regexes
@@ -265,6 +268,7 @@ public class DatabaseProviderService implements ProviderServiceI{
                     regexp.setRegex(regex);
                     newProvider.addRegex(regexp);
                 });
+
 
         providerRepository.persist(newProvider);
 
@@ -360,7 +364,7 @@ public class DatabaseProviderService implements ProviderServiceI{
             checkIfActionsSupported(request.actions);
 
             var actions = provider.getActions();
-            var tuples = actions.stream().map(act-> Tuple.of(act.getAction(), act.getEndpoint())).collect(Collectors.toList());
+            var tuples = actions.stream().map(act-> Tuple.of(act.getAction(), act.getEndpoints())).collect(Collectors.toList());
             new ArrayList<>(actions).forEach(action-> provider.removeAction(action.getAction()));
             Panache.getEntityManager().flush();
             request.actions.forEach(newAction-> {
@@ -391,7 +395,7 @@ public class DatabaseProviderService implements ProviderServiceI{
             var actions = provider.getActions();
             new ArrayList<>(actions).forEach(action-> provider.removeAction(action.getAction()));
             Panache.getEntityManager().flush();
-            request.actions.forEach(newAction-> provider.addAction(actionRepository.findById(newAction.mode), newAction.endpoint));
+            request.actions.forEach(newAction-> provider.addAction(actionRepository.findById(newAction.mode), newAction.endpoints));
         }
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }

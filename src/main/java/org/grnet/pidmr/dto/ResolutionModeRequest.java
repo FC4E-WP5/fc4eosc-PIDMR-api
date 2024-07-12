@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import java.util.List;
+import java.util.Set;
+
 @Schema(name="ResolutionModeRequest", description="Request to create a resolution mode.")
 public class ResolutionModeRequest {
 
@@ -18,11 +21,12 @@ public class ResolutionModeRequest {
     public String mode;
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "The resolution mode endpoint.",
-            example = "https://orcid.org/%s"
+            description = "The resolution mode set of endpoints.",
+            example = "[\"https://orcid.org/%s\", \"https://demo.orcid.org/%s\"]"
     )
-    @NotEmpty(message = "endpoint may not be empty.")
-    public String endpoint;
+    @NotEmpty(message = "endpoints may not be empty.")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String[] endpoints;
 }
