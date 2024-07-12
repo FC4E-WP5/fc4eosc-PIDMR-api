@@ -1,5 +1,11 @@
 package org.grnet.pidmr;
 
+import io.quarkus.oidc.TokenIntrospection;
+import io.quarkus.test.InjectMock;
+import jakarta.inject.Inject;
+import lombok.Getter;
+import lombok.Setter;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.Validity;
@@ -7,21 +13,41 @@ import org.grnet.pidmr.endpoint.ProviderEndpoint;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import org.grnet.pidmr.repository.ProviderRepository;
+import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
+import org.grnet.pidmr.util.RequestUserContext;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.MockitoAnnotations;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @TestHTTPEndpoint(ProviderEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProviderEndpointTest {
+    @ConfigProperty(name = "quarkus.oidc.client-id")
+    @Getter
+    @Setter
+    private String clientID;
+    @InjectMock
+    RequestUserContext requestUserContext;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        when(requestUserContext.getUserEmail()).thenReturn("admin@example.com");
+        when(requestUserContext.getUserEmail()).thenReturn("alice@example.com");
+    }
 
     @Test
-    public void pidNotEmpty(){
+    public void pidNotEmpty() {
 
         var informativeResponse = given()
                 .contentType(ContentType.JSON)
@@ -36,7 +62,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArk(){
+    public void validArk() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -53,7 +79,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArkLower(){
+    public void validArkLower() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -70,7 +96,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArkUpper(){
+    public void validArkUpper() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -87,7 +113,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void notValidArk(){
+    public void notValidArk() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -103,7 +129,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArxiv(){
+    public void validArxiv() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -120,7 +146,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArxivLower(){
+    public void validArxivLower() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -137,7 +163,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArxivUpper(){
+    public void validArxivUpper() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -154,7 +180,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArxivBefore2007(){
+    public void validArxivBefore2007() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -171,7 +197,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void notValidArxiv(){
+    public void notValidArxiv() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -187,7 +213,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validSwh(){
+    public void validSwh() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -204,7 +230,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validSwhLower(){
+    public void validSwhLower() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -221,7 +247,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validSwhUpper(){
+    public void validSwhUpper() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -238,7 +264,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void notValidSwh(){
+    public void notValidSwh() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -254,7 +280,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validDoi(){
+    public void validDoi() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -271,7 +297,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validDoiLower(){
+    public void validDoiLower() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -288,7 +314,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validDoiUpper(){
+    public void validDoiUpper() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -306,7 +332,7 @@ public class ProviderEndpointTest {
 
 
     @Test
-    public void notValidDoi(){
+    public void notValidDoi() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -322,7 +348,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validEpic(){
+    public void validEpic() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -340,7 +366,7 @@ public class ProviderEndpointTest {
 
 
     @Test
-    public void notValidEpic(){
+    public void notValidEpic() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -356,7 +382,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validEpicOld(){
+    public void validEpicOld() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -373,7 +399,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArkWithType(){
+    public void validArkWithType() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -391,7 +417,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validArkWithTypeError(){
+    public void validArkWithTypeError() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -408,7 +434,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validAGermanUriWithType(){
+    public void validAGermanUriWithType() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -426,7 +452,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validAFinishUriWithType(){
+    public void validAFinishUriWithType() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -444,7 +470,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validGermanUriUpper(){
+    public void validGermanUriUpper() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -460,7 +486,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validFinishUriUpper(){
+    public void validFinishUriUpper() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -476,7 +502,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void validZenodo(){
+    public void validZenodo() {
 
         var validity = given()
                 .contentType(ContentType.JSON)
@@ -492,7 +518,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void notSupportedType(){
+    public void notSupportedType() {
 
         var informativeResponse = given()
                 .contentType(ContentType.JSON)
@@ -509,7 +535,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void multipleIdentificationText(){
+    public void multipleIdentificationText() {
 
         var identifications = given()
                 .basePath("v2/providers")
@@ -539,7 +565,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void identificationText(){
+    public void identificationText() {
 
         var identification = given()
                 .contentType(ContentType.JSON)

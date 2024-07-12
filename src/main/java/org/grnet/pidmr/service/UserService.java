@@ -65,7 +65,7 @@ public class UserService {
         var dto = new UserProfileDto();
         dto.id = requestUserContext.getVopersonID();
         dto.roles = requestUserContext.getRoles(clientID);
-        //dto.email = requestUserContext.getUserEmail();
+        dto.email = requestUserContext.getUserEmail();
         return dto;
     }
     @Transactional
@@ -86,10 +86,10 @@ public class UserService {
 
         roleChangeRequestsRepository.persist(roleChangeRequest);
 
-        //var userID = requestUserContext.getVopersonID();
-        //var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), roleChangeRequest.getId(), String.valueOf(roleChangeRequest.getStatus()));
+        var userID = requestUserContext.getVopersonID();
+        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), roleChangeRequest.getId(), String.valueOf(roleChangeRequest.getStatus()));
 
-        //mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST, MailType.USER_ROLE_CHANGE_REQUEST_CREATION);
+        mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST, MailType.USER_ROLE_CHANGE_REQUEST_CREATION);
 
     }
 
@@ -109,10 +109,10 @@ public class UserService {
             keycloakAdminService.removeRoles(request.getUserId(), List.of(request.getRole()));
         }
 
-        //var userID = request.getUserId();
-        //var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), request.getId(), String.valueOf(request.getStatus()));
+        var userID = request.getUserId();
+        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), request.getId(), String.valueOf(request.getStatus()));
 
-        //mailerService.sendEmailsWithContext(emailContext, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS);
+        mailerService.sendEmailsWithContext(emailContext, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS, MailType.USER_ALERT_CHANGE_ROLE_REQUEST_STATUS);
 
     }
 
