@@ -268,7 +268,7 @@ public class ProviderEndpointTest {
 
         var validity = given()
                 .contentType(ContentType.JSON)
-                .queryParam("pid", "swh:1:rel:22ece559cc7cc2%364edc5e5593d63ae8bd229f9f")
+                .queryParam("pid", "swh:1:rel:22ece559cc7cc2;/364edc5e5593d63ae8bd229f9f")
                 .get("/validate")
                 .then()
                 .assertThat()
