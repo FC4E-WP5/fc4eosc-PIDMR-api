@@ -23,6 +23,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.exception.ModeIsNotSupported;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +98,7 @@ public class MetaresolverService implements MetaresolverServiceI {
 
         pids.forEach(req-> {
 
-            req.pid = req.pid.trim();
+            req.pid = java.net.URLDecoder.decode(req.pid.trim(), StandardCharsets.UTF_8);
             data.putIfAbsent(req.pid, new ArrayList<>());
         });
 
