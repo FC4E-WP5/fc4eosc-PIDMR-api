@@ -35,17 +35,18 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Added
 
--   [#59](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/59) - PIDMR-146 Add "endpoint" field to Provider entity with mode-specific endpoints.
--   [#60](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/60) - PIDMR-154 Add Property to Provider Entity to Track DOI Reliance.
--   [#61](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/61) - PIDMR-160 Implement Communication with Keycloak Admin for User Role Assignment.
--   [#62](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/62) - PIDMR-159 Create an Endpoint to Promote User to Any Role.
--   [#63](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/63) - PIDMR-161 Implement Admin Endpoint for Promotion Request Approval.
--   [#64](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/64) - PIDMR-157 Create New Authentication Flow in Keycloak.
--   [#65](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/65) - PIDMR-164 Create a new endpoint to get all the promotion requests submitted through our API.
--   [#66](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/66) - PIDMR-158 Implement API Endpoint for Assigning User Roles.
--   [#70](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/70) - PIDMR-169 EMAIL after registration.
--   [#81](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/56) - PIDMR-176 Create Endpoint to Retrieve All Role Change Requests by a User.
--   [#82](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/82) - PIDMR-177 Remove Assigned Role on Rejected Role Change Request by Admin.
+-   [#59](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/59)   - PIDMR-146 Add "endpoint" field to Provider entity with mode-specific endpoints.
+-   [#60](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/60)   - PIDMR-154 Add Property to Provider Entity to Track DOI Reliance.
+-   [#61](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/61)   - PIDMR-160 Implement Communication with Keycloak Admin for User Role Assignment.
+-   [#62](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/62)   - PIDMR-159 Create an Endpoint to Promote User to Any Role.
+-   [#63](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/63)   - PIDMR-161 Implement Admin Endpoint for Promotion Request Approval.
+-   [#64](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/64)   - PIDMR-157 Create New Authentication Flow in Keycloak.
+-   [#65](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/65)   - PIDMR-164 Create a new endpoint to get all the promotion requests submitted through our API.
+-   [#66](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/66)   - PIDMR-158 Implement API Endpoint for Assigning User Roles.
+-   [#70](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/70)   - PIDMR-169 EMAIL after registration.
+-   [#81](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/56)   - PIDMR-176 Create Endpoint to Retrieve All Role Change Requests by a User.
+-   [#82](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/82)   - PIDMR-177 Remove Assigned Role on Rejected Role Change Request by Admin.
+-   [#106](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/106) - PIDMR-196 More info to emails send to admins.
 
 ## 2.1.0 - 2024-04-29
 

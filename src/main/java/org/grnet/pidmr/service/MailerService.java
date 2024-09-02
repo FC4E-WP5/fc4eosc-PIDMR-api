@@ -86,6 +86,7 @@ public class MailerService {
                 .map(adminU -> adminU.email)
                 .collect(Collectors.toList());
     }
+
     private Template getTemplate(MailType type) {
         switch (type) {
             case ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST:
@@ -139,16 +140,22 @@ public class MailerService {
             case ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION:
                 templateParams.put("userrole", "Administrator");
                 templateParams.put("urlpath", uiBaseUrl + "/managed-pids/");
+                templateParams.put("username", emailContext.getUsername());
+                templateParams.put("pidtype", emailContext.getPidType());
+                templateParams.put("timestamp", emailContext.getTimestamp());
                 notifyAdmins(adminNewPidTypeEntryRequestTemplate, templateParams, mailAddrs, type);
                 break;
             case PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS:
                 templateParams.put("userrole", "User");
                 templateParams.put("urlpath", uiBaseUrl + "/managed-pids/view/" + String.valueOf(emailContext.getRequestID()));
+                templateParams.put("timestamp", emailContext.getTimestamp());
                 notifyUser(providerAdminAlertUpdatedPidTypeEntryStatusTemplate, templateParams, mailAddrs, type);
                 break;
             case PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION:
                 templateParams.put("userrole", "User");
                 templateParams.put("urlpath", uiBaseUrl + "/managed-pids/view/" + String.valueOf(emailContext.getRequestID()));
+                templateParams.put("pidtype", emailContext.getPidType());
+                templateParams.put("timestamp", emailContext.getTimestamp());
                 notifyUser(providerAdminPidTypeEntryCreatedTemplate, templateParams, Collections.singletonList(emailContext.getEmail()), type);
                 break;
             default:
@@ -157,7 +164,7 @@ public class MailerService {
     }
 
     @Transactional
-    public void sendEmailsWithContext(EmailContextForStatusUpdate emailContext, MailType adminType, MailType userType ) {
+    public void sendEmailsWithContext(EmailContextForStatusUpdate emailContext, MailType adminType, MailType userType) {
         CompletableFuture.supplyAsync(this::retrieveAdminEmails)
                 .thenAccept(adminEmails -> {
 
@@ -174,6 +181,7 @@ public class MailerService {
     }
 
     public Mail buildEmail(Template emailTemplate, HashMap<String, String> templateParams, MailType mailType) {
+
         MailType.MailTemplate mailTemplate = mailType.execute(emailTemplate, templateParams);
         Mail mail = new Mail();
         mail.setHtml(mailTemplate.getBody());

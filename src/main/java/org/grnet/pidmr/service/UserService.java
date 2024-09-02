@@ -64,6 +64,7 @@ public class UserService {
 
         var dto = new UserProfileDto();
         dto.id = requestUserContext.getVopersonID();
+
         dto.roles = requestUserContext.getRoles(clientID);
         dto.email = requestUserContext.getUserEmail();
         return dto;

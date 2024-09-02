@@ -60,7 +60,6 @@ public class UserEndpointTest extends KeycloakTest {
 
         when(requestUserContext.getVopersonID()).thenReturn(request.id);
         when(requestUserContext.getUserEmail()).thenReturn(request.email);
-        request.roles.stream().forEach(r-> System.out.println("role is : "+r));
         when(requestUserContext.getRoles(clientID)).thenReturn(request.roles);
 
         var userProfile = given()

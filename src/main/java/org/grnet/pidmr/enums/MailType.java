@@ -10,7 +10,6 @@ public enum MailType {
 
     ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST() {
         public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
-
             var url = createUrl(templateParams);
 
             String body = emailTemplate
@@ -69,7 +68,6 @@ public enum MailType {
         public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
 
             var url = createUrl(templateParams);
-
             String body = emailTemplate
                     .data("id", templateParams.get("id"))
                     .data("image", templateParams.get("image"))
@@ -81,9 +79,14 @@ public enum MailType {
                     .data("userrole", templateParams.get("userrole"))
                     .data("contactMail", templateParams.get("contactMail"))
                     .data("urlpath", url.toString())
+                    .data("username", templateParams.get("username"))
+                    .data("timestamp", templateParams.get("timestamp"))
+
                     .render();
-            return new MailTemplate("["+templateParams.get("title")+"] - New PID Type Entry Request Created with id: "+templateParams.get("id"), body);
+
+            return new MailTemplate("["+templateParams.get("title")+"] - New PID Type Entry Request of pid type : "+templateParams.get("pidtype")+" Created with id: "+templateParams.get("id"), body);
         }
+
     },
     PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION {
         public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
@@ -100,8 +103,9 @@ public enum MailType {
                     .data("userrole", templateParams.get("userrole"))
                     .data("contactMail", templateParams.get("contactMail"))
                     .data("urlpath", url.toString())
+                    .data("timestamp", templateParams.get("timestamp"))
                     .render();
-            return new MailTemplate("["+templateParams.get("title")+"] - New PID Type Entry Request Created with id: "+templateParams.get("id"), body);
+            return new MailTemplate("["+templateParams.get("title")+"] - New PID Type Entry Request of pid type: "+templateParams.get("pidtype")+ " Created with id: "+templateParams.get("id"), body);
         }
     },
     PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS {
@@ -121,6 +125,7 @@ public enum MailType {
                     .data("contactMail", templateParams.get("contactMail"))
                     .data("status", templateParams.get("status"))
                     .data("urlpath", url.toString())
+                    .data("timestamp", templateParams.get("timestamp"))
                     .render();
             return new MailTemplate("["+templateParams.get("title")+"] - PID Type Entry Request Status Updated with id: "+templateParams.get("id"), body);
         }
