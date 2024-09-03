@@ -140,7 +140,7 @@ public class MailerService {
             case ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION:
                 templateParams.put("userrole", "Administrator");
                 templateParams.put("urlpath", uiBaseUrl + "/managed-pids/");
-                templateParams.put("username", emailContext.getUsername());
+                templateParams.put("usermail", emailContext.getEmail());
                 templateParams.put("pidtype", emailContext.getPidType());
                 templateParams.put("timestamp", emailContext.getTimestamp());
                 notifyAdmins(adminNewPidTypeEntryRequestTemplate, templateParams, mailAddrs, type);
@@ -149,6 +149,7 @@ public class MailerService {
                 templateParams.put("userrole", "User");
                 templateParams.put("urlpath", uiBaseUrl + "/managed-pids/view/" + String.valueOf(emailContext.getRequestID()));
                 templateParams.put("timestamp", emailContext.getTimestamp());
+                templateParams.put("pidtype", emailContext.getPidType());
                 notifyUser(providerAdminAlertUpdatedPidTypeEntryStatusTemplate, templateParams, mailAddrs, type);
                 break;
             case PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION:

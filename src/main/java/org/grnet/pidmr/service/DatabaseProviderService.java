@@ -277,9 +277,9 @@ public class DatabaseProviderService implements ProviderServiceI {
         var timestamp = formatter.format(Timestamp.from(Instant.now()));
 
         var userID = newProvider.getCreatedBy();
-        var username = requestUserContext.getUsername();
         var pidtype = newProvider.getType();
-        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(newProvider.getStatus()), username, pidtype, timestamp);
+
+        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(newProvider.getStatus()), pidtype,timestamp);
         mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION, MailType.PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION);
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
@@ -472,9 +472,10 @@ public class DatabaseProviderService implements ProviderServiceI {
         newProvider.setStatus(status);
         newProvider.setStatusUpdatedBy(requestUserContext.getVopersonID());
 
+        var pidtype=newProvider.getType();
         var userID = newProvider.getCreatedBy();
         var timestamp = formatter.format(Timestamp.from(Instant.now()));
-        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(status), timestamp);
+        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(status), pidtype,timestamp);
         mailerService.sendEmailsWithContext(emailContext, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS);
 
 
