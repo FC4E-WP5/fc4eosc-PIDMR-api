@@ -22,12 +22,16 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 
+---
 ### Added
 
 -   [#86](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/86) - PIDMR-175 Implement GET to retrieve change role request by id as an admin role.
 -   [#99](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/99) - PIDMR-194 Decode pid URL Parameter to Handle Ampersand (&) Character.
 
----
+### Changed
+
+-   [#108](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/108) - PIDMR-198 Moving to new PIDMR backend.
+
 
 ## 2.2.0 - 2024-06-10
 

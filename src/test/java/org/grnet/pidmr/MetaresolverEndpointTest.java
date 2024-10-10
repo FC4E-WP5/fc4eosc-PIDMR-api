@@ -70,7 +70,7 @@ public class MetaresolverEndpointTest {
                 .extract()
                 .as(LocationDto.class);
 
-        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location.url);
+        assertEquals("https://n2t.net/ark:/67531/metapth346793/%3F", location.url);
     }
 
     @Test
