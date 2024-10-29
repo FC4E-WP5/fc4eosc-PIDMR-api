@@ -19,6 +19,7 @@ public class Identification {
             example = "VALID"
     )
     @JsonProperty("status")
+    @EqualsAndHashCode.Include
     public Status status;
 
     @Schema(

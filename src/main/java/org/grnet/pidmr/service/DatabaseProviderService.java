@@ -131,6 +131,16 @@ public class DatabaseProviderService implements ProviderServiceI {
             identification.type = "";
             identification.example = "";
             identifications.add(identification);
+        } else {
+
+            var mergedObjects = identifications.stream()
+                    .collect(Collectors.toMap(
+                            obj -> obj.type,
+                            obj -> obj,
+                            (obj1, obj2) -> Identification.Status.VALID.equals(obj1.status) ? obj1 : obj2
+                    ));
+
+            identifications = new HashSet<>(mergedObjects.values());
         }
 
         return identifications;

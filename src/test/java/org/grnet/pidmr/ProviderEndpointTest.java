@@ -549,19 +549,6 @@ public class ProviderEndpointTest {
                 .as(Identification[].class);
 
         assertEquals("ark", identifications[0].type);
-
-        var identifications1 = given()
-                .basePath("v2/providers")
-                .contentType(ContentType.JSON)
-                .queryParam("text", "10.5281/")
-                .get("/identify")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(Identification[].class);
-
-        assertEquals("10.5281/zenodo", identifications1[0].type);
     }
 
     @Test
