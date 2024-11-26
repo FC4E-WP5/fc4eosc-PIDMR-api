@@ -22,6 +22,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 
+
+
+## 2.2.1 - 2024-11-26
+
 ---
 ### Added
 
