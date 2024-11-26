@@ -17,7 +17,6 @@ import org.grnet.pidmr.dto.PidResolutionBatchResponse;
 import org.grnet.pidmr.dto.PidResolutionRequest;
 import org.grnet.pidmr.dto.PidResolutionResponse;
 import org.grnet.pidmr.entity.AbstractProvider;
-import io.quarkus.cache.CacheResult;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.exception.ModeIsNotSupported;
 
@@ -204,7 +203,6 @@ public class MetaresolverService implements MetaresolverServiceI {
      * @param mode The display mode.
      * @return The Metaresolver URL, which resolves the PID.
      */
-    @CacheResult(cacheName = "pid-resolution")
     public String resolve(String pid, String mode) {
 
         var provider = providerService.getProviderByPid(pid);
