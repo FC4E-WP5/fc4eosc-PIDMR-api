@@ -7,8 +7,9 @@ import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.pidmr.entity.database.RoleChangeRequest;
+import org.grnet.pidmr.dto.EmailContextForStatusUpdate;
 import org.grnet.pidmr.enums.MailType;
 import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
 import org.jboss.logging.Logger;
@@ -32,6 +33,7 @@ public class MailerService {
 
     @Inject
     UserService userService;
+
     @Inject
     KeycloakAdminService keycloakAdminService;
 
@@ -54,6 +56,17 @@ public class MailerService {
     @Location("admin_new_change_role_request.html")
     Template adminNewChangeRoleTemplate;
 
+    @Inject
+    @Location("admin_new_pid_type_entry_request.html")
+    Template adminNewPidTypeEntryRequestTemplate;
+    @Inject
+    @Location("provider_admin_alert_updated_pid_type_entry_status.html")
+    Template providerAdminAlertUpdatedPidTypeEntryStatusTemplate;
+
+    @Inject
+    @Location("provider_admin_new_pid_type_entry_created.html")
+    Template providerAdminPidTypeEntryCreatedTemplate;
+
     private static final Logger LOG = Logger.getLogger(MailerService.class);
 
     @ConfigProperty(name = "api.keycloak.user.id")
@@ -74,10 +87,30 @@ public class MailerService {
                 .collect(Collectors.toList());
     }
 
-    public void sendMails(RoleChangeRequest request, MailType type, List<String> mailAddrs) {
+    private Template getTemplate(MailType type) {
+        switch (type) {
+            case ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST:
+                return adminNewChangeRoleTemplate;
+            case USER_ALERT_CHANGE_ROLE_REQUEST_STATUS:
+                return userChangeRoleRequestStatusUpdateTemplate;
+            case USER_ROLE_CHANGE_REQUEST_CREATION:
+                return userChangeRoleRequestCreatedTemplate;
+            case ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION:
+                return adminNewPidTypeEntryRequestTemplate;
+            case PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION:
+                return providerAdminPidTypeEntryCreatedTemplate;
+            case PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS:
+                return providerAdminAlertUpdatedPidTypeEntryStatusTemplate;
+            default:
+                throw new IllegalArgumentException("Unsupported mail type");
+        }
+    }
 
-        HashMap<String, String> templateParams = new HashMap();
-        templateParams.put("id", String.valueOf(request.getId()));
+
+    @Transactional
+    public void sendEmails(EmailContextForStatusUpdate emailContext, MailType type, List<String> mailAddrs) {
+
+        HashMap<String, String> templateParams = new HashMap<>();
         templateParams.put("contactMail", contactMail);
         templateParams.put("image", serviceUrl + "/v1/images/logo.png");
         templateParams.put("image1", serviceUrl + "/v1/images/logo-dans.png");
@@ -87,26 +120,69 @@ public class MailerService {
         templateParams.put("pidmr", uiBaseUrl);
         templateParams.put("title", apiName.toUpperCase());
 
+        templateParams.put("id", String.valueOf(emailContext.getRequestID()));
+        templateParams.put("status", emailContext.getRequestStatus());
+
         switch (type) {
             case ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST:
                 templateParams.put("userrole", "Administrator");
-                notifyAdmins(adminNewChangeRoleTemplate, templateParams, mailAddrs);
-                break;
-            case USER_ALERT_CHANGE_ROLE_REQUEST_STATUS:
-                templateParams.put("userrole", "User");
-                templateParams.put("status", request.getStatus().name());
-                notifyUser(userChangeRoleRequestStatusUpdateTemplate, templateParams, Arrays.asList(request.getEmail()), type);
+                templateParams.put("urlpath", uiBaseUrl + "/user-role-requests/");
+                notifyAdmins(adminNewChangeRoleTemplate, templateParams, mailAddrs, type);
                 break;
             case USER_ROLE_CHANGE_REQUEST_CREATION:
                 templateParams.put("userrole", "User");
                 notifyUser(userChangeRoleRequestCreatedTemplate, templateParams, mailAddrs, type);
                 break;
-            default:
+            case USER_ALERT_CHANGE_ROLE_REQUEST_STATUS:
+                templateParams.put("userrole", "User");
+                notifyUser(userChangeRoleRequestStatusUpdateTemplate, templateParams, Collections.singletonList(emailContext.getEmail()), type);
                 break;
+            case ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION:
+                templateParams.put("userrole", "Administrator");
+                templateParams.put("urlpath", uiBaseUrl + "/managed-pids/");
+                templateParams.put("usermail", emailContext.getEmail());
+                templateParams.put("pidtype", emailContext.getPidType());
+                templateParams.put("timestamp", emailContext.getTimestamp());
+                notifyAdmins(adminNewPidTypeEntryRequestTemplate, templateParams, mailAddrs, type);
+                break;
+            case PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS:
+                templateParams.put("userrole", "User");
+                templateParams.put("urlpath", uiBaseUrl + "/managed-pids/view/" + String.valueOf(emailContext.getRequestID()));
+                templateParams.put("timestamp", emailContext.getTimestamp());
+                templateParams.put("pidtype", emailContext.getPidType());
+                notifyUser(providerAdminAlertUpdatedPidTypeEntryStatusTemplate, templateParams, mailAddrs, type);
+                break;
+            case PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION:
+                templateParams.put("userrole", "User");
+                templateParams.put("urlpath", uiBaseUrl + "/managed-pids/view/" + String.valueOf(emailContext.getRequestID()));
+                templateParams.put("pidtype", emailContext.getPidType());
+                templateParams.put("timestamp", emailContext.getTimestamp());
+                notifyUser(providerAdminPidTypeEntryCreatedTemplate, templateParams, Collections.singletonList(emailContext.getEmail()), type);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported mail type");
         }
     }
 
+    @Transactional
+    public void sendEmailsWithContext(EmailContextForStatusUpdate emailContext, MailType adminType, MailType userType) {
+        CompletableFuture.supplyAsync(this::retrieveAdminEmails)
+                .thenAccept(adminEmails -> {
+
+                    if (adminType != userType) {
+                        sendEmails(emailContext, adminType, adminEmails);
+                        if (!adminEmails.contains(emailContext.getEmail())) {
+                            sendEmails(emailContext, userType, Collections.singletonList(emailContext.getEmail()));
+                        }
+                    } else {
+                        sendEmails(emailContext, userType, Collections.singletonList(emailContext.getEmail()));
+                    }
+
+                });
+    }
+
     public Mail buildEmail(Template emailTemplate, HashMap<String, String> templateParams, MailType mailType) {
+
         MailType.MailTemplate mailTemplate = mailType.execute(emailTemplate, templateParams);
         Mail mail = new Mail();
         mail.setHtml(mailTemplate.getBody());
@@ -127,9 +203,9 @@ public class MailerService {
         }
     }
 
-    private void notifyAdmins(Template emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs) {
+    private void notifyAdmins(Template emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs, MailType mailType) {
 
-        var mail = buildEmail(emailTemplate, templateParams, MailType.ADMIN_ALERT_NEW_CHANGE_ROLE_REQUEST);
+        var mail = buildEmail(emailTemplate, templateParams, mailType);
         mail.setBcc(mailAddrs);
         try {
             LOG.info("EMAIL INFO " + "from: " + mail.getFrom() + " to: " + Arrays.toString(mail.getTo().toArray()) + " subject: " + mail.getSubject() + " message:" + mail.getText());
@@ -166,6 +242,7 @@ public class MailerService {
         public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
             return new CompletableFuture<U>().completeAsync(supplier);
         }
+
     }
 }
 

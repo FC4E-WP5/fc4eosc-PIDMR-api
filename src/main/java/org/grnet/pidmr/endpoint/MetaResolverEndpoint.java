@@ -30,6 +30,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -51,7 +52,7 @@ public class MetaResolverEndpoint {
     @Operation(
             summary = "Resolves different types of PIDs.",
             description = "By default, this operation returns a JSON response containing the URL resolving the PID. " +
-                    "You can immediately resolve the PID by using the 'redirect' parameter since the API redirects you to the resolving page.")
+                    "You can immediately resolve the PID by using the 'redirect' parameter since the API redirects you to the resolving page. If the pid contains the ampersand (&) character, please replace it with %26.")
     @APIResponse(
             responseCode = "200",
             description = "The Metaresolver location that resolves the PID.",
@@ -91,7 +92,9 @@ public class MetaResolverEndpoint {
             description = "The display mode of PID.", examples = {@ExampleObject(name = "Landing Page", value = "landingpage"), @ExampleObject(name = "Metadata", value = "metadata"), @ExampleObject(name = "Resource", value = "resource")}, schema = @Schema(type = SchemaType.STRING, defaultValue = "landingpage")) @DefaultValue("landingpage") @QueryParam("pidMode") String pidMode, @Parameter(name = "redirect", in = QUERY, example = "false",
                                     description = "Redirects the request to the URL resolving the PID.", schema = @Schema(type = SchemaType.BOOLEAN, defaultValue = "false")) @DefaultValue("false") @QueryParam("redirect") boolean redirect) {
 
-        var resolvable = metaresolverService.resolve(pid.trim(), pidMode);
+        var result = java.net.URLDecoder.decode(pid.trim(), StandardCharsets.UTF_8);
+
+        var resolvable = metaresolverService.resolve(result, pidMode);
 
         if(redirect){
 
@@ -108,7 +111,7 @@ public class MetaResolverEndpoint {
     @Tag(name = "Metaresolver")
     @Operation(
             summary = "Resolve multiple PIDs.",
-            description = "Resolve multiple PIDs with specified modes. The mode property is only included for PIDs that require modes other than the default landing page mode.")
+            description = "Resolve multiple PIDs with specified modes. The mode property is only included for PIDs that require modes other than the default landing page mode. If the pid contains the ampersand (&) character, please replace it with %26.")
     @APIResponse(
             responseCode = "200",
             description = "A batch response containing multiple PID resolution results.",
@@ -136,7 +139,7 @@ public class MetaResolverEndpoint {
     @POST
     @Path("/resolve/batch")
     @Produces(value = MediaType.APPLICATION_JSON)
-    public Response resolveBatchPid(@Valid @NotNull(message = "The request body is empty.") PidResolutionBatchRequest pidResolutionBatchRequest) throws InterruptedException, ExecutionException {
+    public Response resolveBatchPid(@Valid @NotNull(message = "The request body is empty.") PidResolutionBatchRequest pidResolutionBatchRequest) throws InterruptedException {
 
         if(pidResolutionBatchRequest.data.size() > maxPidListSize){
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotSupportedException;
 import jakarta.ws.rs.core.UriInfo;
@@ -72,7 +73,7 @@ public class ProviderService implements ProviderServiceI {
     }
 
     @Override
-    public Identification identify(String text) {
+    public Set<Identification> multipleIdentification(String text) {
 
         throw new NotSupportedException("Not implemented yet!");
     }
@@ -239,5 +240,11 @@ public class ProviderService implements ProviderServiceI {
                     .map(Provider::getType)
                     .findAny();
         }
+    }
+
+    @Override
+    public Identification identify(String text) {
+
+        throw new NotSupportedException("Not implemented yet!");
     }
 }

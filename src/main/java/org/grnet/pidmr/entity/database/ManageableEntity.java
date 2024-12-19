@@ -37,6 +37,9 @@ public abstract class ManageableEntity {
     @Column(name = "created_by")
     private String createdBy;
 
+    @Column(name = "status_updated_by")
+    private String statusUpdatedBy;
+
     @Column(name = "entity_type", insertable=false, updatable=false)
     @EqualsAndHashCode.Include
     private String entityType;

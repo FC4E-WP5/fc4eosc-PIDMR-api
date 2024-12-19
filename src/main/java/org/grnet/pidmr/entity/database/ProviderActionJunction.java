@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Objects;
+import java.util.Set;
 
 @Entity(name = "ProviderActionJunction")
 @Table(name = "Provider_Action_Junction")
@@ -29,15 +30,16 @@ public class ProviderActionJunction {
     @MapsId("actionId")
     private Action action;
 
-    @Column(name = "endpoint")
-    private String endpoint;
+    @Column(name = "endpoints")
+    private String[] endpoints;
 
-    public ProviderActionJunction(Provider provider, Action action, String endpoint) {
+    public ProviderActionJunction(Provider provider, Action action,String[] endpoints) {
         this.provider = provider;
         this.action = action;
-        this.endpoint = endpoint;
+        this.endpoints = endpoints;
         this.id = new ProviderActionId(provider.getId(), action.getId());
     }
+
     public ProviderActionJunction() {
     }
 
@@ -57,4 +59,6 @@ public class ProviderActionJunction {
     public int hashCode() {
         return Objects.hash(provider, action);
     }
+
 }
+

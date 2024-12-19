@@ -18,11 +18,7 @@ import org.grnet.pidmr.entity.database.converters.ProviderStatusAttributeConvert
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ModeIsNotSupported;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This entity represents the Provider table in database.
@@ -99,8 +95,8 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     @Column(name = "relies_on_dois")
     private boolean reliesOnDois;
 
-    public void addAction(Action action, String endpoint) {
-        var providerAction = new ProviderActionJunction(this, action, endpoint);
+    public void addAction(Action action, String[] endpoints ) {
+        var providerAction = new ProviderActionJunction(this, action, endpoints);
         actions.add(providerAction);
         action.getProviders().add(providerAction);
     }

@@ -61,7 +61,6 @@ public class ManageEntityInterceptor {
         } else if (args.length > 0 && args[0] instanceof Long){
 
             var entity = manageableEntityRepository.findByIdAndEntityType((Long) args[0], manageEntity.entityType());
-
             if(Objects.isNull(entity.getCreatedBy())  || !entity.getCreatedBy().equals(requestUserContext.getVopersonID())){
 
                 throw new ForbiddenException("You do not have permission to access this resource.");

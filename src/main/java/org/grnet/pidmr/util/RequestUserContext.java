@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.json.JsonString;
 import jakarta.ws.rs.BadRequestException;
 import lombok.Getter;
+import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,14 +21,24 @@ public class RequestUserContext {
     @Getter
     private final String vopersonID;
 
+    @Getter
+    private final String userEmail;
+    @Getter
+    private final String username;
+
     @Inject
     private TokenIntrospection tokenIntrospection;
 
-    public RequestUserContext(TokenIntrospection tokenIntrospection) {
+    @Inject
+    private KeycloakAdminService keycloakAdminService;
+
+    public RequestUserContext(TokenIntrospection tokenIntrospection, KeycloakAdminService keycloakAdminService) {
 
         try {
 
             this.vopersonID = tokenIntrospection.getJsonObject().getString("voperson_id");
+            this.userEmail = keycloakAdminService.getUserEmail(vopersonID);
+            this.username= tokenIntrospection.getJsonObject().getString("username");
             this.tokenIntrospection = tokenIntrospection;
         } catch (Exception e) {
 
@@ -35,6 +46,7 @@ public class RequestUserContext {
             throw new BadRequestException(message);
         }
     }
+
 
     public List<String> getRoles(String clientID){
 

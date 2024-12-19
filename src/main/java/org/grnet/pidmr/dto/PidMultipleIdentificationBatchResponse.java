@@ -5,14 +5,15 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-@Schema(name="PidIdentificationBatchResponse", description="A batch response containing multiple PID identification results.")
-public class PidIdentificationBatchResponse {
+@Schema(name="PidMultipleIdentificationBatchResponse", description="A batch response containing multiple PID identification results.")
+public class PidMultipleIdentificationBatchResponse {
 
     @Schema(
             type = SchemaType.OBJECT,
-            additionalProperties = Identification.class,
+            additionalProperties = Set.class,
             description = "Each item in the list corresponds to the result of a single PID identification request in the batch."
     )
-    public Map<String, Identification> data = new HashMap<>();
+    public Map<String, Set<Identification>> data = new HashMap<>();
 }

@@ -51,6 +51,7 @@ public interface ProviderMapper {
     @Mapping(source = "regexes", target = "regexes", qualifiedByName = "database-regexes")
     @Mapping(source = "actions", target = "actions", qualifiedByName = "database-actions")
     @Mapping(source = "createdBy", target = "userId")
+    @Mapping(source = "statusUpdatedBy", target = "statusUpdatedBy")
     AdminProviderDto databaseAdminProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
 
     @Named("database-actions")
@@ -61,9 +62,10 @@ public interface ProviderMapper {
                 .map(action->{
 
                     var mode = new ResolutionModeDto();
-                    mode.mode = action.getAction().getMode();
-                    mode.name = action.getAction().getName();
-                    mode.endpoint = action.getEndpoint();
+                    mode.mode           = action.getAction().getMode();
+                    mode.name           = action.getAction().getName();
+                    //mode.endpoint       = action.getEndpoint();
+                    mode.endpoints = action.getEndpoints();
 
                     return mode;
                 })

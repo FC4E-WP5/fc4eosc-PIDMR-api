@@ -182,4 +182,36 @@ public class KeycloakAdminService {
                 .map(roleRepresentation -> new KeycloakRole(roleRepresentation.getId(), roleRepresentation.getName(), roleRepresentation.getDescription()))
                 .collect(Collectors.toList());
     }
+
+
+    /**
+     * Retrieves the email of a user by their unique identifier.
+     *
+     * @param vopersonId The unique identifier of the user.
+     * @return The email address of the user, or null if the user does not have an email set.
+     */
+    public String getUserEmail(String vopersonId) {
+        try {
+            var realmResource = keycloak.realm(realm);
+            var usersResource = realmResource.users();
+
+            var userRepresentation = usersResource.searchByAttributes(String.format("%s:%s", attribute, vopersonId))
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException("User not found with vopersonId: " + vopersonId));
+
+            String email = userRepresentation.getEmail();
+            if (email == null) {
+                throw new RuntimeException("Email not found for user with vopersonId: " + vopersonId);
+            }
+            return email;
+        } catch (NotFoundException e) {
+            LOG.warn("User not found with vopersonId: " + vopersonId);
+            throw e; // Re-throwing NotFoundException to handle it specifically elsewhere if needed
+        } catch (Exception e) {
+            LOG.error("An error occurred while fetching the user's email for vopersonId: " + vopersonId, e);
+            throw new RuntimeException("Error fetching user's email for vopersonId: " + vopersonId, e);
+        }
+    }
+
 }

@@ -22,6 +22,7 @@ import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
 import org.grnet.pidmr.dto.PidIdentificationBatchRequest;
 import org.grnet.pidmr.dto.PidIdentificationBatchResponse;
+import org.grnet.pidmr.dto.PidMultipleIdentificationBatchResponse;
 import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.pagination.PageResource;
@@ -35,6 +36,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.pidmr.service.DatabaseProviderService;
 
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -80,7 +83,7 @@ public class ProviderEndpoint {
     @Operation(
             summary = "Validates PIDs.",
             description = "This operation check the validity of each identifier. " +
-                    "Every Provider has a regex based on which the validation is performed.")
+                    "Every Provider has a regex based on which the validation is performed. If the pid contains the ampersand (&) character, please replace it with %26.")
     @APIResponse(
             responseCode = "200",
             description = "The result of the validation.",
@@ -104,9 +107,11 @@ public class ProviderEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response validate(@Parameter(name = "pid", in = QUERY, required = true, example = "ark:/13030/tf5p30086k", allowReserved = true,
             description = "The PID to be validated.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("pid") @NotEmpty(message = "pid may not be empty.") String pid, @Parameter(name = "type", in = QUERY,
-            description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) {
+            description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) throws UnsupportedEncodingException {
 
-        var validity = providerService.validation(pid.trim(), type);
+        var result = java.net.URLDecoder.decode(pid.trim(), StandardCharsets.UTF_8);
+
+        var validity = providerService.validation(result, type);
 
         return Response.ok().entity(validity).build();
     }
@@ -114,7 +119,7 @@ public class ProviderEndpoint {
     @Tag(name = "Provider")
     @Operation(
             summary = "This endpoint identifies PIDs.",
-            description = "This endpoint identifies PIDs from the provided text.")
+            description = "This endpoint identifies PIDs from the provided text. If the pid contains the ampersand (&) character, please replace it with %26.")
     @APIResponse(
             responseCode = "200",
             description = "The result of text identification.",
@@ -133,7 +138,9 @@ public class ProviderEndpoint {
     public Response identify(@Parameter(name = "text", in = QUERY, required = true, example = "ark:/", allowReserved = true,
             description = "Text to be checked for PID.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("text") @NotEmpty(message = "text may not be empty.") String text) {
 
-        var identification = providerService.identify(text.trim());
+        var result = java.net.URLDecoder.decode(text.trim(), StandardCharsets.UTF_8);
+
+        var identification = providerService.identify(result);
 
         return Response.ok().entity(identification).build();
     }
@@ -141,7 +148,7 @@ public class ProviderEndpoint {
     @Tag(name = "Provider")
     @Operation(
             summary = "Identify multiple PIDs.",
-            description = "Identify multiple PIDs.")
+            description = "Identify multiple PIDs. If the pid contains the ampersand (&) character, please replace it with %26.")
     @APIResponse(
             responseCode = "200",
             description = "A batch response containing multiple PID identification results.",
@@ -180,7 +187,9 @@ public class ProviderEndpoint {
 
         pidIdentificationBatchRequest.data.forEach(entry->{
 
-            var identification = providerService.identify(entry.trim());
+            var result = java.net.URLDecoder.decode(entry.trim(), StandardCharsets.UTF_8);
+
+            var identification = providerService.identify(result);
 
             response.data.put(entry, identification);
 

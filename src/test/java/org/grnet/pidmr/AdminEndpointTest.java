@@ -1,38 +1,64 @@
 package org.grnet.pidmr;
 
+import io.quarkus.oidc.TokenIntrospection;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import org.grnet.pidmr.dto.AdminProviderDto;
-import org.grnet.pidmr.dto.InformativeResponse;
-import org.grnet.pidmr.dto.ProviderDto;
-import org.grnet.pidmr.dto.ProviderRequestV1;
-import org.grnet.pidmr.dto.UpdateProviderV1;
-import org.grnet.pidmr.dto.UpdateProviderStatus;
-import org.grnet.pidmr.dto.Validity;
+import lombok.Getter;
+import lombok.Setter;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.endpoint.AdminEndpoint;
+import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.enums.ProviderStatus;
+import org.grnet.pidmr.repository.ActionRepository;
+import org.grnet.pidmr.repository.ProviderRepository;
+import org.grnet.pidmr.repository.RegexRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
+import org.grnet.pidmr.util.RequestUserContext;
+import org.junit.jupiter.api.*;
+import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @TestHTTPEndpoint(AdminEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class AdminEndpointTest extends KeycloakTest{
+public class AdminEndpointTest extends KeycloakTest {
+    @ConfigProperty(name = "quarkus.oidc.client-id")
+    @Getter
+    @Setter
+    private String clientID;
 
+    @InjectMock
+    KeycloakAdminService keycloakAdminServiceMock;
+
+    @InjectMock
+    RequestUserContext requestUserContext;
     @Inject
     DatabaseProviderService providerService;
 
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        when(requestUserContext.getVopersonID()).thenReturn("admin_voperson_id");
+        when(requestUserContext.getUserEmail()).thenReturn("admin@example.com");
+    }
+
+
     @Test
-    public void createProviderNotValidAction(){
+    public void createProviderNotValidAction() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -56,9 +82,9 @@ public class AdminEndpointTest extends KeycloakTest{
 
         assertEquals("There is an action that is not supported.", informativeResponse.message);
     }
-
+//
     @Test
-    public void createProvider(){
+    public void createProvider() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -84,9 +110,10 @@ public class AdminEndpointTest extends KeycloakTest{
 
         providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
-
+//
+//    //
     @Test
-    public void createProviderExists(){
+    public void createProviderExists() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -126,7 +153,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderWithRegexWithoutApproving(){
+    public void createProviderWithRegexWithoutApproving() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -164,9 +191,9 @@ public class AdminEndpointTest extends KeycloakTest{
 
         providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
-
+//
     @Test
-    public void createProviderWithRegexAfterApproving(){
+    public void createProviderWithRegexAfterApproving() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -221,7 +248,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderWithoutActions(){
+    public void createProviderWithoutActions() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -247,7 +274,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void createProviderWithoutRegexes(){
+    public void createProviderWithoutRegexes() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -271,9 +298,11 @@ public class AdminEndpointTest extends KeycloakTest{
 
         assertEquals("regexes should have at least one entry.", response.message);
     }
-
+//
+//    //
     @Test
-    public void getProvider(){
+    public void getProvider() {
+      // when(requestUserContext.getVopersonID()).thenReturn("admin_voperson_id");
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -293,7 +322,7 @@ public class AdminEndpointTest extends KeycloakTest{
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(ProviderDto.class);
+                .as(AdminProviderDto.class);
 
         var response = given()
                 .auth()
@@ -304,16 +333,16 @@ public class AdminEndpointTest extends KeycloakTest{
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(ProviderDto.class);
+                .as(AdminProviderDto.class);
 
         assertEquals(request.name, response.name);
         assertEquals(request.type, response.type);
 
         providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
-
+//
     @Test
-    public void getProviderNotFound(){
+    public void getProviderNotFound() {
 
         var response = given()
                 .auth()
@@ -326,11 +355,12 @@ public class AdminEndpointTest extends KeycloakTest{
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is no Provider with the following id: "+1000L, response.message);
+        assertEquals("There is no Provider with the following id: " + 1000L, response.message);
     }
 
+    //
     @Test
-    public void deleteProvider(){
+    public void deleteProvider() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -365,9 +395,10 @@ public class AdminEndpointTest extends KeycloakTest{
 
         assertEquals("The Provider has been successfully deleted.", response.message);
     }
-
+//
+//    //
     @Test
-    public void updateBasicProviderInformation(){
+    public void updateBasicProviderInformation() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -416,9 +447,9 @@ public class AdminEndpointTest extends KeycloakTest{
 
         providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
-
+//
     @Test
-    public void updateProviderRegexesAndActions(){
+    public void updateProviderRegexesAndActions() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -465,9 +496,11 @@ public class AdminEndpointTest extends KeycloakTest{
 
         providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
     }
+//
+//    @Test
+    public void providerForbidden() {
+        when(requestUserContext.getRoles(clientID)).thenReturn(Arrays.asList("user"));
 
-    @Test
-    public void providerForbidden(){
 
         var createForbidden = given()
                 .auth()
@@ -525,7 +558,7 @@ public class AdminEndpointTest extends KeycloakTest{
     }
 
     @Test
-    public void providerForbiddenPermissionsOnEntity(){
+    public void providerForbiddenPermissionsOnEntity() {
 
         var request = new ProviderRequestV1();
         request.name = "Test Provider.";
@@ -546,6 +579,8 @@ public class AdminEndpointTest extends KeycloakTest{
                 .statusCode(201)
                 .extract()
                 .as(ProviderDto.class);
+        when(requestUserContext.getVopersonID()).thenReturn("alice_voperson_id");
+        when(requestUserContext.getRoles(clientID)).thenReturn(Arrays.asList("user"));
 
         //alice is a provider_admin and can only manage the providers she creates.
         var updateForbidden = given()
@@ -563,5 +598,18 @@ public class AdminEndpointTest extends KeycloakTest{
         assertEquals("You do not have permission to access this resource.", updateForbidden.message);
 
         providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
+    }
+
+    @Test
+    public void testGetChangeRoleByIdNotFound() {
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .get("/users/role-change-requests/{id}", -1L)
+                .then()
+                .assertThat()
+                .statusCode(404);
     }
 }

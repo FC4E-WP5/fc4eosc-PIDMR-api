@@ -1,6 +1,5 @@
 package org.grnet.pidmr.service;
 
-import io.vavr.Tuple;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -18,11 +17,11 @@ import org.grnet.pidmr.dto.PidResolutionBatchResponse;
 import org.grnet.pidmr.dto.PidResolutionRequest;
 import org.grnet.pidmr.dto.PidResolutionResponse;
 import org.grnet.pidmr.entity.AbstractProvider;
-import io.quarkus.cache.CacheResult;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.exception.ModeIsNotSupported;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +61,8 @@ public class MetaresolverService implements MetaresolverServiceI {
             .writeTimeout(30, TimeUnit.SECONDS)
             .build();
 
+    public MetaresolverService() {
+    }
 
     @SneakyThrows
     public String resolve(AbstractProvider provider, String pid, String mode) {
@@ -97,7 +98,7 @@ public class MetaresolverService implements MetaresolverServiceI {
 
         pids.forEach(req-> {
 
-            req.pid = req.pid.trim();
+            req.pid = java.net.URLDecoder.decode(req.pid.trim(), StandardCharsets.UTF_8);
             data.putIfAbsent(req.pid, new ArrayList<>());
         });
 
@@ -202,7 +203,6 @@ public class MetaresolverService implements MetaresolverServiceI {
      * @param mode The display mode.
      * @return The Metaresolver URL, which resolves the PID.
      */
-    @CacheResult(cacheName = "pid-resolution")
     public String resolve(String pid, String mode) {
 
         var provider = providerService.getProviderByPid(pid);
