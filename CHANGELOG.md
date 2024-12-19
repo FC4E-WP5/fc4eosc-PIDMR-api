@@ -20,7 +20,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   `Security` in case of vulnerabilities.
 -   `Deprecated` for soon-to-be removed features.
 
-## Unreleased
+## 2.3.0 - 2024-12-19
 
 ---
 ### Added
