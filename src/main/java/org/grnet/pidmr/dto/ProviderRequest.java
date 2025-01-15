@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.pidmr.constraints.StringEnumeration;
+import org.grnet.pidmr.enums.Validator;
 
 import java.util.Set;
 
@@ -68,4 +70,14 @@ public class ProviderRequest {
     )
     @JsonProperty("relies_on_dois")
     public boolean reliesOnDois;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = Validator.class,
+            description = "The Validator (e.g. NONE, ISBN).",
+            example = "ISBN"
+    )
+    @JsonProperty("validator")
+    @StringEnumeration(enumClass = Validator.class, message = "validator")
+    public String validator = "NONE";
 }

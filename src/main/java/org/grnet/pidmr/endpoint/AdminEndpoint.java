@@ -35,6 +35,7 @@ import org.grnet.pidmr.dto.UpdateProviderV1;
 import org.grnet.pidmr.dto.UpdateProviderStatus;
 import org.grnet.pidmr.dto.UpdateRoleChangeRequestStatus;
 import org.grnet.pidmr.dto.UserProfileDto;
+import org.grnet.pidmr.dto.ValidatorResponse;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.pagination.PageResource;
@@ -799,6 +800,71 @@ public class AdminEndpoint {
 
         var response = userService.retrieveRoleChangeRequest(id);
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get all PID Validators.",
+            description = "Returns a list of all available PID validators, including their names and descriptions.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of PID validators.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableValidators.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/validators")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getValidators(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                  @Parameter(name = "size", in = QUERY,
+                                          description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                      @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                  @Context UriInfo uriInfo) {
+
+        var response = adminService.getValidatorsByPage(page-1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    public static class PageableValidators extends PageResource<ValidatorResponse> {
+
+        private List<ValidatorResponse> content;
+
+        @Override
+        public List<ValidatorResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ValidatorResponse> content) {
+            this.content = content;
+        }
     }
 
     public static class PageableAdminProvider extends PageResource<AdminProviderDto> {

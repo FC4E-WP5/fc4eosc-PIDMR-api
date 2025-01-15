@@ -938,6 +938,17 @@
             "icon_uri": ""
           },
           {
+            "name": "Admin Validator Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Admin Validator Resource",
+            "attributes": {},
+            "_id": "e415a1e6-58a1-4418-bbc4-ee756ac44c39",
+            "uris": [
+              "/v1/admin/validators/*"
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Admin Provider Resource",
             "ownerManagedAccess": false,
             "displayName": "Admin Provider Resource",
@@ -1022,6 +1033,18 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Admin User Resource\"]",
+              "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "31ff4a5f-e773-4c51-87ae-719cc12acf2c",
+            "name": "Admin Validator Permissions",
+            "description": "",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Admin Validator Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
