@@ -8,7 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.Set;
 
-@Schema(name="ProviderRequestV2", description="Request to create/modify a Provider.")
+@Schema(name="ProviderRequestV2", description="Request to create a Provider.")
 public class ProviderRequestV2 extends ProviderRequest {
 
     @Schema(

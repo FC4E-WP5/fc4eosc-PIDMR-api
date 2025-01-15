@@ -1,7 +1,6 @@
 package org.grnet.pidmr.service;
 
 import io.quarkus.hibernate.orm.panache.Panache;
-import io.quarkus.oidc.TokenIntrospection;
 import io.vavr.Tuple;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,6 +16,7 @@ import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.enums.MailType;
 import org.grnet.pidmr.enums.ProviderStatus;
+import org.grnet.pidmr.enums.Validator;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.interceptors.ManageEntity;
 import org.grnet.pidmr.mapper.ProviderMapper;
@@ -154,12 +154,17 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         if (matcher.matches()) {
 
-            var identification = new Identification();
-            identification.status = Identification.Status.VALID;
-            identification.type = provider.getType();
-            identification.example = provider.getExample();
-            identification.actions = dto.actions;
-            identifications.add(identification);
+            if(provider.getValidator().validate(String.valueOf(cs))){
+
+                var identification = new Identification();
+                identification.status = Identification.Status.VALID;
+                identification.type = provider.getType();
+                identification.example = provider.getExample();
+                identification.actions = dto.actions;
+                identifications.add(identification);
+            } else {
+                return;
+            }
         }
 
         if (matcher.hitEnd()) {
@@ -181,10 +186,13 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         if (matcher.matches()) {
 
-            identification.status = Identification.Status.VALID;
-            identification.type = provider.getType();
-            identification.example = provider.getExample();
-            identification.actions = dto.actions;
+            if(provider.getValidator().validate(String.valueOf(cs))){
+
+                identification.status = Identification.Status.VALID;
+                identification.type = provider.getType();
+                identification.example = provider.getExample();
+                identification.actions = dto.actions;
+            }
             return identification;
         }
 
@@ -228,6 +236,7 @@ public class DatabaseProviderService implements ProviderServiceI {
         checkIfActionsSupported(request.actions);
 
         var newProvider = setProviderForCreation(request);
+        newProvider.setValidator(Validator.valueOf(request.validator));
 
         request
                 .actions
@@ -266,6 +275,8 @@ public class DatabaseProviderService implements ProviderServiceI {
         checkIfActionsSupported(request.actions.stream().map(action -> action.mode).collect(Collectors.toSet()));
 
         var newProvider = setProviderForCreation(request);
+
+        newProvider.setValidator(Validator.valueOf(request.validator));
 
         request
                 .actions
@@ -407,6 +418,10 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         var provider = setProviderForUpdating(id, request);
 
+        if (StringUtils.isNotEmpty(request.validator)) {
+            provider.setValidator(Validator.valueOf(request.validator));
+        }
+
         if (!request.actions.isEmpty()) {
 
             checkIfActionsSupported(request.actions.stream().map(action -> action.mode).collect(Collectors.toSet()));
@@ -482,11 +497,11 @@ public class DatabaseProviderService implements ProviderServiceI {
         newProvider.setStatus(status);
         newProvider.setStatusUpdatedBy(requestUserContext.getVopersonID());
 
-        var pidtype=newProvider.getType();
-        var userID = newProvider.getCreatedBy();
-        var timestamp = formatter.format(Timestamp.from(Instant.now()));
-        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(status), pidtype,timestamp);
-        mailerService.sendEmailsWithContext(emailContext, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS);
+//        var pidtype=newProvider.getType();
+//        var userID = newProvider.getCreatedBy();
+//        var timestamp = formatter.format(Timestamp.from(Instant.now()));
+//        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(status), pidtype,timestamp);
+//        mailerService.sendEmailsWithContext(emailContext, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS);
 
 
         return ProviderMapper.INSTANCE.databaseAdminProviderToDto(newProvider);

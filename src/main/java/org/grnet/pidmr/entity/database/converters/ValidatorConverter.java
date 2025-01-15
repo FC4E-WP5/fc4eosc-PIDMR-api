@@ -4,46 +4,38 @@ package org.grnet.pidmr.entity.database.converters;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import jakarta.ws.rs.ServerErrorException;
-import org.grnet.pidmr.enums.RoleChangeRequestStatus;
+import org.grnet.pidmr.enums.Validator;
 
 @Converter
-public class RoleChangeStatusConverter implements AttributeConverter<RoleChangeRequestStatus, Integer> {
+public class ValidatorConverter implements AttributeConverter<Validator, Integer> {
 
     @Override
-    public Integer convertToDatabaseColumn(RoleChangeRequestStatus status) {
+    public Integer convertToDatabaseColumn(Validator status) {
 
         if (status == null)
             return null;
 
         switch (status) {
-            case PENDING:
+            case NONE:
                 return 0;
-
-            case APPROVED:
+            case ISBN:
                 return 1;
-
-            case REJECTED:
-                return 2;
-
             default:
                 throw new ServerErrorException(status + " not supported.", 501);
         }
     }
 
     @Override
-    public RoleChangeRequestStatus convertToEntityAttribute(Integer dbData) {
+    public Validator convertToEntityAttribute(Integer dbData) {
 
         if (dbData == null)
             return null;
 
         switch (dbData) {
             case 0:
-                return RoleChangeRequestStatus.PENDING;
+                return Validator.NONE;
             case 1:
-                return RoleChangeRequestStatus.APPROVED;
-            case 2:
-                return RoleChangeRequestStatus.REJECTED;
-
+                return Validator.ISBN;
             default:
                 throw new ServerErrorException(dbData + " not supported.", 501);
         }
