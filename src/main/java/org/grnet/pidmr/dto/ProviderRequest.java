@@ -52,14 +52,14 @@ public class ProviderRequest {
     public Set<String> regexes;
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "A PID example.",
-            example = "ark:/13030/tf5p30086k"
+            description = "A PID examples.",
+            example = "[\"ark:/13030/tf5p30086k\", \"ark:/12148/btv1b8449691v\", \"ark:/53355/cl010066723\"]"
     )
-    @JsonProperty("example")
-    @NotEmpty(message = "example may not be empty.")
-    public String example;
+    @JsonProperty("examples")
+    @NotEmpty(message = "examples should have at least one entry.")
+    public String[] examples;
 
     @Schema(
             type = SchemaType.BOOLEAN,

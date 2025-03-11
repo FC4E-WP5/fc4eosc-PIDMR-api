@@ -26,7 +26,7 @@ You can run your application in dev mode that enables live coding using:
 
 To access the dev database, please execute the following command:
 
-`mysql -h localhost -P 3306 -u pidmr -p pidmr --protocol=tcp`
+`psql -h localhost -U pidmr -d pidmr`
 
 ### Obtain an access token from Dev Service Keycloak
 

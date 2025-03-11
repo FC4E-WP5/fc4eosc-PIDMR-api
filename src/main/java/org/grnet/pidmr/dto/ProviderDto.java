@@ -66,13 +66,12 @@ public class ProviderDto {
     public Set<String> regexes = new HashSet<>();
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "A PID example.",
-            example = "ark:/13030/tf5p30086k"
+            description = "Provides an example of a valid PID.",
+            example = "[\"ark:/13030/tf5p30086k\", \"ark:/12148/btv1b8449691v\", \"ark:/53355/cl010066723\"]"
     )
-    @JsonProperty("example")
-    public String example;
+    public String[] examples;
 
     @Schema(
             type = SchemaType.BOOLEAN,

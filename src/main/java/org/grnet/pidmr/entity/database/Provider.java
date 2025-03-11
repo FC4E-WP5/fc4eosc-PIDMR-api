@@ -88,11 +88,11 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     private boolean directResolution;
 
     /**
-     * A PID example.
+     * A PID examples.
      */
-    @Column
+    @Column(name = "examples")
     @NotNull
-    private String example;
+    private String[] examples;
 
     @Column(name = "relies_on_dois")
     private boolean reliesOnDois;
@@ -101,7 +101,7 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     @Convert(converter = ValidatorConverter.class)
     private Validator validator;
 
-    public void addAction(Action action, String[] endpoints ) {
+    public void addAction(Action action, List<Endpoint> endpoints ) {
         var providerAction = new ProviderActionJunction(this, action, endpoints);
         actions.add(providerAction);
         action.getProviders().add(providerAction);

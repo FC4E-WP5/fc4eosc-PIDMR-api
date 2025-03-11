@@ -46,13 +46,13 @@ public class UpdateProvider {
     public Set<String> regexes = new HashSet<>();
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.ARRAY,
             implementation = String.class,
             description = "A PID example.",
-            example = "ark:/13030/tf5p30086k"
+            example = "[\"ark:/13030/tf5p30086k\", \"ark:/12148/btv1b8449691v\", \"ark:/53355/cl010066723\"]"
     )
-    @JsonProperty("example")
-    public String example;
+    @JsonProperty("examples")
+    public String[] examples;
 
     @Schema(
             type = SchemaType.BOOLEAN,

@@ -927,6 +927,17 @@
             "icon_uri": ""
           },
           {
+            "name": "Admin Provider Resource v3",
+            "ownerManagedAccess": false,
+            "displayName": "Admin Provider Resource v3",
+            "attributes": {},
+            "_id": "3d185d85-2f57-7bce-b2d9-40c32718b2e3",
+            "uris": [
+              "/v3/admin/providers/*"
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Admin User Resource",
             "ownerManagedAccess": false,
             "displayName": "Admin User Resource",
@@ -1021,6 +1032,18 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Admin Provider Resource v2\"]",
+              "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
+            }
+          },
+          {
+            "id": "fa2c5c69-03f4-4ae3-a565-c90cb2bfe75e",
+            "name": "Admin Provider v3 Permissions",
+            "description": "Admin Provider v3 Permissions",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Admin Provider Resource v3\"]",
               "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
             }
           },
