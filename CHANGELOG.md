@@ -22,7 +22,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 
+### Added
+
 -   [#129](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/129) - PIDMR-206 Add validator Property to Provider Table.
+-   [#133](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/133) - PIDMR-225 PIDMR provider schema update.
 
 
 ## 2.3.0 - 2024-12-19
