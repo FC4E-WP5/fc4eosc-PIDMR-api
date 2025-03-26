@@ -55,7 +55,7 @@ public class ProviderRequest {
             type = SchemaType.ARRAY,
             implementation = String.class,
             description = "A PID examples.",
-            example = "[\"ark:/13030/tf5p30086k\", \"ark:/12148/btv1b8449691v\", \"ark:/53355/cl010066723\"]"
+            example = "[\"ark:/13030/tf5p30086k\", \"ark:/12148/btv1b8449691v\", \"ark:/53355/cl010066723\", \"ark:/12148/cb406766211\"]"
     )
     @JsonProperty("examples")
     @NotEmpty(message = "examples should have at least one entry.")
