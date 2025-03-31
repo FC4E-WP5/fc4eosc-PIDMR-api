@@ -15,7 +15,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.grnet.pidmr.entity.AbstractProvider;
 import org.grnet.pidmr.entity.database.converters.ProviderStatusAttributeConverter;
+import org.grnet.pidmr.entity.database.converters.ValidatorConverter;
 import org.grnet.pidmr.enums.ProviderStatus;
+import org.grnet.pidmr.enums.Validator;
 import org.grnet.pidmr.exception.ModeIsNotSupported;
 
 import java.util.*;
@@ -86,16 +88,20 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     private boolean directResolution;
 
     /**
-     * A PID example.
+     * A PID examples.
      */
-    @Column
+    @Column(name = "examples")
     @NotNull
-    private String example;
+    private String[] examples;
 
     @Column(name = "relies_on_dois")
     private boolean reliesOnDois;
 
-    public void addAction(Action action, String[] endpoints ) {
+    @Column
+    @Convert(converter = ValidatorConverter.class)
+    private Validator validator;
+
+    public void addAction(Action action, List<Endpoint> endpoints ) {
         var providerAction = new ProviderActionJunction(this, action, endpoints);
         actions.add(providerAction);
         action.getProviders().add(providerAction);

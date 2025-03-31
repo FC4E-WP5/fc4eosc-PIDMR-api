@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.pidmr.enums.Validator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -65,13 +66,12 @@ public class ProviderDto {
     public Set<String> regexes = new HashSet<>();
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "A PID example.",
-            example = "ark:/13030/tf5p30086k"
+            description = "Provides an example of a valid PID.",
+            example = "[\"ark:/13030/tf5p30086k\", \"ark:/12148/btv1b8449691v\", \"ark:/53355/cl010066723\"]"
     )
-    @JsonProperty("example")
-    public String example;
+    public String[] examples;
 
     @Schema(
             type = SchemaType.BOOLEAN,
@@ -81,4 +81,13 @@ public class ProviderDto {
     )
     @JsonProperty("relies_on_dois")
     public boolean reliesOnDois;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = Validator.class,
+            description = "The validator of the Provider.",
+            example = "NONE"
+    )
+    @JsonProperty("validator")
+    public String validator;
 }

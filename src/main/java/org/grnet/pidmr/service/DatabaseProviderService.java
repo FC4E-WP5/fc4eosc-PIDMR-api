@@ -1,7 +1,6 @@
 package org.grnet.pidmr.service;
 
 import io.quarkus.hibernate.orm.panache.Panache;
-import io.quarkus.oidc.TokenIntrospection;
 import io.vavr.Tuple;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -10,13 +9,16 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.entity.database.Action;
+import org.grnet.pidmr.entity.database.Endpoint;
 import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.enums.MailType;
 import org.grnet.pidmr.enums.ProviderStatus;
+import org.grnet.pidmr.enums.Validator;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.interceptors.ManageEntity;
 import org.grnet.pidmr.mapper.ProviderMapper;
@@ -129,7 +131,7 @@ public class DatabaseProviderService implements ProviderServiceI {
             var identification = new Identification();
             identification.status = Identification.Status.INVALID;
             identification.type = "";
-            identification.example = "";
+            identification.examples = new String[]{""};
             identifications.add(identification);
         } else {
 
@@ -148,18 +150,23 @@ public class DatabaseProviderService implements ProviderServiceI {
 
     private void check(CharSequence cs, Pattern pattern, Provider provider, Set<Identification> identifications) {
 
-        Matcher matcher = pattern.matcher(cs);
+        var matcher = pattern.matcher(cs);
 
         var dto = ProviderMapper.INSTANCE.databaseProviderToDto(provider);
 
         if (matcher.matches()) {
 
-            var identification = new Identification();
-            identification.status = Identification.Status.VALID;
-            identification.type = provider.getType();
-            identification.example = provider.getExample();
-            identification.actions = dto.actions;
-            identifications.add(identification);
+            if(provider.getValidator().validate(String.valueOf(cs))){
+
+                var identification = new Identification();
+                identification.status = Identification.Status.VALID;
+                identification.type = provider.getType();
+                identification.examples = provider.getExamples();
+                identification.actions = dto.actions;
+                identifications.add(identification);
+            } else {
+                return;
+            }
         }
 
         if (matcher.hitEnd()) {
@@ -167,7 +174,7 @@ public class DatabaseProviderService implements ProviderServiceI {
             var identification = new Identification();
             identification.status = Identification.Status.AMBIGUOUS;
             identification.type = provider.getType();
-            identification.example = provider.getExample();
+            identification.examples = provider.getExamples();
             identification.actions = dto.actions;
             identifications.add(identification);
         }
@@ -175,16 +182,19 @@ public class DatabaseProviderService implements ProviderServiceI {
 
     private Identification check(CharSequence cs, Pattern pattern, Provider provider, Identification identification) {
 
-        Matcher matcher = pattern.matcher(cs);
+        var matcher = pattern.matcher(cs);
 
         var dto = ProviderMapper.INSTANCE.databaseProviderToDto(provider);
 
         if (matcher.matches()) {
 
-            identification.status = Identification.Status.VALID;
-            identification.type = provider.getType();
-            identification.example = provider.getExample();
-            identification.actions = dto.actions;
+            if(provider.getValidator().validate(String.valueOf(cs))){
+
+                identification.status = Identification.Status.VALID;
+                identification.type = provider.getType();
+                identification.examples = provider.getExamples();
+                identification.actions = dto.actions;
+            }
             return identification;
         }
 
@@ -192,7 +202,7 @@ public class DatabaseProviderService implements ProviderServiceI {
 
             identification.status = Identification.Status.AMBIGUOUS;
             identification.type = provider.getType();
-            identification.example = provider.getExample();
+            identification.examples = provider.getExamples();
             identification.actions = dto.actions;
         }
 
@@ -207,7 +217,7 @@ public class DatabaseProviderService implements ProviderServiceI {
         newProvider.setName(request.name);
         newProvider.setType(request.type);
         newProvider.setDescription(request.description);
-        newProvider.setExample(request.example);
+        newProvider.setExamples(request.examples);
         newProvider.setCreatedBy(requestUserContext.getVopersonID());
         newProvider.setStatus(ProviderStatus.PENDING);
         newProvider.setReliesOnDois(request.reliesOnDois);
@@ -228,6 +238,7 @@ public class DatabaseProviderService implements ProviderServiceI {
         checkIfActionsSupported(request.actions);
 
         var newProvider = setProviderForCreation(request);
+        newProvider.setValidator(Validator.valueOf(request.validator));
 
         request
                 .actions
@@ -259,20 +270,25 @@ public class DatabaseProviderService implements ProviderServiceI {
      */
     @Transactional
     public ProviderDto createV2(ProviderRequestV2 request) {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        // Set the formatter's time zone to UTC
+
+        var formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         checkIfActionsSupported(request.actions.stream().map(action -> action.mode).collect(Collectors.toSet()));
 
         var newProvider = setProviderForCreation(request);
 
+        newProvider.setValidator(Validator.valueOf(request.validator));
+
         request
                 .actions
                 .forEach
-                        (action -> {
-                            newProvider.addAction(actionRepository.findById(action.mode), action.endpoints);
-                        });
+                        (action -> newProvider.addAction(actionRepository.findById(action.mode), Arrays.stream(action
+                                .endpoints)
+                                .map(endpoint -> new Endpoint(endpoint, request.type))
+                                .collect(Collectors.toList())
+                        ));
 
         request.
                 regexes
@@ -295,6 +311,51 @@ public class DatabaseProviderService implements ProviderServiceI {
         return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
     }
 
+    /**
+     * This method stores a new Provider in the database.
+     *
+     * @param request The Provider to be created.
+     * @return The created Provider.
+     * @throws
+     */
+    @Transactional
+    public ProviderDto createV3(ProviderRequestV3 request) {
+
+        var formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        checkIfActionsSupported(request.actions.stream().map(action -> action.mode).collect(Collectors.toSet()));
+
+        var newProvider = setProviderForCreation(request);
+
+        newProvider.setValidator(Validator.valueOf(request.validator));
+
+        request
+                .actions
+                .forEach
+                        (action -> newProvider.addAction(actionRepository.findById(action.mode), action.endpoints));
+
+        request.
+                regexes
+                .forEach(regex -> {
+                    var regexp = new Regex();
+                    regexp.setRegex(regex);
+                    newProvider.addRegex(regexp);
+                });
+
+
+        providerRepository.persist(newProvider);
+        var timestamp = formatter.format(Timestamp.from(Instant.now()));
+
+        var userID = newProvider.getCreatedBy();
+        var pidtype = newProvider.getType();
+
+        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(newProvider.getStatus()), pidtype,timestamp);
+        mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION, MailType.PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION);
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(newProvider);
+    }
 
     /**
      * This method deletes from database a Provider by its ID.
@@ -355,8 +416,8 @@ public class DatabaseProviderService implements ProviderServiceI {
         if (StringUtils.isNotEmpty(request.description)) {
             provider.setDescription(request.description);
         }
-        if (StringUtils.isNotEmpty(request.example)) {
-            provider.setExample(request.example);
+        if (ArrayUtils.isNotEmpty(request.examples)) {
+            provider.setExamples(request.examples);
         }
         provider.setReliesOnDois(request.reliesOnDois);
         provider.setStatus(ProviderStatus.PENDING);
@@ -407,6 +468,42 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         var provider = setProviderForUpdating(id, request);
 
+        if (StringUtils.isNotEmpty(request.validator)) {
+            provider.setValidator(Validator.valueOf(request.validator));
+        }
+
+        if (!request.actions.isEmpty()) {
+
+            checkIfActionsSupported(request.actions.stream().map(action -> action.mode).collect(Collectors.toSet()));
+            var actions = provider.getActions();
+            new ArrayList<>(actions).forEach(action -> provider.removeAction(action.getAction()));
+            Panache.getEntityManager().flush();
+            request.actions.forEach(newAction -> provider.addAction(actionRepository.findById(newAction.mode), Arrays.stream(newAction
+                            .endpoints)
+                    .map(endpoint -> new Endpoint(endpoint, provider.getType()))
+                    .collect(Collectors.toList())));
+        }
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+    }
+
+    /**
+     * This method updates one or more attributes of a Provider.
+     *
+     * @param request The Provider attributes to be updated.
+     * @param id      The Provider to be updated.
+     * @return The updated Provider.
+     */
+    @ManageEntity(entityType = "Provider")
+    @Transactional
+    public ProviderDto updateV3(Long id, UpdateProviderV3 request) {
+
+        var provider = setProviderForUpdating(id, request);
+
+        if (StringUtils.isNotEmpty(request.validator)) {
+            provider.setValidator(Validator.valueOf(request.validator));
+        }
+
         if (!request.actions.isEmpty()) {
 
             checkIfActionsSupported(request.actions.stream().map(action -> action.mode).collect(Collectors.toSet()));
@@ -415,6 +512,7 @@ public class DatabaseProviderService implements ProviderServiceI {
             Panache.getEntityManager().flush();
             request.actions.forEach(newAction -> provider.addAction(actionRepository.findById(newAction.mode), newAction.endpoints));
         }
+
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
     }
 
@@ -474,20 +572,14 @@ public class DatabaseProviderService implements ProviderServiceI {
      */
     @Transactional
     public AdminProviderDto updateProviderStatus(Long id, ProviderStatus status) {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        // Set the formatter's time zone to UTC
+
+        var formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         var newProvider = providerRepository.findById(id);
         newProvider.setStatus(status);
         newProvider.setStatusUpdatedBy(requestUserContext.getVopersonID());
-
-        var pidtype=newProvider.getType();
-        var userID = newProvider.getCreatedBy();
-        var timestamp = formatter.format(Timestamp.from(Instant.now()));
-        var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(status), pidtype,timestamp);
-        mailerService.sendEmailsWithContext(emailContext, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS, MailType.PROVIDER_ADMIN_ALERT_CHANGE_PID_TYPE_ENTRY_REQUEST_STATUS);
-
 
         return ProviderMapper.INSTANCE.databaseAdminProviderToDto(newProvider);
     }
@@ -500,7 +592,7 @@ public class DatabaseProviderService implements ProviderServiceI {
         var identification = new Identification();
         identification.status = Identification.Status.INVALID;
         identification.type = "";
-        identification.example = "";
+        identification.examples = new String[]{""};
 
         for (Regex regex : regexes) {
 
@@ -514,5 +606,4 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         return identification;
     }
-
 }

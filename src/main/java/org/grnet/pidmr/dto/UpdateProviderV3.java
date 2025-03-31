@@ -10,16 +10,16 @@ import org.grnet.pidmr.enums.Validator;
 import java.util.HashSet;
 import java.util.Set;
 
-@Schema(name="UpdateProviderV2", description="An object represents a request for updating a Provider.")
-public class UpdateProviderV2 extends UpdateProvider {
+@Schema(name="UpdateProviderV3", description="An object represents a request for updating a Provider.")
+public class UpdateProviderV3 extends UpdateProvider {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = ResolutionModeRequest.class,
+            implementation = ResolutionModeRequestV2.class,
             description = "The resolution modes supported by Provider."
     )
     @JsonProperty("resolution_modes")
-    public Set<@Valid ResolutionModeRequest> actions = new HashSet<>();
+    public Set<@Valid ResolutionModeRequestV2> actions = new HashSet<>();
 
     @Schema(
             type = SchemaType.STRING,

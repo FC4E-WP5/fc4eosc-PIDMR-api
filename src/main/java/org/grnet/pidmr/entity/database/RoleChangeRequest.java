@@ -55,6 +55,4 @@ public class RoleChangeRequest {
     @NotNull
     @Convert(converter = RoleChangeStatusConverter.class)
     private RoleChangeRequestStatus status;
-
-
 }

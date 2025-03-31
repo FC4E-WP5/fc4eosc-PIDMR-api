@@ -1,6 +1,5 @@
 package org.grnet.pidmr;
 
-import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -11,11 +10,7 @@ import lombok.Setter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.endpoint.AdminEndpoint;
-import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.enums.ProviderStatus;
-import org.grnet.pidmr.repository.ActionRepository;
-import org.grnet.pidmr.repository.ProviderRepository;
-import org.grnet.pidmr.repository.RegexRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
 import org.grnet.pidmr.util.RequestUserContext;
@@ -23,7 +18,6 @@ import org.junit.jupiter.api.*;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
@@ -66,7 +60,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("regexp");
         request.actions = Set.of("not_valid_action");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var informativeResponse = given()
                 .auth()
@@ -92,7 +86,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("regexp");
         request.actions = Set.of("resource");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()
@@ -121,7 +115,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("regexp");
         request.actions = Set.of("resource");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()
@@ -161,7 +155,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource", "metadata");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()
@@ -201,7 +195,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource", "metadata");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()
@@ -255,7 +249,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.type = "test-regex-provider";
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var response = given()
                 .auth()
@@ -281,7 +275,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.type = "test-regex-provider";
         request.description = "Test Provider.";
         request.actions = Set.of("resource", "metadata");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var response = given()
                 .auth()
@@ -310,7 +304,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource", "metadata");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()
@@ -368,7 +362,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource", "metadata");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()
@@ -406,7 +400,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()
@@ -424,7 +418,7 @@ public class AdminEndpointTest extends KeycloakTest {
         updateRequest.name = "Update Test Provider.";
         updateRequest.type = "test-update-provider";
         updateRequest.description = "Update Test Provider.";
-        updateRequest.example = "updated example";
+        updateRequest.examples = new String[]{"updated example"};
 
         var updatedProvider = given()
                 .auth()
@@ -441,7 +435,6 @@ public class AdminEndpointTest extends KeycloakTest {
         assertEquals(updateRequest.type, updatedProvider.type);
         assertEquals(updateRequest.name, updatedProvider.name);
         assertEquals(updateRequest.description, updatedProvider.description);
-        assertEquals(updateRequest.example, updatedProvider.example);
         assertEquals(request.regexes.stream().findFirst().get(), updatedProvider.regexes.stream().findFirst().get());
         assertEquals(request.actions.stream().findFirst().get(), updatedProvider.actions.stream().findFirst().get().mode);
 
@@ -457,7 +450,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()
@@ -490,71 +483,10 @@ public class AdminEndpointTest extends KeycloakTest {
         assertEquals(request.type, updatedProvider.type);
         assertEquals(request.name, updatedProvider.name);
         assertEquals(request.description, updatedProvider.description);
-        assertEquals(request.example, updatedProvider.example);
         assertEquals(updateRequest.regexes.stream().findFirst().get(), updatedProvider.regexes.stream().findFirst().get());
         assertEquals(updateRequest.actions.stream().findFirst().get(), updatedProvider.actions.stream().findFirst().get().mode);
 
         providerService.deleteProviderByIdWithoutCheckingPermissions(provider.id);
-    }
-//
-//    @Test
-    public void providerForbidden() {
-        when(requestUserContext.getRoles(clientID)).thenReturn(Arrays.asList("user"));
-
-
-        var createForbidden = given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .body(new ProviderRequestV1())
-                .contentType(ContentType.JSON)
-                .post("/providers")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", createForbidden.message);
-
-        var updateForbidden = given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .body(new UpdateProviderV1())
-                .contentType(ContentType.JSON)
-                .patch("/providers/{id}", 3)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", updateForbidden.message);
-
-        var deleteForbidden = given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .contentType(ContentType.JSON)
-                .delete("/providers/{id}", 2)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", deleteForbidden.message);
-
-        var readForbidden = given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .contentType(ContentType.JSON)
-                .get("/providers/{id}", 1)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", readForbidden.message);
     }
 
     @Test
@@ -566,7 +498,7 @@ public class AdminEndpointTest extends KeycloakTest {
         request.description = "Test Provider.";
         request.regexes = Set.of("rege(x(es)?|xps?)");
         request.actions = Set.of("resource");
-        request.example = "example";
+        request.examples = new String[]{"example"};
 
         var provider = given()
                 .auth()

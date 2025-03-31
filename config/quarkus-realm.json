@@ -927,6 +927,17 @@
             "icon_uri": ""
           },
           {
+            "name": "Admin Provider Resource v3",
+            "ownerManagedAccess": false,
+            "displayName": "Admin Provider Resource v3",
+            "attributes": {},
+            "_id": "3d185d85-2f57-7bce-b2d9-40c32718b2e3",
+            "uris": [
+              "/v3/admin/providers/*"
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Admin User Resource",
             "ownerManagedAccess": false,
             "displayName": "Admin User Resource",
@@ -934,6 +945,17 @@
             "_id": "e415a1e6-78a1-4118-bbb4-ee756ac44c39",
             "uris": [
               "/v1/admin/users/*"
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Admin Validator Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Admin Validator Resource",
+            "attributes": {},
+            "_id": "e415a1e6-58a1-4418-bbc4-ee756ac44c39",
+            "uris": [
+              "/v1/admin/validators/*"
             ],
             "icon_uri": ""
           },
@@ -1014,6 +1036,18 @@
             }
           },
           {
+            "id": "fa2c5c69-03f4-4ae3-a565-c90cb2bfe75e",
+            "name": "Admin Provider v3 Permissions",
+            "description": "Admin Provider v3 Permissions",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Admin Provider Resource v3\"]",
+              "applyPolicies": "[\"Only Administrators\",\"Only Provider Administrators\"]"
+            }
+          },
+          {
             "id": "29ff4a5f-e773-4c51-87ae-719cc12acf2c",
             "name": "Admin User Permissions",
             "description": "",
@@ -1022,6 +1056,18 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Admin User Resource\"]",
+              "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "31ff4a5f-e773-4c51-87ae-719cc12acf2c",
+            "name": "Admin Validator Permissions",
+            "description": "",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Admin Validator Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },

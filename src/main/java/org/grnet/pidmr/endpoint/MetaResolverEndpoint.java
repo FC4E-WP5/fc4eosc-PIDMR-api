@@ -31,7 +31,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutionException;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.pidmr.constraints.StringEnumeration;
+import org.grnet.pidmr.enums.Validator;
 
 import java.util.Set;
 
@@ -50,14 +52,14 @@ public class ProviderRequest {
     public Set<String> regexes;
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "A PID example.",
-            example = "ark:/13030/tf5p30086k"
+            description = "A PID examples.",
+            example = "[\"ark:/13030/tf5p30086k\", \"ark:/12148/btv1b8449691v\", \"ark:/53355/cl010066723\", \"ark:/12148/cb406766211\"]"
     )
-    @JsonProperty("example")
-    @NotEmpty(message = "example may not be empty.")
-    public String example;
+    @JsonProperty("examples")
+    @NotEmpty(message = "examples should have at least one entry.")
+    public String[] examples;
 
     @Schema(
             type = SchemaType.BOOLEAN,
@@ -68,4 +70,14 @@ public class ProviderRequest {
     )
     @JsonProperty("relies_on_dois")
     public boolean reliesOnDois;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = Validator.class,
+            description = "The Validator (e.g. NONE, ISBN).",
+            example = "ISBN"
+    )
+    @JsonProperty("validator")
+    @StringEnumeration(enumClass = Validator.class, message = "validator")
+    public String validator = "NONE";
 }

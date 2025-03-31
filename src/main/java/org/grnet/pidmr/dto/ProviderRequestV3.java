@@ -8,15 +8,15 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.Set;
 
-@Schema(name="ProviderRequestV2", description="Request to create a Provider.")
-public class ProviderRequestV2 extends ProviderRequest {
+@Schema(name="ProviderRequestV3", description="Request to create a Provider.")
+public class ProviderRequestV3 extends ProviderRequest {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = ResolutionModeRequest.class,
+            implementation = ResolutionModeRequestV2.class,
             description = "The resolution modes supported by Provider"
     )
     @JsonProperty("resolution_modes")
     @NotEmpty(message = "resolution_modes should have at least one entry.")
-    public Set<@Valid ResolutionModeRequest> actions;
+    public Set<@Valid ResolutionModeRequestV2> actions;
 }

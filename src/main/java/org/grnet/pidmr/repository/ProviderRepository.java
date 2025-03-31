@@ -79,7 +79,24 @@ public class ProviderRepository implements Repository<Provider, Long> {
 
         var em = Panache.getEntityManager();
         var regex = em.createNativeQuery("SELECT r.* FROM Regex r INNER JOIN Provider p on r.provider_id=p.id WHERE '" +pid+ "' ~ regex AND p.status = 1", Regex.class);
-        return regex.getResultList().stream().findFirst();
+
+        var optional = regex.getResultList().stream().findFirst();
+
+        if(optional.isPresent()){
+
+            var rgx = (Regex) optional.get();
+
+            if(rgx.getProvider().getValidator().validate(pid)){
+
+                return Optional.of(rgx);
+            } else{
+
+                return Optional.empty();
+            }
+
+        } else {
+            return Optional.empty();
+        }
     }
 
     public Optional<Regex> valid(String pid, Provider provider) {
@@ -90,6 +107,22 @@ public class ProviderRepository implements Repository<Provider, Long> {
                 .createNativeQuery("SELECT r.* FROM Regex r INNER JOIN Provider p on r.provider_id=p.id WHERE '" +pid+ "' ~ regex AND provider_id = :providerId AND p.status = 1", Regex.class)
                 .setParameter("providerId", provider.getId());
 
-        return regex.getResultList().stream().findFirst();
+        var optional = regex.getResultList().stream().findFirst();
+
+        if(optional.isPresent()){
+
+            var rgx = (Regex) optional.get();
+
+            if(rgx.getProvider().getValidator().validate(pid)){
+
+                return Optional.of(rgx);
+            } else{
+
+                return Optional.empty();
+            }
+
+        } else {
+            return Optional.empty();
+        }
     }
 }
