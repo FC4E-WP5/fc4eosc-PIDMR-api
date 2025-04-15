@@ -12,6 +12,7 @@ import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.Action;
 import org.grnet.pidmr.entity.Provider;
+import org.grnet.pidmr.interceptors.ManageEntity;
 import org.grnet.pidmr.mapper.ProviderMapper;
 import org.grnet.pidmr.pagination.Page;
 import org.grnet.pidmr.pagination.PageResource;
