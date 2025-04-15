@@ -606,4 +606,11 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         return identification;
     }
+    @Transactional
+    public ProviderDto getById(Long providerId) {
+
+        var provider = providerRepository.findById(providerId);
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+    }
 }

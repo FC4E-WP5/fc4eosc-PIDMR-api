@@ -8,11 +8,13 @@ import lombok.Setter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.InformativeResponse;
+import org.grnet.pidmr.dto.ProviderDto;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.endpoint.ProviderEndpoint;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import org.grnet.pidmr.entity.database.Provider;
 import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
 import org.grnet.pidmr.util.RequestUserContext;
@@ -577,5 +579,39 @@ public class ProviderEndpointTest {
                 .as(Identification.class);
 
         assertEquals("10.5281/zenodo", identification1.type);
+    }
+
+
+    @Test
+    public void getProviderNotFound() {
+
+        var response = given()
+                .basePath("v1/providers")
+                .contentType(ContentType.JSON)
+                .get("/{id}", 1000L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Provider with the following id: " + 1000L, response.message);
+    }
+
+
+    @Test
+    public void getProvider() {
+
+        var response = given()
+                .basePath("v1/providers")
+                .contentType(ContentType.JSON)
+                .get("/{id}", 3)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ProviderDto.class);
+
+        assertEquals("swh", response.type);
     }
 }
