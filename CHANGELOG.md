@@ -33,7 +33,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Changed
 
 -   [#139](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/139) PIDMR-239 The valid result should be first
-
+-   [#141](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/141) PIDMR-240 The supported modes in API are not returned in an order (fix)
 
 ## 2.3.0 - 2024-12-19
 
