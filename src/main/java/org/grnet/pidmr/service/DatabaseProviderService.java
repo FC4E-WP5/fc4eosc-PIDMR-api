@@ -145,6 +145,16 @@ public class DatabaseProviderService implements ProviderServiceI {
             identifications = new HashSet<>(mergedObjects.values());
         }
 
+        identifications = identifications.stream()
+                .sorted(Comparator.comparingInt((Identification identification) -> {
+                    switch (identification.status) {
+                        case VALID: return 0;
+                        case AMBIGUOUS: return 1;
+                        default: return 2;
+                    }
+                }))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         return identifications;
     }
 
