@@ -14,9 +14,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,17 +57,16 @@ public interface ProviderMapper {
 
         return actions
                 .stream()
-                .map(action->{
-
+                .map(action -> {
                     var mode = new ResolutionModeDto();
-                    mode.mode           = action.getAction().getMode();
-                    mode.name           = action.getAction().getName();
-                    //mode.endpoint       = action.getEndpoint();
+                    mode.mode = action.getAction().getMode();
+                    mode.name = action.getAction().getName();
                     mode.endpoints = action.getEndpoints();
 
                     return mode;
                 })
-                .collect(Collectors.toSet());
+                .sorted(Comparator.comparing(mode -> mode.name))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Named("database-regexes")
