@@ -22,6 +22,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 
+### Added
+
+-   [#142](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/142) - PIDMR-188 API update status.
+
+
 ## 2.4.0 - 2025-03-27
 
 ### Added
