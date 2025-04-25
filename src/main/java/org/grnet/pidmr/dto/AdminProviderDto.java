@@ -1,5 +1,6 @@
 package org.grnet.pidmr.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -34,4 +35,13 @@ public class AdminProviderDto extends ProviderDto {
     )
     @JsonProperty("status_updated_by")
     public String statusUpdatedBy;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The reason the Provider status has been updated.",
+            example = "We want to reject this Provider."
+    )
+    @JsonProperty("reason")
+    public String reason;
 }

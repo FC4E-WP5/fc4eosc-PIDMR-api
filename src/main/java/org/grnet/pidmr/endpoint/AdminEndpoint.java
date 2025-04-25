@@ -418,9 +418,9 @@ public class AdminEndpoint {
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
                                               @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id :") Long id,
-                                              @Valid @NotNull(message = "The request body is empty.") UpdateProviderStatus updateProviderStatus) {
+                                              @Valid @NotNull(message = "The request body is empty.") UpdateProviderStatus request) {
 
-        var response = providerService.updateProviderStatus(id, ProviderStatus.valueOf(updateProviderStatus.status));
+        var response = providerService.updateProviderStatus(id, request);
 
         return Response.ok().entity(response).build();
     }

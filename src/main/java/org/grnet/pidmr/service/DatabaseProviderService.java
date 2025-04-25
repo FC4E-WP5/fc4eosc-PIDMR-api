@@ -577,19 +577,20 @@ public class DatabaseProviderService implements ProviderServiceI {
      * Updates the status of a Provider with the provided status.
      *
      * @param id     The ID of the Provider to update.
-     * @param status The new status to set for the Provider.
+     * @param request Request for updating Provider status.
      * @return The updated Provider.
      */
     @Transactional
-    public AdminProviderDto updateProviderStatus(Long id, ProviderStatus status) {
+    public AdminProviderDto updateProviderStatus(Long id, UpdateProviderStatus request) {
 
         var formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         var newProvider = providerRepository.findById(id);
-        newProvider.setStatus(status);
+        newProvider.setStatus(ProviderStatus.valueOf(request.status));
         newProvider.setStatusUpdatedBy(requestUserContext.getVopersonID());
+        newProvider.setReason(request.reason);
 
         return ProviderMapper.INSTANCE.databaseAdminProviderToDto(newProvider);
     }

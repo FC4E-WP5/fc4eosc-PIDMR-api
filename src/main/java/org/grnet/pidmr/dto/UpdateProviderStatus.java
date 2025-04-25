@@ -15,11 +15,19 @@ public class UpdateProviderStatus {
             type = SchemaType.STRING,
             implementation = ProviderStatus.class,
             required = true,
-            description = "The Provider status (e.g. APPROVED, PENDING).",
+            description = "The Provider status (e.g. APPROVED, PENDING, REJECTED).",
             example = "APPROVED"
     )
     @JsonProperty("status")
     @StringEnumeration(enumClass = ProviderStatus.class, message = "status")
     @NotEmpty(message = "status may not be empty.")
     public String status;
+
+    @Schema(
+            type = SchemaType.STRING,
+            description = "The reason for updating the Provider status.",
+            example = "We want to approve this Provider."
+    )
+    @JsonProperty("reason")
+    public String reason;
 }
