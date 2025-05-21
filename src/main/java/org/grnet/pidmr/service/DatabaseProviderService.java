@@ -297,7 +297,7 @@ public class DatabaseProviderService implements ProviderServiceI {
                         (action -> newProvider.addAction(actionRepository.findById(action.mode), Arrays.stream(action
                                 .endpoints)
                                 .map(endpoint -> new Endpoint(endpoint, request.type))
-                                .collect(Collectors.toList())
+                                .collect(Collectors.toSet())
                         ));
 
         request.
@@ -340,6 +340,8 @@ public class DatabaseProviderService implements ProviderServiceI {
         var newProvider = setProviderForCreation(request);
 
         newProvider.setValidator(Validator.valueOf(request.validator));
+
+        newProvider.setMetadataPathEntries(request.metadataPathEntries);
 
         request
                 .actions
@@ -491,7 +493,7 @@ public class DatabaseProviderService implements ProviderServiceI {
             request.actions.forEach(newAction -> provider.addAction(actionRepository.findById(newAction.mode), Arrays.stream(newAction
                             .endpoints)
                     .map(endpoint -> new Endpoint(endpoint, provider.getType()))
-                    .collect(Collectors.toList())));
+                    .collect(Collectors.toSet())));
         }
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
@@ -512,6 +514,11 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         if (StringUtils.isNotEmpty(request.validator)) {
             provider.setValidator(Validator.valueOf(request.validator));
+        }
+
+        if(!request.metadataPathEntries.isEmpty()){
+
+            provider.setMetadataPathEntries(request.metadataPathEntries);
         }
 
         if (!request.actions.isEmpty()) {

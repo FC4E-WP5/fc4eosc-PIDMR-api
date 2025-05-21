@@ -12,8 +12,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity(name = "ProviderActionJunction")
 @Table(name = "Provider_Action_Junction")
@@ -34,9 +34,9 @@ public class ProviderActionJunction {
 
     @Type(JsonType.class)
     @Column(name = "endpoints", columnDefinition = "jsonb")
-    private List<Endpoint> endpoints;
+    private Set<Endpoint> endpoints;
 
-    public ProviderActionJunction(Provider provider, Action action, List<Endpoint> endpoints) {
+    public ProviderActionJunction(Provider provider, Action action, Set<Endpoint> endpoints) {
         this.provider = provider;
         this.action = action;
         this.endpoints = endpoints;

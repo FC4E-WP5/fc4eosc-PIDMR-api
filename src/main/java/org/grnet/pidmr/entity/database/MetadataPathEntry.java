@@ -1,6 +1,5 @@
 package org.grnet.pidmr.entity.database;
 
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,23 +9,21 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Data
 @AllArgsConstructor
 @EqualsAndHashCode
-public class Endpoint {
+public class MetadataPathEntry {
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The endpoint link.",
-            example = "https://n2t.net/%s"
-    )
-    @NotEmpty(message = "link may not be empty.")
-    private String link;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The endpoint provider.",
+            description = "The Provider.",
             example = "ark"
     )
-    @NotEmpty(message = "provider may not be empty.")
     private String provider;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The metadata path.",
+            example = "https://n2t.net/%s/?"
+    )
+    private String path;
 }

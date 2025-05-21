@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.pidmr.entity.database.MetadataPathEntry;
 
 import java.util.Set;
 
@@ -19,4 +20,12 @@ public class ProviderRequestV3 extends ProviderRequest {
     @JsonProperty("resolution_modes")
     @NotEmpty(message = "resolution_modes should have at least one entry.")
     public Set<@Valid ResolutionModeRequestV2> actions;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = MetadataPathEntry.class,
+            description = "An array of resource paths in metadata."
+    )
+    @JsonProperty("resource_path_in_metadata")
+    public Set<MetadataPathEntry> metadataPathEntries;
 }
