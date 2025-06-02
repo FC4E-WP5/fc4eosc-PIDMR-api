@@ -25,6 +25,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Added
 
 -   [#142](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/142) - PIDMR-188 API update status.
+-   [#143](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/143) - PIDMR-251 Add metadata_path property to Provider entity and update related endpoints.
 
 
 ## 2.4.0 - 2025-03-27
