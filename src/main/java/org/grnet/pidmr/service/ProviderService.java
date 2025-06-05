@@ -3,8 +3,8 @@ package org.grnet.pidmr.service;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotSupportedException;
 import jakarta.ws.rs.core.UriInfo;
@@ -12,7 +12,6 @@ import org.grnet.pidmr.dto.Identification;
 import org.grnet.pidmr.dto.Validity;
 import org.grnet.pidmr.entity.Action;
 import org.grnet.pidmr.entity.Provider;
-import org.grnet.pidmr.interceptors.ManageEntity;
 import org.grnet.pidmr.mapper.ProviderMapper;
 import org.grnet.pidmr.pagination.Page;
 import org.grnet.pidmr.pagination.PageResource;
@@ -44,6 +43,8 @@ public class ProviderService implements ProviderServiceI {
     @ConfigProperty(name = "list.actions.file")
     String actionsPath;
 
+    @Inject
+    Utility utility;
 
     /**
      * This method is responsible for paginating the available Providers.
@@ -58,7 +59,7 @@ public class ProviderService implements ProviderServiceI {
 
         var allProviders = getProviders();
 
-        var partition = Utility.partition(new ArrayList<>(allProviders), size);
+        var partition = utility.partition(new ArrayList<>(allProviders), size);
 
         var providers = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
 
@@ -91,7 +92,7 @@ public class ProviderService implements ProviderServiceI {
                 .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
                 .build();
 
-        return Utility.toSet(Provider.class, mapper, providersPath);
+        return utility.toSet(Provider.class, mapper, providersPath);
     }
 
     /**
@@ -105,7 +106,7 @@ public class ProviderService implements ProviderServiceI {
                 .builder()
                 .build();
 
-        return Utility.toSet(Action.class, mapper, actionsPath);
+        return utility.toSet(Action.class, mapper, actionsPath);
     }
 
     /**

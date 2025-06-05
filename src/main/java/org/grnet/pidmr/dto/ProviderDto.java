@@ -99,4 +99,13 @@ public class ProviderDto {
     )
     @JsonProperty("resource_path_in_metadata")
     public Set<MetadataPathEntry> metadataPathEntries = new HashSet<>();
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The image url path.",
+            example = "/v1/providers/1/upload/images"
+    )
+    @JsonProperty("image_url_path")
+    public String imageUrlPath;
 }

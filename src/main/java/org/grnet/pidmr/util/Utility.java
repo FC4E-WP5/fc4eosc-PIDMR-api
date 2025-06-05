@@ -1,8 +1,9 @@
 package org.grnet.pidmr.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.cache.CacheResult;
+import jakarta.enterprise.context.ApplicationScoped;
 import lombok.SneakyThrows;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -17,7 +18,12 @@ import static java.util.stream.Collectors.toMap;
 /**
  * This class should contain general methods used by the API components.
  */
+
+@ApplicationScoped
 public class Utility {
+
+    @ConfigProperty(name = "base.upload.image.dir")
+    String baseUploadImageDir;
 
     /**
      * This method paginates a list of objects.
@@ -26,7 +32,7 @@ public class Utility {
      * @param pageSize The page size.
      * @return A map containing the pages of objects.
      */
-    public static <T> Map<Integer, List<T>> partition(List<T> list, int pageSize) {
+    public <T> Map<Integer, List<T>> partition(List<T> list, int pageSize) {
 
         return IntStream.iterate(0, i -> i + pageSize)
                 .limit((list.size() + pageSize - 1) / pageSize)
@@ -48,8 +54,12 @@ public class Utility {
      * @throws RuntimeException If the parsing is not completed successfully.
      */
     @SneakyThrows(IOException.class)
-    public static <T> Set<T> toSet(Class<T> clazz, ObjectMapper objectMapper, String pathToJson) {
+    public <T> Set<T> toSet(Class<T> clazz, ObjectMapper objectMapper, String pathToJson) {
 
        return objectMapper.readValue(Paths.get(pathToJson).toFile(), objectMapper.getTypeFactory().constructCollectionType(Set.class, clazz));
+    }
+
+    public String getBaseUploadImageDir() {
+        return baseUploadImageDir;
     }
 }

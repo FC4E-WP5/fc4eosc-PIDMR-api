@@ -36,7 +36,6 @@ import org.grnet.pidmr.dto.UpdateProviderStatus;
 import org.grnet.pidmr.dto.UpdateRoleChangeRequestStatus;
 import org.grnet.pidmr.dto.UserProfileDto;
 import org.grnet.pidmr.dto.ValidatorResponse;
-import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ProviderRepository;
@@ -48,6 +47,7 @@ import org.grnet.pidmr.util.ServiceUriInfo;
 import org.grnet.pidmr.validator.constraints.NotFoundEntity;
 import org.hibernate.exception.ConstraintViolationException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 

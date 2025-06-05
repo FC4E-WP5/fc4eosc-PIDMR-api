@@ -26,7 +26,6 @@ import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
 import org.grnet.pidmr.validator.constraints.NotFoundEntity;
 
-
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -247,6 +246,45 @@ public class ProviderEndpoint {
         var response = providerService.getResolutionModes();
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Retrieves an image under a provider-based folder.",
+            description = "Retrieves an image under a provider-based folder."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Image retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/{id}/upload/images")
+    @Produces({"image/jpeg", "image/png"})
+    public Response getImage(@Parameter(
+            description = "The ID of the Provider.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                             @PathParam("id")
+                             @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id:") Long id) {
+
+        var image = providerService.getUploadedImage(id);
+
+        return Response.ok(image).build();
     }
 
     public static class PageableProvider extends PageResource<ProviderDto> {

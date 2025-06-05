@@ -28,4 +28,15 @@ public class ProviderRequestV3 extends ProviderRequest {
     )
     @JsonProperty("resource_path_in_metadata")
     public Set<MetadataPathEntry> metadataPathEntries;
+
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Base64-encoded image (with or without data URI prefix)",
+            example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+            format = "byte"
+    )
+    @JsonProperty("image_base_64")
+    public String imageBase64;
 }
