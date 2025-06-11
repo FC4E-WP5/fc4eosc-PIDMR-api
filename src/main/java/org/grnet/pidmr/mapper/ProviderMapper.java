@@ -8,12 +8,14 @@ import org.grnet.pidmr.entity.Provider;
 import org.grnet.pidmr.entity.database.ProviderActionJunction;
 import org.grnet.pidmr.entity.database.Regex;
 import org.grnet.pidmr.service.ProviderService;
+import org.grnet.pidmr.util.Utility;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,12 +33,14 @@ public interface ProviderMapper {
     @Mapping(source = "actions", target = "actions", qualifiedByName = "actions")
     @Mapping(source = "regex", target = "regexes")
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "imageUrlPath", ignore = true)
     @Named("providerToDto")
     ProviderDto providerToDto(Provider provider);
 
     @Named("databaseProviderToDto")
     @Mapping(source = "regexes", target = "regexes", qualifiedByName = "database-regexes")
     @Mapping(source = "actions", target = "actions", qualifiedByName = "database-actions")
+    @Mapping(source = "provider", target = "imageUrlPath", qualifiedByName = "image-path")
     ProviderDto databaseProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
 
     @IterableMapping(qualifiedByName = "databaseProviderToDto")
@@ -50,7 +54,25 @@ public interface ProviderMapper {
     @Mapping(source = "actions", target = "actions", qualifiedByName = "database-actions")
     @Mapping(source = "createdBy", target = "userId")
     @Mapping(source = "statusUpdatedBy", target = "statusUpdatedBy")
+    @Mapping(source = "provider", target = "imageUrlPath", qualifiedByName = "image-path")
     AdminProviderDto databaseAdminProviderToDto(org.grnet.pidmr.entity.database.Provider provider);
+
+    @Named("image-path")
+    default String imagePath(org.grnet.pidmr.entity.database.Provider provider){
+
+        var utility = CDI.current().select(Utility.class).get();
+
+        var uploadDir = new File(utility.getBaseUploadImageDir(), provider.getType());
+
+        var imageFile = new File(uploadDir, provider.getType());
+
+        if (imageFile.exists()){
+
+            return "/v1/providers/"+provider.getId()+"/upload/images";
+        } else {
+            return "";
+        }
+    }
 
     @Named("database-actions")
     default Set<ResolutionModeDto> databaseActions(Set<ProviderActionJunction> actions) {
@@ -85,7 +107,7 @@ public interface ProviderMapper {
             return Collections.EMPTY_SET;
         } else {
 
-            ProviderService providerService = CDI.current().select(ProviderService.class).get();
+            var providerService = CDI.current().select(ProviderService.class).get();
 
             var providerActions = providerService.actionsToMap();
 
