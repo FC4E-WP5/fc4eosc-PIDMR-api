@@ -27,6 +27,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   [#142](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/142) - PIDMR-188 API update status.
 -   [#143](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/143) - PIDMR-251 Add metadata_path property to Provider entity and update related endpoints.
 -   [#149](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/149) - PIDMR-254 Add Image Upload Endpoint with Provider-Based Folder Structure.
+-   [#150](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/150) - PIDMR-256 Handle PKIX path validation failed with user-friendly error message.
 
 
 ## 2.4.0 - 2025-03-27
