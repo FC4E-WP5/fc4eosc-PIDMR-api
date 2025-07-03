@@ -23,6 +23,7 @@
   </properties>
   <dependencyManagement>
     <dependencies>
+
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
@@ -33,6 +34,10 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-elasticsearch-rest-client</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>
@@ -236,6 +241,7 @@
           <execution>
             <goals>
               <goal>integration-test</goal>
+              <goal>verify</goal>
               <goal>verify</goal>
             </goals>
             <configuration>

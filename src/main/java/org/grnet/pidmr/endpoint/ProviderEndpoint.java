@@ -34,17 +34,21 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.pidmr.service.DatabaseProviderService;
+import org.grnet.pidmr.service.ElasticSearchService;
 
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("v1/providers")
 public class ProviderEndpoint {
 
+    @Inject
+    ElasticSearchService elasticSearchService;
     @Inject
     DatabaseProviderService providerService;
 
@@ -107,12 +111,20 @@ public class ProviderEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response validate(@Parameter(name = "pid", in = QUERY, required = true, example = "ark:/13030/tf5p30086k", allowReserved = true,
             description = "The PID to be validated.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("pid") @NotEmpty(message = "pid may not be empty.") String pid, @Parameter(name = "type", in = QUERY,
-            description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) throws UnsupportedEncodingException {
+            description = "When this parameter is used, the API does not search the list of available Providers but directly retrieves the Provider of this type.", schema = @Schema(type = SchemaType.STRING)) @DefaultValue("") @QueryParam("type") String type) throws Exception {
 
         var result = java.net.URLDecoder.decode(pid.trim(), StandardCharsets.UTF_8);
-
         var validity = providerService.validation(result, type);
 
+        // Send to Elastic asynchronously without blocking the response
+        CompletableFuture.runAsync(() -> {
+            try {
+                elasticSearchService.sendSingleDoc(validity);
+            } catch (Exception e) {
+                // log error but do not throw to keep async fire-and-forget
+                e.printStackTrace();
+            }
+        });
         return Response.ok().entity(validity).build();
     }
 
