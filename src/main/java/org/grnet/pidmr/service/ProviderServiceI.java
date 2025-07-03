@@ -79,4 +79,5 @@ public interface ProviderServiceI {
      * @return An object containing identification status, possible type, and an example of PID.
      */
     Identification identify(String text);
+
 }
