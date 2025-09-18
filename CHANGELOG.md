@@ -19,8 +19,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   `Fixed` for any bug fixes.
 -   `Security` in case of vulnerabilities.
 -   `Deprecated` for soon-to-be removed features.
-
 ## Unreleased
+
+## 2.5.0 - 2025-09-18
+---
 
 ### Added
 
@@ -31,6 +33,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 
 ## 2.4.0 - 2025-03-27
+---
 
 ### Added
 
