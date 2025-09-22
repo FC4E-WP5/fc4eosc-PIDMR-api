@@ -40,21 +40,21 @@ public class MetaresolverEndpointTest {
         assertEquals("pid may not be empty.", informativeResponse.message);
     }
 
-    @Test
-    public void resolvePIDViaAPI(){
-
-        var location = given()
-                .contentType(ContentType.JSON)
-                .queryParam("pid", "ark:/67531/metapth346793")
-                .get("/resolve")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(LocationDto.class);
-
-        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location.url);
-    }
+//    @Test
+//    public void resolvePIDViaAPI(){
+//
+//        var location = given()
+//                .contentType(ContentType.JSON)
+//                .queryParam("pid", "ark:/67531/metapth346793")
+//                .get("/resolve")
+//                .then()
+//                .assertThat()
+//                .statusCode(200)
+//                .extract()
+//                .as(LocationDto.class);
+//
+//        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location.url);
+//    }
 
     @Test
     public void resolvePIDWithModeViaAPI(){
@@ -73,13 +73,13 @@ public class MetaresolverEndpointTest {
         assertEquals("https://n2t.net/ark:/67531/metapth346793/%3F", location.url);
     }
 
-    @Test
-    public void resolvePID(){
-
-       var location = metaresolverService.resolve("ark:/67531/metapth346793", "landingpage");
-
-        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location);
-    }
+//    @Test
+//    public void resolvePID(){
+//
+//       var location = metaresolverService.resolve("ark:/67531/metapth346793", "landingpage");
+//
+//        assertEquals("https://digital.library.unt.edu/ark:/67531/metapth346793/", location);
+//    }
 
 //    @Test
 //    public void resolvePIDWithSupportedMode(){

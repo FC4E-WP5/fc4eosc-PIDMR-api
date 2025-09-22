@@ -36,7 +36,6 @@ import org.grnet.pidmr.dto.UpdateProviderStatus;
 import org.grnet.pidmr.dto.UpdateRoleChangeRequestStatus;
 import org.grnet.pidmr.dto.UserProfileDto;
 import org.grnet.pidmr.dto.ValidatorResponse;
-import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.exception.ConflictException;
 import org.grnet.pidmr.pagination.PageResource;
 import org.grnet.pidmr.repository.ProviderRepository;
@@ -48,6 +47,7 @@ import org.grnet.pidmr.util.ServiceUriInfo;
 import org.grnet.pidmr.validator.constraints.NotFoundEntity;
 import org.hibernate.exception.ConstraintViolationException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -418,9 +418,9 @@ public class AdminEndpoint {
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
                                               @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id :") Long id,
-                                              @Valid @NotNull(message = "The request body is empty.") UpdateProviderStatus updateProviderStatus) {
+                                              @Valid @NotNull(message = "The request body is empty.") UpdateProviderStatus request) {
 
-        var response = providerService.updateProviderStatus(id, ProviderStatus.valueOf(updateProviderStatus.status));
+        var response = providerService.updateProviderStatus(id, request);
 
         return Response.ok().entity(response).build();
     }

@@ -6,25 +6,14 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotAcceptableException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.pidmr.dto.Identification;
-import org.grnet.pidmr.dto.InformativeResponse;
-import org.grnet.pidmr.dto.PidIdentificationBatchRequest;
-import org.grnet.pidmr.dto.PidIdentificationBatchResponse;
-import org.grnet.pidmr.dto.PidMultipleIdentificationBatchResponse;
-import org.grnet.pidmr.dto.ProviderDto;
-import org.grnet.pidmr.dto.Validity;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.pagination.PageResource;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -33,8 +22,9 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.pidmr.repository.ProviderRepository;
 import org.grnet.pidmr.service.DatabaseProviderService;
-
+import org.grnet.pidmr.validator.constraints.NotFoundEntity;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -78,6 +68,40 @@ public class ProviderEndpoint {
 
         return Response.ok().entity(providerService.pagination(page - 1, size, uriInfo)).build();
     }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Get Provider by ID.",
+            description = "Endpoint for retrieving a Provider by its ID.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The requested Provider.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderDto.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getProviderById(
+            @Parameter(
+                    description = "The ID of the Provider to retrieve.",
+                    required = true,
+                    example = "1",
+                    schema = @Schema(type = SchemaType.NUMBER))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id:") Long id) {
+
+        var response = providerService.getById(id);
+
+        return Response.ok().entity(response).build();
+    }
+
 
     @Tag(name = "Provider")
     @Operation(
@@ -222,6 +246,45 @@ public class ProviderEndpoint {
         var response = providerService.getResolutionModes();
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Retrieves an image under a provider-based folder.",
+            description = "Retrieves an image under a provider-based folder."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Image retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/{id}/upload/images")
+    @Produces({"image/jpeg", "image/png"})
+    public Response getImage(@Parameter(
+            description = "The ID of the Provider.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                             @PathParam("id")
+                             @Valid @NotFoundEntity(repository = ProviderRepository.class, message = "There is no Provider with the following id:") Long id) {
+
+        var image = providerService.getUploadedImage(id);
+
+        return Response.ok(image).build();
     }
 
     public static class PageableProvider extends PageResource<ProviderDto> {

@@ -1,5 +1,6 @@
 package org.grnet.pidmr.entity.database;
 
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -19,6 +20,7 @@ import org.grnet.pidmr.entity.database.converters.ValidatorConverter;
 import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.enums.Validator;
 import org.grnet.pidmr.exception.ModeIsNotSupported;
+import org.hibernate.annotations.Type;
 
 import java.util.*;
 
@@ -101,7 +103,12 @@ public class Provider extends ManageableEntity implements AbstractProvider {
     @Convert(converter = ValidatorConverter.class)
     private Validator validator;
 
-    public void addAction(Action action, List<Endpoint> endpoints ) {
+
+    @Type(JsonType.class)
+    @Column(name = "metadata_path", columnDefinition = "jsonb")
+    private Set<MetadataPathEntry> metadataPathEntries;
+
+    public void addAction(Action action, Set<Endpoint> endpoints ) {
         var providerAction = new ProviderActionJunction(this, action, endpoints);
         actions.add(providerAction);
         action.getProviders().add(providerAction);

@@ -43,4 +43,7 @@ public abstract class ManageableEntity {
     @Column(name = "entity_type", insertable=false, updatable=false)
     @EqualsAndHashCode.Include
     private String entityType;
+
+    @Column(name = "reason")
+    private String reason;
 }

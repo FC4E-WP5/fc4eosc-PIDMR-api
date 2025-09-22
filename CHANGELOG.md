@@ -19,15 +19,37 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   `Fixed` for any bug fixes.
 -   `Security` in case of vulnerabilities.
 -   `Deprecated` for soon-to-be removed features.
-
 ## Unreleased
 
+## 2.5.0 - 2025-09-18
+---
+
+### Added
+
+-   [#142](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/142) - PIDMR-188 API update status.
+-   [#143](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/143) - PIDMR-251 Add metadata_path property to Provider entity and update related endpoints.
+-   [#149](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/149) - PIDMR-254 Add Image Upload Endpoint with Provider-Based Folder Structure.
+-   [#150](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/150) - PIDMR-256 Handle PKIX path validation failed with user-friendly error message.
+-   [#138](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/138) - PIDMR-238 Create Endpoint for Getting a Provider by ID for Users
+
+### Changed
+
+
+-   [#139](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/139) - PIDMR-239 The valid result should be first
+-   [#140](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/140) - PIDMR-240: The supported modes in API are not returned in an order
+-   [#141](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/141) - PIDMR-240 The supported modes in API are not returned in an order (fix)
+-   [#148](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/148) - PIDMR-258 Minor fixes in unit tests
+
+
 ## 2.4.0 - 2025-03-27
+---
 
 ### Added
 
 -   [#129](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/129) - PIDMR-206 Add validator Property to Provider Table.
 -   [#133](https://github.com/FC4E-WP5/fc4eosc-PIDMR-api/pull/133) - PIDMR-225 PIDMR provider schema update.
+
+### Changed
 
 
 ## 2.3.0 - 2024-12-19

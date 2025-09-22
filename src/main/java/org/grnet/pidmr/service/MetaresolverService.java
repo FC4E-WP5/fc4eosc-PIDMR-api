@@ -20,6 +20,7 @@ import org.grnet.pidmr.entity.AbstractProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.exception.ModeIsNotSupported;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -84,7 +85,11 @@ public class MetaresolverService implements MetaresolverServiceI {
         try (var response = client.newCall(request).execute()) {
 
             return response.request().url().toString();
-        } catch (Exception e) {
+        }catch (SSLHandshakeException ssl){
+
+            throw new ServerErrorException("Secure connection failed: The Provider's ("+provider.getType()+") certificate is invalid or has expired.", 500);
+        }
+        catch (Exception e) {
 
             throw new ServerErrorException("Cannot communicate with metaresolver: " + e.getMessage(), 500);
         }

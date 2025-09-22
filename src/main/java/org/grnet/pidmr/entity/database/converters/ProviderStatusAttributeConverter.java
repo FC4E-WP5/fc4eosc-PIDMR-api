@@ -23,6 +23,9 @@ public class ProviderStatusAttributeConverter implements AttributeConverter<Prov
             case APPROVED:
                 return 1;
 
+            case REJECTED:
+                return 2;
+
             default:
                 throw new ServerErrorException(status + " not supported.", 501);
         }
@@ -40,6 +43,9 @@ public class ProviderStatusAttributeConverter implements AttributeConverter<Prov
 
             case 1:
                 return ProviderStatus.APPROVED;
+
+            case 2:
+                return ProviderStatus.REJECTED;
 
             default:
                 throw new ServerErrorException(dbData + " not supported.", 501);

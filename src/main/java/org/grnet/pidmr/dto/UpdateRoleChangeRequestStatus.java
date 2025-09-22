@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.pidmr.constraints.StringEnumeration;
-import org.grnet.pidmr.enums.ProviderStatus;
 import org.grnet.pidmr.enums.RoleChangeRequestStatus;
 
 

@@ -24,6 +24,8 @@ public class AdminService {
     @Inject
     RoleChangeRequestsRepository roleChangeRequestsRepository;
 
+    @Inject Utility utility;
+
     /**
      * Retrieves a page of RoleChangeRequestDto objects.
      *
@@ -44,7 +46,7 @@ public class AdminService {
                 .map(validator -> new ValidatorResponse(validator.name(), validator.getDescription()))
                 .collect(Collectors.toList());
 
-        var partition = Utility.partition(new ArrayList<>(allValidators), size);
+        var partition = utility.partition(new ArrayList<>(allValidators), size);
 
         var validators = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
 

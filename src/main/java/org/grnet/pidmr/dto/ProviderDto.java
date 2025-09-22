@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.pidmr.entity.database.MetadataPathEntry;
 import org.grnet.pidmr.enums.Validator;
 
 import java.util.HashSet;
@@ -90,4 +91,21 @@ public class ProviderDto {
     )
     @JsonProperty("validator")
     public String validator;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = MetadataPathEntry.class,
+            description = "An array of resource paths in metadata."
+    )
+    @JsonProperty("resource_path_in_metadata")
+    public Set<MetadataPathEntry> metadataPathEntries = new HashSet<>();
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The image url path.",
+            example = "/v1/providers/1/upload/images"
+    )
+    @JsonProperty("image_url_path")
+    public String imageUrlPath;
 }

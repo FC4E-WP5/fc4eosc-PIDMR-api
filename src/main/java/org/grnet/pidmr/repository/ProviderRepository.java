@@ -41,7 +41,7 @@ public class ProviderRepository implements Repository<Provider, Long> {
      */
     public Pageable<Provider> fetchProvidersByPage(int page, int size){
 
-        var panache = find("status = : status", Parameters.with("status", ProviderStatus.APPROVED)).page(page, size);
+        var panache = find("status = :status ORDER BY name ASC", Parameters.with("status", ProviderStatus.APPROVED)).page(page, size);
 
         var pageable = new PageableImpl<Provider>();
         pageable.list = panache.list();

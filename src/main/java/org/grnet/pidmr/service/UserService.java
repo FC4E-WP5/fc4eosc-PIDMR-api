@@ -60,6 +60,8 @@ public class UserService {
     @Inject
     HistoryRepository historyRepository;
 
+    @Inject Utility utility;
+
     public UserProfileDto getUserProfile(){
 
         var dto = new UserProfileDto();
@@ -199,7 +201,7 @@ public class UserService {
 
         var users = getUsers();
 
-        var partition = Utility.partition(new ArrayList<>(users), size);
+        var partition = utility.partition(new ArrayList<>(users), size);
 
         var partitionedUsers = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
 

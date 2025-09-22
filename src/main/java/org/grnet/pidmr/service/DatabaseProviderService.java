@@ -6,11 +6,14 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.pidmr.dto.*;
 import org.grnet.pidmr.entity.database.Action;
 import org.grnet.pidmr.entity.database.Endpoint;
@@ -29,11 +32,15 @@ import org.grnet.pidmr.repository.RegexRepository;
 import org.grnet.pidmr.service.keycloak.KeycloakAdminService;
 import org.grnet.pidmr.util.RequestUserContext;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URLConnection;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -61,6 +68,11 @@ public class DatabaseProviderService implements ProviderServiceI {
 
     @Inject
     KeycloakAdminService keycloakAdminService;
+
+    @ConfigProperty(name = "base.upload.image.dir")
+    String baseUploadImageDir;
+
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
     @Override
     public Validity valid(String pid) {
@@ -144,6 +156,16 @@ public class DatabaseProviderService implements ProviderServiceI {
 
             identifications = new HashSet<>(mergedObjects.values());
         }
+
+        identifications = identifications.stream()
+                .sorted(Comparator.comparingInt((Identification identification) -> {
+                    switch (identification.status) {
+                        case VALID: return 0;
+                        case AMBIGUOUS: return 1;
+                        default: return 2;
+                    }
+                }))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         return identifications;
     }
@@ -287,7 +309,7 @@ public class DatabaseProviderService implements ProviderServiceI {
                         (action -> newProvider.addAction(actionRepository.findById(action.mode), Arrays.stream(action
                                 .endpoints)
                                 .map(endpoint -> new Endpoint(endpoint, request.type))
-                                .collect(Collectors.toList())
+                                .collect(Collectors.toSet())
                         ));
 
         request.
@@ -331,6 +353,8 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         newProvider.setValidator(Validator.valueOf(request.validator));
 
+        newProvider.setMetadataPathEntries(request.metadataPathEntries);
+
         request
                 .actions
                 .forEach
@@ -350,6 +374,11 @@ public class DatabaseProviderService implements ProviderServiceI {
 
         var userID = newProvider.getCreatedBy();
         var pidtype = newProvider.getType();
+
+        if(StringUtils.isNotEmpty(request.imageBase64)) {
+
+            uploadImage(request.imageBase64, newProvider.getType());
+        }
 
         var emailContext = new EmailContextForStatusUpdate(userID, keycloakAdminService.getUserEmail(userID), newProvider.getId(), String.valueOf(newProvider.getStatus()), pidtype,timestamp);
         mailerService.sendEmailsWithContext(emailContext, MailType.ADMIN_ALERT_NEW_PID_TYPE_ENTRY_CREATION, MailType.PROVIDER_ADMIN_NEW_PID_TYPE_ENTRY_CREATION);
@@ -481,7 +510,7 @@ public class DatabaseProviderService implements ProviderServiceI {
             request.actions.forEach(newAction -> provider.addAction(actionRepository.findById(newAction.mode), Arrays.stream(newAction
                             .endpoints)
                     .map(endpoint -> new Endpoint(endpoint, provider.getType()))
-                    .collect(Collectors.toList())));
+                    .collect(Collectors.toSet())));
         }
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
@@ -504,6 +533,11 @@ public class DatabaseProviderService implements ProviderServiceI {
             provider.setValidator(Validator.valueOf(request.validator));
         }
 
+        if(!request.metadataPathEntries.isEmpty()){
+
+            provider.setMetadataPathEntries(request.metadataPathEntries);
+        }
+
         if (!request.actions.isEmpty()) {
 
             checkIfActionsSupported(request.actions.stream().map(action -> action.mode).collect(Collectors.toSet()));
@@ -511,6 +545,10 @@ public class DatabaseProviderService implements ProviderServiceI {
             new ArrayList<>(actions).forEach(action -> provider.removeAction(action.getAction()));
             Panache.getEntityManager().flush();
             request.actions.forEach(newAction -> provider.addAction(actionRepository.findById(newAction.mode), newAction.endpoints));
+        }
+
+        if(StringUtils.isNotEmpty(request.imageBase64)){
+            uploadImage(request.imageBase64, provider.getType());
         }
 
         return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
@@ -567,19 +605,20 @@ public class DatabaseProviderService implements ProviderServiceI {
      * Updates the status of a Provider with the provided status.
      *
      * @param id     The ID of the Provider to update.
-     * @param status The new status to set for the Provider.
+     * @param request Request for updating Provider status.
      * @return The updated Provider.
      */
     @Transactional
-    public AdminProviderDto updateProviderStatus(Long id, ProviderStatus status) {
+    public AdminProviderDto updateProviderStatus(Long id, UpdateProviderStatus request) {
 
         var formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         var newProvider = providerRepository.findById(id);
-        newProvider.setStatus(status);
+        newProvider.setStatus(ProviderStatus.valueOf(request.status));
         newProvider.setStatusUpdatedBy(requestUserContext.getVopersonID());
+        newProvider.setReason(request.reason);
 
         return ProviderMapper.INSTANCE.databaseAdminProviderToDto(newProvider);
     }
@@ -605,5 +644,75 @@ public class DatabaseProviderService implements ProviderServiceI {
         }
 
         return identification;
+    }
+    @Transactional
+    public ProviderDto getById(Long providerId) {
+
+        var provider = providerRepository.findById(providerId);
+
+        return ProviderMapper.INSTANCE.databaseProviderToDto(provider);
+    }
+
+    public File getUploadedImage(Long providerId){
+
+        var provider = providerRepository.findById(providerId);
+
+        var file = new File(baseUploadImageDir + "/" + provider.getType() + "/" + provider.getType());
+        if (!file.exists()) {
+
+            throw new NotFoundException("Image doesn't exist.");
+        }
+
+        return file;
+    }
+
+    public void uploadImage(String imageBase64, String providerType) {
+
+        try {
+            if (imageBase64.startsWith("data:")) {
+                int semiColonIndex = imageBase64.indexOf(';');
+                if (semiColonIndex < 0) {
+                    throw new BadRequestException("Invalid data URI format");
+                }
+                var mimeType = imageBase64.substring(5, semiColonIndex);
+
+                imageBase64 = imageBase64.substring(imageBase64.indexOf(",") + 1);
+
+                switch (mimeType) {
+                    case "image/png":
+                    case "image/jpeg":
+                    case "image/jpg":
+                        break;
+                    default:
+                         throw new BadRequestException("Only PNG and JPEG images are supported.");
+                }
+            } else {
+
+                throw new BadRequestException("Missing image MIME type prefix (data URI), or unsupported format");
+            }
+
+            var uploadDir = new File(baseUploadImageDir, providerType);
+
+            if (!uploadDir.exists()) uploadDir.mkdirs();
+
+            // Decode base64
+            byte[] imageBytes = Base64.getDecoder().decode(imageBase64);
+
+            if (imageBytes.length > MAX_FILE_SIZE) {
+                throw new BadRequestException("Image size exceeds 5MB limit");
+            }
+
+            var imageFile = new File(uploadDir, providerType);
+
+            // Write file
+            try (FileOutputStream fos = new FileOutputStream(imageFile)) {
+                fos.write(imageBytes);
+            }
+        } catch (IllegalArgumentException e) {
+            // Base64 decode error
+           throw new BadRequestException("Invalid base64 encoding");
+        } catch (Exception e) {
+            throw new InternalServerErrorException("Failed to save image: " + e.getMessage());
+        }
     }
 }
